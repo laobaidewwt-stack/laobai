@@ -192,6 +192,41 @@ body.admin .wrap{padding-top:28px}
 .lk-del:hover{opacity:1}
 
 
+
+/* ====== CUSTOM CATEGORY EDITOR ====== */
+.cat-editor{display:none;margin:0 16px 10px;background:#fff;border-radius:var(--r);padding:12px 14px;box-shadow:var(--sh);border:1px solid rgba(27,143,88,.04)}
+body.admin .cat-editor{display:block}
+.cat-ed-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cat-ed-hd span{font-size:12px;font-weight:600;color:var(--txt2)}
+.cat-ed-add{padding:3px 10px;border-radius:6px;background:var(--mint);border:1px solid var(--mint2);font-size:10px;font-weight:600;color:var(--green);cursor:pointer;font-family:var(--f)}
+.cat-ed-list{display:flex;flex-wrap:wrap;gap:4px}
+.cat-ed-item{display:flex;align-items:center;gap:3px;padding:3px 8px;border-radius:8px;background:var(--mint);font-size:11px;color:var(--txt2)}
+.cat-ed-item button{background:none;border:none;color:var(--txt4);font-size:10px;cursor:pointer;padding:0 2px}
+.cat-ed-item button:hover{color:#dc2626}
+.cat-ed-input{padding:4px 8px;border:1px solid var(--mint2);border-radius:6px;font-size:11px;font-family:var(--f);outline:none;width:60px}
+
+/* ====== CLIPBOARD PASTE BUTTON ====== */
+.paste-btn{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:var(--r2);background:var(--mint);border:1px solid var(--mint2);font-size:12px;font-weight:500;color:var(--green);cursor:pointer;font-family:var(--f);margin-bottom:10px;width:100%;justify-content:center;transition:all .15s}
+.paste-btn:hover{background:var(--mint2)}
+.paste-btn:active{transform:scale(.98)}
+
+/* ====== BATCH MANAGEMENT ====== */
+.batch-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--mint2);padding:10px 16px;z-index:250;box-shadow:0 -2px 10px rgba(0,0,0,.05)}
+.batch-bar.show{display:flex;align-items:center;gap:8px;justify-content:center}
+.batch-info{font-size:12px;color:var(--txt3);flex:1}
+.batch-info b{color:var(--green)}
+.batch-act{padding:7px 14px;border-radius:8px;font-size:11px;font-weight:600;font-family:var(--f);cursor:pointer;border:none;transition:all .15s}
+.batch-del{background:rgba(220,38,38,.06);color:#dc2626}.batch-del:hover{background:rgba(220,38,38,.12)}
+.batch-cat{background:var(--mint);color:var(--green);border:1px solid var(--mint2)}.batch-cat:hover{background:var(--mint2)}
+.batch-cancel{background:#fff;color:var(--txt4);border:1px solid var(--mint2)}
+.batch-toggle{padding:3px 10px;border-radius:6px;background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.1);font-size:10px;font-weight:600;color:#2563eb;cursor:pointer;font-family:var(--f);margin-left:4px}
+
+/* Checkbox on cards */
+.c-check{display:none;width:22px;height:22px;border-radius:6px;border:2px solid var(--mint2);flex-shrink:0;cursor:pointer;align-items:center;justify-content:center;transition:all .15s;background:#fff}
+body.batch-mode .c-check{display:flex}
+.c-check.on{background:var(--green);border-color:var(--green);color:#fff;font-size:12px}
+body.batch-mode .c-actions{display:none}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.dl{padding:10px 12px}.hd-name{font-size:17px}}
 </style>
@@ -226,6 +261,12 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
     <button class="s-x" id="sx" onclick="clrS()">✕</button>
   </div></div>
   <div class="recent" id="rcBox"><div class="rc-hd"><span>最近浏览</span><button onclick="clrRc()">清除</button></div><div class="rc-list" id="rcList"></div></div>
+  
+  <div class="cat-editor" id="catEditor">
+    <div class="cat-ed-hd"><span>📂 管理分类</span><button class="cat-ed-add" onclick="addCatPrompt()">+ 新分类</button></div>
+    <div class="cat-ed-list" id="catEdList"></div>
+  </div>
+
   <div class="tabs" id="tabs">
     <button class="tab on" data-cat="all">全部</button>
     <button class="tab" data-cat="泰剧">🇹🇭 泰剧</button>
@@ -247,7 +288,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
 
-<div class="admin-bar" id="adminBar">🔓 管理模式 <button onclick="exitAdmin()">退出</button></div>
+<div class="admin-bar" id="adminBar">🔓 管理模式 <button class="batch-toggle" onclick="enterBatch()">批量管理</button> <button onclick="exitAdmin()">退出</button></div>
 <button class="fab" id="fab" onclick="openM()">+</button>
 <div class="ov" id="ov">
 <div class="modal">
@@ -255,7 +296,8 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <h3 id="mt">添加资源</h3>
 <div class="fg"><label>资源名称</label><input type="text" id="fn" placeholder="例：鱿鱼游戏"></div>
 <div class="fg"><label>分类</label><select id="fc"><option value="泰剧">泰剧</option><option value="姬片">姬片</option><option value="韩剧">韩剧</option><option value="网剧">网剧</option><option value="西班牙剧">西班牙剧</option><option value="美剧">美剧</option><option value="中剧">中剧</option><option value="短剧">短剧</option></select></div>
-<div class="links-hd"><span>网盘链接</span><button class="add-lk" onclick="addLk()">+ 添加</button></div>
+<button class="paste-btn" onclick="pasteClipboard()">📋 从剪贴板粘贴识别</button>
+    <div class="links-hd"><span>网盘链接</span><button class="add-lk" onclick="addLk()">+ 添加</button></div>
 <div class="presets">
 <div class="pre" onclick="addLk('百度','')">百度</div>
 <div class="pre" onclick="addLk('UC','')">UC</div>
@@ -268,6 +310,14 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <div class="fg"><label>关键词</label><input type="text" id="fw" placeholder="空格分隔"></div>
 <div class="btns"><button class="btnC" onclick="closeM()">取消</button><button class="btnS" onclick="saveR()">保存</button></div>
 </div></div>
+
+
+<div class="batch-bar" id="batchBar">
+  <div class="batch-info">已选 <b id="batchCnt">0</b> 条</div>
+  <button class="batch-act batch-cat" onclick="batchChangeCat()">改分类</button>
+  <button class="batch-act batch-del" onclick="batchDel()">批量删除</button>
+  <button class="batch-act batch-cancel" onclick="exitBatch()">取消</button>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -389,6 +439,180 @@ async function delR(id){
   shown=0;render();renderLt();toast('已删除');
 }
 
+
+// ====== CUSTOM CATEGORIES ======
+const DEFAULT_CATS=['泰剧','姬片','韩剧','网剧','西班牙剧','美剧','中剧','短剧'];
+const CAT_KEY='lb_cats';
+
+function getCats(){
+  try{const s=localStorage.getItem(CAT_KEY);if(s)return JSON.parse(s)}catch{}
+  return [...DEFAULT_CATS];
+}
+function saveCats(c){try{localStorage.setItem(CAT_KEY,JSON.stringify(c))}catch{}}
+
+function renderCatEditor(){
+  const cats=getCats();
+  document.getElementById('catEdList').innerHTML=cats.map(c=>
+    `<div class="cat-ed-item">${c}<button onclick="removeCat('${c}')">✕</button></div>`
+  ).join('');
+  // Update tabs
+  const tabsEl=document.getElementById('tabs');
+  tabsEl.innerHTML='<button class="tab on" data-cat="all">全部</button>'+
+    cats.map(c=>{
+      const em=EM[c]||'📁';
+      return `<button class="tab" data-cat="${c}">${em} ${c}</button>`;
+    }).join('');
+  // Update select in modal
+  const fc=document.getElementById('fc');
+  if(fc){fc.innerHTML=cats.map(c=>`<option value="${c}">${c}</option>`).join('')}
+}
+
+function addCatPrompt(){
+  const n=prompt('输入新分类名称：');
+  if(!n||!n.trim())return;
+  const cats=getCats();
+  if(cats.includes(n.trim())){toast('分类已存在');return}
+  cats.push(n.trim());
+  saveCats(cats);
+  renderCatEditor();
+  toast('已添加分类: '+n.trim());
+}
+
+function removeCat(c){
+  if(!confirm('删除分类「'+c+'」？'))return;
+  let cats=getCats();
+  cats=cats.filter(x=>x!==c);
+  saveCats(cats);
+  renderCatEditor();
+  toast('已删除分类');
+}
+
+// ====== CLIPBOARD AUTO-PASTE ======
+async function pasteClipboard(){
+  let text='';
+  try{text=await navigator.clipboard.readText()}catch{
+    toast('无法读取剪贴板，请手动粘贴');return;
+  }
+  if(!text.trim()){toast('剪贴板为空');return}
+  
+  // Parse clipboard content
+  const lines=text.split(/\n/);
+  let foundName='',foundLinks=[];
+  
+  // URL patterns
+  const urlReg=/(https?:\/\/[^\s\u3000]+)/g;
+  
+  for(const line of lines){
+    const trimmed=line.trim();
+    if(!trimmed)continue;
+    
+    // Find URLs
+    const urls=trimmed.match(urlReg);
+    if(urls){
+      for(const url of urls){
+        const u=url.toLowerCase();
+        if(u.includes('baidu')||u.includes('pan.baidu')||u.includes('yun.baidu')){
+          foundLinks.push({name:'百度',url});
+        }else if(u.includes('uc.cn')||u.includes('drive.uc')){
+          foundLinks.push({name:'UC',url});
+        }else if(u.includes('quark')||u.includes('pan.quark')){
+          foundLinks.push({name:'夸克',url});
+        }else if(u.includes('alipan')||u.includes('aliyundrive')){
+          foundLinks.push({name:'阿里',url});
+        }else if(u.includes('xunlei')||u.includes('pan.xunlei')){
+          foundLinks.push({name:'迅雷',url});
+        }else if(u.includes('115')){
+          foundLinks.push({name:'115',url});
+        }else{
+          foundLinks.push({name:'链接',url});
+        }
+      }
+    }
+    
+    // First non-URL, non-empty line could be drama name
+    if(!foundName&&!urls){
+      // Clean up common prefixes
+      let name=trimmed.replace(/^(资源|分享|更新|发布)[：:]\s*/,'').replace(/[【】\[\]]/g,'').trim();
+      if(name.length>1&&name.length<60)foundName=name;
+    }
+  }
+  
+  // Fill form
+  if(foundName)document.getElementById('fn').value=foundName;
+  
+  if(foundLinks.length){
+    document.getElementById('lkRows').innerHTML='';
+    _lkCnt=0;
+    foundLinks.forEach(l=>addLk(l.name,l.url));
+    toast('已识别 '+(foundName?'「'+foundName+'」+ ':'')+foundLinks.length+'个链接');
+  }else if(foundName){
+    toast('已识别: '+foundName+'（未找到链接）');
+  }else{
+    toast('未识别到内容，请手动填写');
+  }
+}
+
+// ====== BATCH MANAGEMENT ======
+let batchMode=false,batchSelected=new Set();
+
+function enterBatch(){
+  batchMode=true;
+  batchSelected.clear();
+  document.body.classList.add('batch-mode');
+  document.getElementById('batchBar').classList.add('show');
+  updBatchCnt();
+  shown=0;render();
+}
+
+function exitBatch(){
+  batchMode=false;
+  batchSelected.clear();
+  document.body.classList.remove('batch-mode');
+  document.getElementById('batchBar').classList.remove('show');
+  shown=0;render();
+}
+
+function toggleBatchItem(id){
+  if(batchSelected.has(id))batchSelected.delete(id);
+  else batchSelected.add(id);
+  const el=document.querySelector('.c-check[data-id="'+id+'"]');
+  if(el)el.classList.toggle('on',batchSelected.has(id));
+  updBatchCnt();
+}
+
+function updBatchCnt(){
+  document.getElementById('batchCnt').textContent=batchSelected.size;
+}
+
+async function batchDel(){
+  if(!batchSelected.size){toast('请先选择资源');return}
+  if(!confirm('确定删除选中的 '+batchSelected.size+' 条资源？'))return;
+  const ids=[...batchSelected];
+  for(const id of ids){
+    await supa.from('resources').delete().eq('id',id);
+    res=res.filter(r=>r.id!==id);
+  }
+  toast('已删除 '+ids.length+' 条');
+  exitBatch();
+  shown=0;render();renderLt();
+}
+
+async function batchChangeCat(){
+  if(!batchSelected.size){toast('请先选择资源');return}
+  const cats=getCats();
+  const newCat=prompt('输入新分类：\n可选: '+cats.join('、'));
+  if(!newCat||!newCat.trim())return;
+  const ids=[...batchSelected];
+  for(const id of ids){
+    await supa.from('resources').update({cat:newCat.trim()}).eq('id',id);
+    const r=res.find(x=>x.id===id);
+    if(r)r.cat=newCat.trim();
+  }
+  toast('已修改 '+ids.length+' 条分类');
+  exitBatch();
+  shown=0;render();renderLt();
+}
+
 // ====== LOAD DATA FROM data.json ======
 async function loadData(){
   try{
@@ -405,7 +629,7 @@ async function loadData(){
   }
   document.getElementById('loadingScreen').classList.add('hide');
   setTimeout(()=>document.getElementById('loadingScreen').style.display='none',500);
-  render();renderLt();renderRc();
+  render();renderLt();renderRc();renderCatEditor();
 }
 
 // Recent
@@ -447,7 +671,7 @@ function render(ap){
       if(l.url)lks+=`<a class="dl dl-k" href="${hA(l.url)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-x">${h(l.name.charAt(0))}</div><div class="dl-text"><div class="dl-name">${h(l.name)}</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`})}
     if(!lks)lks='<div class="no-dl">暂无链接</div>';
     const nw=isNew(r.date)?'<span class="c-new">NEW</span>':'';
-    return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}</div></div></div><div class="c-dl">${lks}</div>
+    return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><div class="c-check" data-id="${r.id}" onclick="toggleBatchItem(${r.id})"></div><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}</div></div></div><div class="c-dl">${lks}</div>
 <div class="c-actions"><button class="c-act" onclick="editR(${r.id})">编辑</button><button class="c-act del" onclick="delR(${r.id})">删除</button></div>
 </div>`}).join(''));
   shown+=sl.length;
@@ -481,6 +705,9 @@ function clrS(){document.getElementById('si').value='';q='';shown=0;render();upd
 
 // Tabs
 document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));b.classList.add('on');cat=b.dataset.cat;shown=0;render()});
+// Re-bind after dynamic tab render
+const _origRenderCat=renderCatEditor;
+renderCatEditor=function(){_origRenderCat();document.getElementById('tabs').onclick=e=>{const b=e.target.closest('.tab');if(!b)return;document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));b.classList.add('on');cat=b.dataset.cat;shown=0;render()}};
 
 // Init
 loadData();
