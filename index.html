@@ -140,9 +140,66 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f);-webkit-font-smo
 .loading-screen.hide{opacity:0;pointer-events:none}
 .loading-screen p{font-size:13px;color:var(--txt4);margin-top:12px}
 
+
+/* ====== ADMIN MODE ====== */
+body:not(.admin) .fab{display:none}
+body:not(.admin) .c-actions{display:none}
+.admin-bar{display:none;position:fixed;top:0;left:0;right:0;height:28px;background:linear-gradient(135deg,var(--green),var(--green-lt));z-index:999;align-items:center;justify-content:center;gap:6px;font-size:10px;color:#fff;font-weight:600;letter-spacing:.5px}
+body.admin .admin-bar{display:flex}
+.admin-bar button{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:9px;padding:2px 8px;border-radius:4px;cursor:pointer;font-family:var(--f)}
+body.admin .wrap{padding-top:28px}
+.hd-av{-webkit-tap-highlight-color:transparent;user-select:none}
+
+/* Card actions */
+.c-actions{display:flex;justify-content:flex-end;gap:4px;padding:4px 10px 6px;background:var(--mint)}
+.c-act{padding:3px 10px;border-radius:6px;background:rgba(255,255,255,.6);border:none;font-size:10px;color:var(--txt4);cursor:pointer;font-family:var(--f);transition:all .15s;font-weight:500}
+.c-act:hover{background:rgba(255,255,255,.9);color:var(--txt2)}
+.c-act.del:hover{color:#dc2626;background:rgba(220,38,38,.06)}
+
+/* FAB */
+.fab{position:fixed;bottom:24px;right:max(calc(50% - 210px + 12px),18px);width:44px;height:44px;border-radius:50%;background:var(--green);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 3px 14px rgba(27,143,88,.3);z-index:200;display:flex;align-items:center;justify-content:center;transition:all .3s var(--ease)}
+.fab:hover{transform:scale(1.1)}.fab:active{transform:scale(.9)}
+
+/* Modal */
+.ov{display:none;position:fixed;inset:0;background:rgba(17,17,17,.2);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:300;align-items:flex-end;justify-content:center}
+.ov.show{display:flex}
+.modal{background:var(--bg);border-radius:18px 18px 0 0;width:100%;max-width:420px;max-height:88vh;overflow-y:auto;padding:14px 20px 34px;animation:up .3s cubic-bezier(.16,1,.3,1)}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mbar{width:28px;height:3px;background:var(--txt5);border-radius:2px;margin:0 auto 12px;opacity:.4}
+.modal h3{font-size:15px;font-weight:600;text-align:center;margin-bottom:14px}
+.fg{margin-bottom:9px}
+.fg label{display:block;font-size:10px;color:var(--txt4);margin-bottom:3px;font-weight:500}
+.fg input,.fg select{width:100%;padding:9px 12px;background:#fff;border:1.5px solid var(--mint2);border-radius:var(--r3);color:var(--txt);font-size:13px;font-family:var(--f);outline:none;transition:border-color .25s}
+.fg input:focus,.fg select:focus{border-color:var(--green)}
+.fg select{cursor:pointer}
+.fr{display:flex;gap:8px}.fr .fg{flex:1}.fr .fg.sm{flex:0 0 80px}
+.btns{display:flex;gap:8px;margin-top:14px}
+.btnC,.btnS{flex:1;padding:10px;border-radius:16px;font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer;transition:all .2s;border:none}
+.btnC{background:#fff;color:var(--txt3);border:1px solid var(--mint2)}
+.btnS{background:var(--green);color:#fff}
+
+/* Link rows in modal */
+.links-hd{display:flex;align-items:center;justify-content:space-between;margin:6px 0 8px}
+.links-hd span{font-size:10px;color:var(--txt4);font-weight:500}
+.add-lk{padding:4px 10px;border-radius:8px;background:var(--mint);border:1px solid var(--mint2);font-size:10px;font-weight:600;color:var(--green);cursor:pointer;font-family:var(--f)}
+.presets{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.pre{padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;font-family:var(--f);border:1px solid var(--mint2);background:var(--mint);color:var(--green);transition:all .15s}
+.pre:hover{border-color:var(--green)}
+.lk-row{display:flex;gap:6px;align-items:center;margin-bottom:8px;animation:fadeUp .2s var(--ease)}
+.lk-row .fg{margin-bottom:0}
+.lk-nc{flex:0 0 66px}.lk-uc{flex:1}
+.lk-del{width:26px;height:26px;border-radius:50%;background:rgba(220,38,38,.05);border:none;color:#dc2626;font-size:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;opacity:.5}
+.lk-del:hover{opacity:1}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.dl{padding:10px 12px}.hd-name{font-size:17px}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPA_URL='https://mecsrhqkicgycdtatugk.supabase.co';
+const SUPA_KEY='sb_publishable_R57y7ocqV-hqP--hrvzDhg_msz2glCK';
+const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+</script>
 </head>
 <body>
 
@@ -187,6 +244,29 @@ body{background:var(--bg);color:var(--txt);font-family:var(--f);-webkit-font-smo
   <div class="ft"><a href="https://weibo.com/u/5974858251" target="_blank">@老白的窝窝头123</a><p>资源来自网络 · 仅供学习交流</p></div>
 </div>
 <button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<div class="admin-bar" id="adminBar">🔓 管理模式 <button onclick="exitAdmin()">退出</button></div>
+<button class="fab" id="fab" onclick="openM()">+</button>
+<div class="ov" id="ov">
+<div class="modal">
+<div class="mbar"></div>
+<h3 id="mt">添加资源</h3>
+<div class="fg"><label>资源名称</label><input type="text" id="fn" placeholder="例：鱿鱼游戏"></div>
+<div class="fg"><label>分类</label><select id="fc"><option value="泰剧">泰剧</option><option value="姬片">姬片</option><option value="韩剧">韩剧</option><option value="网剧">网剧</option><option value="西班牙剧">西班牙剧</option><option value="美剧">美剧</option><option value="中剧">中剧</option><option value="短剧">短剧</option></select></div>
+<div class="links-hd"><span>网盘链接</span><button class="add-lk" onclick="addLk()">+ 添加</button></div>
+<div class="presets">
+<div class="pre" onclick="addLk('百度','')">百度</div>
+<div class="pre" onclick="addLk('UC','')">UC</div>
+<div class="pre" onclick="addLk('夸克','')">夸克</div>
+<div class="pre" onclick="addLk('阿里','')">阿里</div>
+<div class="pre" onclick="addLk('迅雷','')">迅雷</div>
+<div class="pre" onclick="addLk()">自定义</div>
+</div>
+<div id="lkRows"></div>
+<div class="fg"><label>关键词</label><input type="text" id="fw" placeholder="空格分隔"></div>
+<div class="btns"><button class="btnC" onclick="closeM()">取消</button><button class="btnS" onclick="saveR()">保存</button></div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -198,15 +278,126 @@ function h(s){const d=document.createElement('div');d.textContent=s||'';return d
 function hA(s){return(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2e3)}
 
+
+// ====== ADMIN MODE ======
+const AK='lb_admin';
+let _editId=null,_lkCnt=0;
+
+function isAdmin(){try{return sessionStorage.getItem(AK)==='1'}catch{return false}}
+function toggleAdmin(){
+  const on=!isAdmin();
+  try{if(on)sessionStorage.setItem(AK,'1');else sessionStorage.removeItem(AK)}catch{}
+  document.body.classList.toggle('admin',on);
+  toast(on?'管理模式 ✓':'已退出管理');
+}
+function exitAdmin(){try{sessionStorage.removeItem(AK)}catch{};document.body.classList.remove('admin');toast('已退出管理')}
+
+// Long press avatar
+let _lpt;
+const _av=document.querySelector('.hd-av');
+_av.addEventListener('touchstart',()=>{_lpt=setTimeout(toggleAdmin,800)},{passive:true});
+_av.addEventListener('touchend',()=>clearTimeout(_lpt));
+_av.addEventListener('mousedown',()=>{_lpt=setTimeout(toggleAdmin,800)});
+_av.addEventListener('mouseup',()=>clearTimeout(_lpt));
+_av.addEventListener('mouseleave',()=>clearTimeout(_lpt));
+if(isAdmin())document.body.classList.add('admin');
+
+// Modal
+function openM(title){document.getElementById('mt').textContent=title||'添加资源';document.getElementById('ov').classList.add('show')}
+function closeM(){document.getElementById('ov').classList.remove('show');['fn','fw'].forEach(id=>document.getElementById(id).value='');document.getElementById('fc').selectedIndex=0;document.getElementById('lkRows').innerHTML='';_lkCnt=0;_editId=null}
+document.getElementById('ov').addEventListener('click',e=>{if(e.target===e.currentTarget)closeM()});
+
+// Link rows
+function addLk(name,url){
+  _lkCnt++;const id=_lkCnt;
+  const row=document.createElement('div');row.className='lk-row';row.id='lkr'+id;
+  row.innerHTML=`<div class="fg lk-nc"><input placeholder="名称" value="${name||''}"></div><div class="fg lk-uc"><input placeholder="粘贴链接" value="${url||''}"></div><button class="lk-del" onclick="document.getElementById('lkr${id}').remove()">✕</button>`;
+  document.getElementById('lkRows').appendChild(row);
+}
+
+function collectLks(){
+  const rows=document.querySelectorAll('#lkRows .lk-row');
+  const lks=[];
+  rows.forEach(r=>{
+    const inputs=r.querySelectorAll('input');
+    const name=inputs[0].value.trim(),url=inputs[1].value.trim();
+    if(name&&url)lks.push({name,url});
+  });
+  return lks;
+}
+
+async function saveR(){
+  const n=document.getElementById('fn').value.trim();
+  if(!n){toast('请输入名称');return}
+  const links=collectLks();
+  const d={name:n,cat:document.getElementById('fc').value,baidu:'',uc:'',kk:'',links:links,keywords:document.getElementById('fw').value.trim(),date:new Date().toISOString().slice(0,10)};
+  links.forEach(l=>{
+    const ln=l.name.toLowerCase();
+    if(ln.includes('\u767e\u5ea6'))d.baidu=l.url;
+    else if(ln==='uc')d.uc=l.url;
+    else if(ln.includes('\u5938\u514b'))d.kk=l.url;
+  });
+  if(_editId){
+    // Update existing
+    const idx=res.findIndex(r=>r.id===_editId);
+    const origDate=idx>=0?res[idx].date:d.date;
+    d.date=origDate;
+    const {error}=await supa.from('resources').update(d).eq('id',_editId);
+    if(error){toast('更新失败: '+error.message);return}
+    if(idx>=0){d.id=_editId;res[idx]=d}
+    toast('已更新 ✓');
+  }else{
+    // Insert new
+    const {data:inserted,error}=await supa.from('resources').insert(d).select();
+    if(error){toast('添加失败: '+error.message);return}
+    if(inserted&&inserted[0])res.unshift(inserted[0]);
+    toast('已添加 ✓');
+  }
+  shown=0;render();renderLt();closeM();
+}
+
+function editR(id){
+  const r=res.find(x=>x.id===id);if(!r)return;
+  _editId=id;
+  document.getElementById('fn').value=r.name||'';
+  document.getElementById('fw').value=r.keywords||'';
+  const fc=document.getElementById('fc');
+  for(let i=0;i<fc.options.length;i++){if(fc.options[i].value===r.cat){fc.selectedIndex=i;break}}
+  document.getElementById('lkRows').innerHTML='';_lkCnt=0;
+  if(r.baidu)addLk('百度',r.baidu);
+  if(r.uc)addLk('UC',r.uc);
+  if(r.kk)addLk('夸克',r.kk);
+  if(r.links&&Array.isArray(r.links)){
+    r.links.forEach(l=>{
+      const ln=l.name.toLowerCase();
+      if((ln.includes('\u767e\u5ea6')&&r.baidu)||(ln==='uc'&&r.uc)||(ln.includes('\u5938\u514b')&&r.kk))return;
+      addLk(l.name,l.url);
+    });
+  }
+  openM('编辑资源');
+}
+
+async function delR(id){
+  if(!confirm('确定删除？'))return;
+  const {error}=await supa.from('resources').delete().eq('id',id);
+  if(error){toast('删除失败: '+error.message);return}
+  res=res.filter(r=>r.id!==id);
+  shown=0;render();renderLt();toast('已删除');
+}
+
 // ====== LOAD DATA FROM data.json ======
 async function loadData(){
   try{
-    const r=await fetch('data.json?t='+Date.now());
-    if(!r.ok)throw new Error('fetch failed');
-    res=await r.json();
+    const {data,error}=await supa.from('resources').select('*').order('date',{ascending:false});
+    if(error)throw error;
+    res=data||[];
   }catch(e){
-    console.error('Failed to load data.json',e);
-    res=[];
+    console.error('Supabase load failed, falling back to data.json',e);
+    try{
+      const r=await fetch('data.json?t='+Date.now());
+      if(r.ok)res=await r.json();
+      else res=[];
+    }catch{res=[]}
   }
   document.getElementById('loadingScreen').classList.add('hide');
   setTimeout(()=>document.getElementById('loadingScreen').style.display='none',500);
@@ -247,7 +438,9 @@ function render(ap){
     if(r.links&&Array.isArray(r.links)){r.links.forEach(l=>{if(l.url)lks+=`<a class="dl dl-k" href="${hA(l.url)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-x">${h(l.name.charAt(0))}</div><div class="dl-text"><div class="dl-name">${h(l.name)}</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`})}
     if(!lks)lks='<div class="no-dl">暂无链接</div>';
     const nw=isNew(r.date)?'<span class="c-new">NEW</span>':'';
-    return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}</div></div></div><div class="c-dl">${lks}</div></div>`}).join(''));
+    return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}</div></div></div><div class="c-dl">${lks}</div>
+<div class="c-actions"><button class="c-act" onclick="editR(${r.id})">编辑</button><button class="c-act del" onclick="delR(${r.id})">删除</button></div>
+</div>`}).join(''));
   shown+=sl.length;
   document.getElementById('loader').classList.toggle('show',shown<tot);
 }
