@@ -354,6 +354,229 @@ body.dark .wb-ta{background:var(--card);color:var(--txt)}
 .wb-btns{display:flex;gap:8px;margin-top:10px}
 .wb-btns button{flex:1;padding:9px;border-radius:12px;font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer;border:none}
 
+
+/* ====== ANNOUNCEMENT BAR ====== */
+.announce{display:none;margin:0 16px 10px;padding:10px 14px;border-radius:var(--r2);background:linear-gradient(135deg,#fff8e6,#fff2d0);border:1px solid rgba(180,140,50,.12);position:relative}
+.announce.show{display:block}
+body.dark .announce{background:linear-gradient(135deg,#2a2510,#1f1c0e);border-color:rgba(180,140,50,.15)}
+.announce-text{font-size:12px;color:#8a6d1e;line-height:1.6;padding-right:24px}
+body.dark .announce-text{color:#c4a84e}
+.announce-close{position:absolute;top:8px;right:10px;background:none;border:none;font-size:14px;color:#c4a050;cursor:pointer;padding:2px}
+.announce-edit{display:none;margin-top:8px;width:100%;padding:6px 10px;border:1px solid rgba(180,140,50,.2);border-radius:6px;font-size:12px;font-family:var(--f);background:#fff;color:var(--txt);outline:none}
+body.admin .announce-edit{display:block}
+body.dark .announce-edit{background:var(--card);color:var(--txt)}
+.announce-save{display:none;margin-top:6px;padding:4px 12px;border-radius:6px;background:#b4941a;color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--f)}
+body.admin .announce-save{display:inline-block}
+
+/* ====== FAVORITES ====== */
+.fav-btn{font-size:16px;cursor:pointer;flex-shrink:0;transition:transform .2s;-webkit-tap-highlight-color:transparent;background:none;border:none;padding:2px}
+.fav-btn:active{transform:scale(1.3)}
+.fav-bar{display:none;margin:0 16px 8px}
+.fav-bar.show{display:block}
+.fav-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.fav-hd span{font-size:11px;color:var(--txt4);font-weight:500}
+.fav-hd button{background:none;border:none;font-size:10px;color:var(--txt5);cursor:pointer;font-family:var(--f)}
+.fav-list{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.fav-list::-webkit-scrollbar{display:none}
+.fav-chip{flex-shrink:0;padding:4px 10px;border-radius:10px;background:#fff0f0;border:1px solid #fdd;font-size:11px;color:#d44;cursor:pointer;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;transition:all .2s;display:flex;align-items:center;gap:3px}
+body.dark .fav-chip{background:rgba(220,60,60,.08);border-color:rgba(220,60,60,.12)}
+.fav-chip:hover{border-color:#e88;color:#c33}
+
+/* ====== VISIT COUNTER ====== */
+.visit-count{font-size:10px;color:var(--txt5);text-align:center;padding:4px 0}
+.visit-count b{color:var(--txt4)}
+
+
+/* ====== HELP GUIDE ====== */
+.help-btn{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:12px;background:var(--mint);border:1px solid var(--mint2);font-size:10px;color:var(--green);cursor:pointer;font-family:var(--f);font-weight:500;transition:all .15s;margin-left:6px}
+.help-btn:hover{background:var(--mint2)}
+body.dark .help-btn{background:var(--mint);border-color:var(--mint2)}
+
+.help-ov{display:none;position:fixed;inset:0;background:rgba(17,17,17,.2);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:310;align-items:flex-end;justify-content:center}
+.help-ov.show{display:flex}
+.help-modal{background:var(--bg);border-radius:18px 18px 0 0;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;padding:14px 20px 34px;animation:up .3s cubic-bezier(.16,1,.3,1)}
+body.dark .help-modal{background:var(--bg)}
+.help-modal .mbar{width:28px;height:3px;background:var(--txt5);border-radius:2px;margin:0 auto 12px;opacity:.4}
+.help-modal h2{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;color:var(--green)}
+.help-modal .help-sub{font-size:11px;color:var(--txt4);text-align:center;margin-bottom:16px}
+.help-sec{margin-bottom:16px}
+.help-sec h3{font-size:14px;font-weight:600;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.help-card{background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:6px;border:1px solid rgba(27,143,88,.04)}
+body.dark .help-card{background:var(--card)}
+.help-card .hc-title{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:3px}
+.help-card .hc-desc{font-size:12px;color:var(--txt3);line-height:1.6}
+.help-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.help-tag{padding:8px 10px;border-radius:8px;background:var(--mint);text-align:center;font-size:12px;color:var(--txt2);font-weight:500}
+body.dark .help-tag{background:var(--mint)}
+.help-warn{background:var(--bg);border-radius:10px;padding:12px 14px;border-left:3px solid #dc2626;margin-top:12px}
+body.dark .help-warn{background:rgba(220,38,38,.05)}
+.help-warn p{font-size:12px;color:#b91c1c;line-height:1.6}
+
+
+/* ====== BILIBILI-STYLE SPLASH ====== */
+.welcome{position:fixed;inset:0;z-index:1000;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+body.dark .welcome{background:#0f1a14}
+.welcome.phase2 .w-logo{animation:wLogoShrink .5s ease forwards}
+.welcome.phase2 .w-text{animation:wTextUp .4s ease .1s forwards}
+.welcome.phase2 .w-loading{animation:wFadeOut .3s ease .1s forwards}
+.welcome.hide{animation:wSplitOpen .6s cubic-bezier(.7,0,.3,1) forwards}
+
+/* Logo */
+.w-logo-wrap{position:relative;margin-bottom:20px}
+.w-logo{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#1b8f58,#25c06e);display:flex;align-items:center;justify-content:center;font-size:44px;animation:wLogoIn .6s cubic-bezier(.34,1.56,.64,1) both;box-shadow:0 8px 32px rgba(27,143,88,.2)}
+.w-ring{position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(27,143,88,.15);animation:wRingSpin 3s linear infinite}
+.w-ring2{position:absolute;inset:-16px;border-radius:50%;border:1px dashed rgba(27,143,88,.08);animation:wRingSpin 5s linear infinite reverse}
+
+/* Text */
+.w-text{margin-top:4px;animation:wTextIn .5s ease .3s both}
+.w-title{font-size:26px;font-weight:700;color:var(--txt,#111);letter-spacing:3px;text-align:center}
+.w-sub{font-size:12px;color:var(--txt4,#95b5a4);text-align:center;margin-top:6px;letter-spacing:1px}
+
+/* Loading bar */
+.w-loading{margin-top:30px;width:120px;height:3px;border-radius:2px;background:rgba(27,143,88,.1);overflow:hidden;animation:wLoadIn .4s ease .5s both}
+.w-loading-bar{width:0%;height:100%;border-radius:2px;background:linear-gradient(90deg,#1b8f58,#25c06e);animation:wLoadFill 1.2s ease .6s forwards}
+
+/* Particles */
+.w-particle{position:absolute;width:4px;height:4px;border-radius:50%;background:rgba(27,143,88,.12);pointer-events:none}
+.w-particle:nth-child(1){top:15%;left:20%;animation:wPFloat 3s ease-in-out infinite}
+.w-particle:nth-child(2){top:25%;right:15%;width:6px;height:6px;animation:wPFloat 4s ease-in-out .5s infinite}
+.w-particle:nth-child(3){bottom:30%;left:12%;width:5px;height:5px;animation:wPFloat 3.5s ease-in-out 1s infinite}
+.w-particle:nth-child(4){bottom:20%;right:20%;animation:wPFloat 4.5s ease-in-out .3s infinite}
+.w-particle:nth-child(5){top:40%;left:35%;width:3px;height:3px;background:rgba(37,192,110,.1);animation:wPFloat 3s ease-in-out .8s infinite}
+.w-particle:nth-child(6){top:60%;right:30%;width:5px;height:5px;background:rgba(37,192,110,.08);animation:wPFloat 5s ease-in-out .2s infinite}
+
+@keyframes wLogoIn{0%{transform:scale(0) rotate(-20deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes wLogoShrink{to{transform:scale(.85);opacity:.6}}
+@keyframes wRingSpin{to{transform:rotate(360deg)}}
+@keyframes wTextIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes wTextUp{to{transform:translateY(-8px);opacity:.5}}
+@keyframes wLoadIn{from{opacity:0;transform:scaleX(.5)}to{opacity:1;transform:scaleX(1)}}
+@keyframes wLoadFill{0%{width:0%}60%{width:80%}100%{width:100%}}
+@keyframes wFadeOut{to{opacity:0;transform:translateY(5px)}}
+@keyframes wPFloat{0%,100%{transform:translateY(0) scale(1);opacity:.5}50%{transform:translateY(-15px) scale(1.3);opacity:.8}}
+
+/* The bilibili-style split open */
+
+/* Rainbow elements on splash */
+.w-rainbow{position:absolute;width:300px;height:300px;border-radius:50%;opacity:.06;pointer-events:none;filter:blur(40px)}
+.w-rainbow:nth-child(7){top:-10%;left:-10%;background:conic-gradient(from 0deg,#ff6b6b,#ffa94d,#ffd43b,#69db7c,#4dabf7,#9775fa,#f06595,#ff6b6b);animation:wRainbowSpin 8s linear infinite}
+.w-rainbow:nth-child(8){bottom:-10%;right:-10%;width:250px;height:250px;background:conic-gradient(from 180deg,#f06595,#9775fa,#4dabf7,#69db7c,#ffd43b,#ffa94d,#ff6b6b,#f06595);animation:wRainbowSpin 10s linear infinite reverse}
+@keyframes wRainbowSpin{to{transform:rotate(360deg)}}
+
+/* Rainbow ring around logo */
+.w-ring-rainbow{position:absolute;inset:-24px;border-radius:50%;background:conic-gradient(from 0deg,#ff6b6b,#ffa94d,#ffd43b,#69db7c,#4dabf7,#9775fa,#f06595,#ff6b6b);animation:wRingSpin 4s linear infinite;opacity:.15}
+.w-ring-rainbow::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#fff}
+body.dark .w-ring-rainbow::after{background:#0f1a14}
+
+/* Rainbow shimmer on title */
+.w-title{background:linear-gradient(90deg,#1b8f58,#4dabf7,#9775fa,#f06595,#ffa94d,#1b8f58);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:wRainbowText 3s linear infinite}
+@keyframes wRainbowText{to{background-position:200% center}}
+
+/* Rainbow particles */
+.w-particle:nth-child(1){background:#ff6b6b}
+.w-particle:nth-child(2){background:#ffa94d}
+.w-particle:nth-child(3){background:#ffd43b}
+.w-particle:nth-child(4){background:#69db7c}
+.w-particle:nth-child(5){background:#4dabf7}
+.w-particle:nth-child(6){background:#9775fa}
+
+/* Rainbow loading bar */
+.w-loading-bar{background:linear-gradient(90deg,#ff6b6b,#ffa94d,#ffd43b,#69db7c,#4dabf7,#9775fa,#f06595);background-size:200% auto;animation:wLoadFill 1.2s ease .6s forwards,wRainbowBar 1s linear infinite}
+@keyframes wRainbowBar{to{background-position:200% center}}
+
+@keyframes wSplitOpen{
+  0%{clip-path:inset(0 0 0 0);opacity:1}
+  100%{clip-path:inset(50% 0 50% 0);opacity:0}
+}
+
+
+/* ====== FEATURE TABS (Calendar/Hot/Random) ====== */
+.feat-bar{display:flex;gap:5px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none}
+.feat-bar::-webkit-scrollbar{display:none}
+.feat-btn{flex-shrink:0;padding:6px 13px;border-radius:14px;background:#fff;border:1px solid var(--mint2);font-size:11px;color:var(--txt3);cursor:pointer;font-family:var(--f);transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.feat-btn:hover{border-color:var(--green);color:var(--green)}
+.feat-btn.on{background:var(--green);color:#fff;border-color:var(--green);font-weight:600}
+body.dark .feat-btn{background:var(--card);border-color:var(--mint2)}
+
+/* ====== CALENDAR ====== */
+.cal-ov{display:none;position:fixed;inset:0;background:rgba(17,17,17,.2);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:310;align-items:flex-end;justify-content:center}
+.cal-ov.show{display:flex}
+.cal-modal{background:var(--bg);border-radius:18px 18px 0 0;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;padding:14px 20px 34px;animation:up .3s cubic-bezier(.16,1,.3,1)}
+body.dark .cal-modal{background:var(--bg)}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-header h3{font-size:16px;font-weight:600}
+.cal-nav{display:flex;gap:8px}
+.cal-nav button{width:30px;height:30px;border-radius:8px;background:var(--mint);border:1px solid var(--mint2);color:var(--green);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:12px}
+.cal-wk{font-size:10px;color:var(--txt4);text-align:center;padding:6px 0;font-weight:600}
+.cal-day{text-align:center;padding:8px 2px;border-radius:8px;font-size:12px;color:var(--txt3);cursor:pointer;transition:all .15s;position:relative;min-height:36px}
+.cal-day:hover{background:var(--mint)}
+.cal-day.today{font-weight:700;color:var(--green)}
+.cal-day.has-update{color:var(--txt);font-weight:600}
+.cal-day.has-update::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--green)}
+.cal-day.other{color:var(--txt5)}
+.cal-day.selected{background:var(--green);color:#fff;font-weight:700}
+.cal-day.selected::after{background:#fff}
+.cal-detail{margin-top:8px}
+.cal-detail-hd{font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:8px}
+.cal-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:4px;font-size:12px;color:var(--txt2);cursor:pointer;transition:all .15s}
+body.dark .cal-item{background:var(--card)}
+.cal-item:hover{background:var(--mint)}
+.cal-item .ci-flag{font-size:14px}
+.cal-item .ci-name{flex:1}
+.cal-item .ci-ep{font-size:10px;color:var(--green)}
+
+/* ====== RANDOM RECOMMEND ====== */
+.random-ov{display:none;position:fixed;inset:0;background:rgba(17,17,17,.2);backdrop-filter:blur(8px);z-index:310;align-items:center;justify-content:center}
+.random-ov.show{display:flex}
+.random-card{background:#fff;border-radius:18px;width:calc(100% - 50px);max-width:340px;padding:24px;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,.12);animation:randomPop .4s cubic-bezier(.16,1,.3,1)}
+body.dark .random-card{background:var(--card)}
+@keyframes randomPop{from{transform:scale(.8) rotate(-2deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.random-emoji{font-size:48px;margin-bottom:8px}
+.random-label{font-size:11px;color:var(--txt4);margin-bottom:12px}
+.random-name{font-size:20px;font-weight:700;color:var(--txt);line-height:1.4;margin-bottom:4px}
+.random-cat{display:inline-block;padding:2px 10px;border-radius:4px;background:var(--mint);font-size:11px;color:var(--green);font-weight:600;margin-bottom:12px}
+.random-ep{font-size:12px;color:var(--txt3);margin-bottom:16px}
+.random-btns{display:flex;gap:8px}
+.random-btns button{flex:1;padding:10px;border-radius:12px;font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer;border:none}
+.rb-again{background:var(--mint);color:var(--green)}
+.rb-go{background:var(--green);color:#fff}
+
+/* ====== HOT RANKING ====== */
+.hot-ov{display:none;position:fixed;inset:0;background:rgba(17,17,17,.2);backdrop-filter:blur(8px);z-index:310;align-items:flex-end;justify-content:center}
+.hot-ov.show{display:flex}
+.hot-modal{background:var(--bg);border-radius:18px 18px 0 0;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;padding:14px 20px 34px;animation:up .3s cubic-bezier(.16,1,.3,1)}
+body.dark .hot-modal{background:var(--bg)}
+.hot-modal h3{font-size:16px;font-weight:600;text-align:center;margin-bottom:14px}
+.hot-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border-radius:10px;margin-bottom:6px;cursor:pointer;transition:all .15s}
+body.dark .hot-item{background:var(--card)}
+.hot-item:hover{background:var(--mint)}
+.hot-rank{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.hot-rank.r1{background:linear-gradient(135deg,#ff6b35,#ff9a5c);color:#fff}
+.hot-rank.r2{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#fff}
+.hot-rank.r3{background:linear-gradient(135deg,#22c572,#4ade80);color:#fff}
+.hot-rank.rn{background:var(--mint);color:var(--txt3)}
+.hot-info{flex:1;min-width:0}
+.hot-name{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hot-meta{font-size:10px;color:var(--txt4);margin-top:2px}
+.hot-score{font-size:14px;font-weight:700;color:var(--green);flex-shrink:0}
+
+/* ====== SUBSCRIBE BADGE ====== */
+.sub-btn{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--mint2);background:var(--mint);color:var(--green);cursor:pointer;font-family:var(--f);font-weight:600;transition:all .15s;flex-shrink:0}
+.sub-btn.on{background:var(--green);color:#fff;border-color:var(--green)}
+.sub-badge{display:inline-block;padding:1px 6px;border-radius:3px;background:rgba(37,99,235,.08);font-size:9px;color:#2563eb;font-weight:600;margin-left:3px;animation:subPulse 1s ease}
+@keyframes subPulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+
+/* ====== COVER IMAGE ====== */
+.c-cover{width:48px;height:64px;border-radius:8px;flex-shrink:0;overflow:hidden;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:22px;position:relative}
+.c-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.c-cover .c-cover-ph{font-size:22px}
+
+/* In latest scroll cards */
+.ltc-cover{width:100%;height:80px;border-radius:6px;overflow:hidden;background:var(--mint);margin-bottom:6px;display:flex;align-items:center;justify-content:center}
+.ltc-cover img{width:100%;height:100%;object-fit:cover;display:block}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.dl{padding:10px 12px}.hd-name{font-size:17px}}
 </style>
@@ -372,6 +595,24 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 </div>
 
 <button class="dark-toggle" id="darkBtn" onclick="toggleDark()">🌙</button>
+
+<div class="welcome" id="welcomeSplash">
+  <div class="w-particle"></div><div class="w-particle"></div><div class="w-particle"></div>
+  <div class="w-particle"></div><div class="w-particle"></div><div class="w-particle"></div>
+  <div class="w-rainbow"></div><div class="w-rainbow"></div>
+  <div class="w-logo-wrap">
+    <div class="w-ring-rainbow"></div>
+    <div class="w-ring"></div>
+    <div class="w-ring2"></div>
+    <div class="w-logo">🏠</div>
+  </div>
+  <div class="w-text">
+    <div class="w-title">老白的小窝</div>
+    <div class="w-sub">欢迎回来 · 为你准备好了</div>
+  </div>
+  <div class="w-loading"><div class="w-loading-bar"></div></div>
+</div>
+
 <div class="sky"></div><div class="sun"></div>
 <div class="cl cl-1"><i></i><i></i><i></i></div><div class="cl cl-2"><i></i><i></i><i></i></div>
 <div class="lf">🍃</div><div class="lf">🌿</div><div class="lf">🍃</div><div class="lf">🌿</div>
@@ -380,7 +621,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <div class="wrap">
   <div class="hd">
     <div class="hd-av">🏠</div>
-    <div class="hd-txt"><div class="hd-name">老白的小窝</div><div class="hd-sub"><span id="totalN">0</span> 部收录 · 持续更新</div></div>
+    <div class="hd-txt"><div class="hd-name">老白的小窝</div><div class="hd-sub"><span id="totalN">0</span> 部收录 · 持续更新 <button class="help-btn" onclick="openHelp()">📖 使用指南</button></div></div>
     <a href="https://weibo.com/u/5974858251" target="_blank" class="hd-follow">+ 关注</a>
   </div>
   <div class="search"><div class="s-box">
@@ -388,6 +629,14 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
     <input type="text" id="si" placeholder="搜索剧名、关键词..." autocomplete="off">
     <button class="s-x" id="sx" onclick="clrS()">✕</button>
   </div></div>
+  
+  <div class="announce" id="announceBar">
+    <div class="announce-text" id="announceText"></div>
+    <button class="announce-close" onclick="closeAnnounce()">✕</button>
+    <input class="announce-edit" id="announceEdit" placeholder="编辑公告内容..." maxlength="200">
+    <button class="announce-save" onclick="saveAnnounce()">保存公告</button>
+  </div>
+
   <div class="recent" id="rcBox"><div class="rc-hd"><span>最近浏览</span><button onclick="clrRc()">清除</button></div><div class="rc-list" id="rcList"></div></div>
   
   
@@ -415,6 +664,12 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   </div>
 
   
+  
+  <div class="fav-bar" id="favBar">
+    <div class="fav-hd"><span>❤️ 我的收藏</span><button onclick="clearFavs()">清除</button></div>
+    <div class="fav-list" id="favList"></div>
+  </div>
+
   <div class="tip-card">
     <div class="tip-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.querySelector('.arrow').textContent=this.nextElementSibling.classList.contains('show')?'▲':'▼'">
       ☕ 整理不易，觉得好用可以打赏支持 ~.~ <span class="arrow">▼</span>
@@ -436,6 +691,13 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
     <button class="tab" data-cat="中剧">🇨🇳 中剧</button>
     <button class="tab" data-cat="短剧">🎞️ 短剧</button>
   </div>
+  
+  <div class="feat-bar">
+    <button class="feat-btn" onclick="openCalendar()">📅 追剧日历</button>
+    <button class="feat-btn" onclick="openHot()">🔥 热度排行</button>
+    <button class="feat-btn" onclick="openRandom()">🎲 随机推荐</button>
+  </div>
+
   <div class="latest" id="ltBox"><div class="lt-hd"><div class="lt-hd-l"><span class="lt-dot"></span><span>最新更新</span></div><div class="lt-hd-r" id="ltDate"></div></div>
     <div class="lt-wrap"><button class="sb sb-l" id="sbL" onclick="slt(-1)">‹</button><div class="lt-scroll" id="ltScroll"></div><button class="sb sb-r show" id="sbR" onclick="slt(1)">›</button></div>
   </div>
@@ -450,6 +712,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   <div class="feed" id="feed"></div>
   <div class="loader" id="loader"><span class="loader-dot"></span><span class="loader-dot"></span><span class="loader-dot"></span></div>
   
+  <div class="visit-count" id="visitCount"></div>
   <div class="ft"><a href="https://weibo.com/u/5974858251" target="_blank">@老白的窝窝头123</a><p>资源来自网络 · 仅供学习交流</p></div>
 </div>
 <button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
@@ -474,7 +737,8 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <div class="pre" onclick="addLk()">自定义</div>
 </div>
 <div id="lkRows"></div>
-<div class="fg"><label>更新集数</label><input type="text" id="fep" placeholder="例：更新至第12集 / 全16集"></div>
+<div class="fg"><label>封面图片（选填）</label><input type="text" id="fcover" placeholder="粘贴图片链接，留空用默认封面"></div>
+    <div class="fg"><label>更新集数</label><input type="text" id="fep" placeholder="例：更新至第12集 / 全16集"></div>
     <div class="fg"><label>关键词</label><input type="text" id="fw" placeholder="空格分隔"></div>
 <div class="btns"><button class="btnC" onclick="closeM()">取消</button><button class="btnS" onclick="saveR()">保存</button></div>
 </div></div>
@@ -520,6 +784,106 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   <button class="undo-btn" onclick="undoDelete()">撤销</button>
 </div>
 
+
+<div class="help-ov" id="helpOv">
+<div class="help-modal">
+<div class="mbar"></div>
+<h2>🏠 老白的小窝</h2>
+<div class="help-sub">使用指南 · 仅作参考 · 仅作私藏</div>
+
+<div class="help-sec">
+<h3>🔎 怎么找剧</h3>
+<div class="help-card"><div class="hc-title">搜索</div><div class="hc-desc">输入剧名或关键词，命中内容会绿色高亮</div></div>
+<div class="help-card"><div class="hc-title">分类筛选</div><div class="hc-desc">点分类标签：泰剧 / 姬片 / 韩剧 / 美剧 …</div></div>
+<div class="help-card"><div class="hc-title">最新更新</div><div class="hc-desc">横滑「最新更新」卡片，3天内有 NEW 标记</div></div>
+<div class="help-card"><div class="hc-title">排序</div><div class="hc-desc">可切换：最新更新 / 剧名A-Z / 失效优先</div></div>
+</div>
+
+<div class="help-sec">
+<h3>📥 怎么下载</h3>
+<div class="help-card"><div class="hc-desc">每条资源下方有网盘按钮：<b style="color:#2563eb">B 百度</b>、<b style="color:#b45309">UC</b>、<b style="color:#16854a">K 夸克</b><br>点击自动跳转对应网盘，保存即可观看<br>建议至少安装一个网盘 App</div></div>
+</div>
+
+<div class="help-sec">
+<h3>🎯 特色功能</h3>
+<div class="help-card"><div class="hc-title">📅 追剧日历</div><div class="hc-desc">查看每天更新了哪些剧，点日期看详情</div></div>
+<div class="help-card"><div class="hc-title">📺 追剧订阅</div><div class="hc-desc">点「+ 追剧」关注某部剧，有新集数时显示「有更新」</div></div>
+<div class="help-card"><div class="hc-title">🎲 随机推荐</div><div class="hc-desc">不知道看什么？点一下随机推荐一部好剧</div></div>
+<div class="help-card"><div class="hc-title">🔥 热度排行</div><div class="hc-desc">看看大家都在追什么，TOP 20 热门榜单</div></div>
+</div>
+
+<div class="help-sec">
+<h3>✨ 贴心功能</h3>
+<div class="help-grid">
+<div class="help-tag">❤️ 收藏喜欢的剧</div>
+<div class="help-tag">🕐 最近浏览记录</div>
+<div class="help-tag">📤 分享给朋友</div>
+<div class="help-tag">🌙 暗黑模式护眼</div>
+<div class="help-tag">📌 置顶重点推荐</div>
+<div class="help-tag">🎬 更新集数显示</div>
+<div class="help-tag">📊 三种排序方式</div>
+<div class="help-tag">⬆️ 一键回到顶部</div>
+</div>
+</div>
+
+<div class="help-sec">
+<h3>⚠️ 链接失效？</h3>
+<div class="help-card"><div class="hc-desc">点资源底部「链接失效？点此反馈」<br>或微博私信 @老白的窝窝头123</div></div>
+</div>
+
+<div class="help-sec">
+<h3>❓ 常见问题</h3>
+<div class="help-card"><div class="hc-title">收费吗？</div><div class="hc-desc">完全免费，转发微博就是最好支持 ❤️</div></div>
+<div class="help-card"><div class="hc-title">想看的剧没有？</div><div class="hc-desc">微博私信老白，尽量找资源</div></div>
+<div class="help-card"><div class="hc-title">怎么收藏网页？</div><div class="hc-desc">添加到浏览器书签，或「添加到主屏幕」</div></div>
+<div class="help-card"><div class="hc-title">「追剧」和「收藏」有什么区别？</div><div class="hc-desc">追剧 = 关注更新提醒，收藏 = 标记喜欢方便找回</div></div>
+</div>
+
+<div class="help-warn">
+<p>⚠️ <b>免责声明</b><br>所有资源来自网络，仅供个人学习交流<br>不提供存储、上传、下载服务<br><b>仅作参考 · 仅作私藏 · 请于24小时内删除</b><br>如有侵权请联系删除</p>
+</div>
+
+<div style="text-align:center;margin-top:16px">
+<button class="btnS" style="width:100%;padding:11px;border-radius:16px" onclick="document.getElementById('helpOv').classList.remove('show')">我知道了</button>
+</div>
+</div></div>
+
+
+<div class="cal-ov" id="calOv">
+<div class="cal-modal">
+<div class="mbar"></div>
+<div class="cal-header">
+  <div class="cal-nav"><button onclick="calNav(-1)">‹</button></div>
+  <h3 id="calTitle"></h3>
+  <div class="cal-nav"><button onclick="calNav(1)">›</button></div>
+</div>
+<div class="cal-grid" id="calGrid"></div>
+<div class="cal-detail" id="calDetail"></div>
+</div></div>
+
+<div class="random-ov" id="randomOv">
+<div class="random-card" id="randomCard">
+<div class="random-emoji">🎲</div>
+<div class="random-label">今天看这部怎么样？</div>
+<div class="random-name" id="randomName"></div>
+<div class="random-cat" id="randomCat"></div>
+<div class="random-ep" id="randomEp"></div>
+<div class="random-btns">
+  <button class="rb-again" onclick="doRandom()">🎲 再来一部</button>
+  <button class="rb-go" id="randomGoBtn" onclick="">去看看 →</button>
+</div>
+</div></div>
+
+<div class="hot-ov" id="hotOv">
+<div class="hot-modal">
+<div class="mbar"></div>
+<h3>🔥 热度排行</h3>
+<div id="hotList"></div>
+<div style="text-align:center;margin-top:14px">
+<button class="btnS" style="width:100%;padding:10px;border-radius:14px" onclick="document.getElementById('hotOv').classList.remove('show')">关闭</button>
+</div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -559,7 +923,7 @@ if(isAdmin())document.body.classList.add('admin');
 
 // Modal
 function openM(title){document.getElementById('mt').textContent=title||'添加资源';document.getElementById('ov').classList.add('show')}
-function closeM(){document.getElementById('ov').classList.remove('show');['fn','fw','fep'].forEach(id=>document.getElementById(id).value='');document.getElementById('fc').selectedIndex=0;document.getElementById('lkRows').innerHTML='';_lkCnt=0;_editId=null}
+function closeM(){document.getElementById('ov').classList.remove('show');['fn','fw','fep','fcover'].forEach(id=>document.getElementById(id).value='');document.getElementById('fc').selectedIndex=0;document.getElementById('lkRows').innerHTML='';_lkCnt=0;_editId=null}
 document.getElementById('ov').addEventListener('click',e=>{if(e.target===e.currentTarget)closeM()});
 
 // Link rows
@@ -585,7 +949,7 @@ async function saveR(){
   const n=document.getElementById('fn').value.trim();
   if(!n){toast('请输入名称');return}
   const links=collectLks();
-  const d={name:n,cat:document.getElementById('fc').value,baidu:'',uc:'',kk:'',links:links,keywords:document.getElementById('fw').value.trim(),episode:document.getElementById('fep').value.trim(),date:new Date().toISOString().slice(0,10)};
+  const d={name:n,cat:document.getElementById('fc').value,baidu:'',uc:'',kk:'',links:links,keywords:document.getElementById('fw').value.trim(),episode:document.getElementById('fep').value.trim(),cover:document.getElementById('fcover').value.trim(),date:new Date().toISOString().slice(0,10)};
   links.forEach(l=>{
     const ln=l.name.toLowerCase();
     if(ln.includes('\u767e\u5ea6'))d.baidu=l.url;
@@ -617,6 +981,7 @@ function editR(id){
   document.getElementById('fn').value=r.name||'';
   document.getElementById('fw').value=r.keywords||'';
   document.getElementById('fep').value=r.episode||'';
+  document.getElementById('fcover').value=r.cover||'';
   const fc=document.getElementById('fc');
   for(let i=0;i<fc.options.length;i++){if(fc.options[i].value===r.cat){fc.selectedIndex=i;break}}
   document.getElementById('lkRows').innerHTML='';_lkCnt=0;
@@ -664,17 +1029,27 @@ function parseMultiResources(text){
   for(const block of blocks){
     if(!block.trim())continue;
     const lines=block.trim().split(/\n/);
-    let name='',links=[];
+    let name='',links=[],ep='';
     
     for(const line of lines){
       const trimmed=line.trim();
       if(!trimmed)continue;
       const urls=trimmed.match(urlReg);
       if(urls){
+        // Check line prefix FIRST (B：, U：, K：, 百度：, etc.)
+        const prefix=trimmed.split(/[：:]/)[0].trim().toUpperCase();
         for(const url of urls){
           const u=url.toLowerCase();
           let lname='链接';
-          if(u.includes('baidu')||u.includes('pan.baidu'))lname='百度';
+          // Priority 1: line prefix
+          if(prefix==='B'||prefix==='BD'||prefix.includes('\u767e\u5ea6'))lname='百度';
+          else if(prefix==='U'||prefix==='UC')lname='UC';
+          else if(prefix==='K'||prefix==='KK'||prefix.includes('\u5938\u514b'))lname='夸克';
+          else if(prefix.includes('\u963f\u91cc')||prefix==='ALI')lname='阿里';
+          else if(prefix.includes('\u8fc5\u96f7')||prefix==='XL')lname='迅雷';
+          else if(prefix==='115')lname='115';
+          // Priority 2: URL domain
+          else if(u.includes('baidu')||u.includes('pan.baidu'))lname='百度';
           else if(u.includes('uc.cn')||u.includes('drive.uc'))lname='UC';
           else if(u.includes('quark'))lname='夸克';
           else if(u.includes('alipan')||u.includes('aliyun'))lname='阿里';
@@ -682,11 +1057,23 @@ function parseMultiResources(text){
           else if(u.includes('115'))lname='115';
           links.push({name:lname,url});
         }
-      }else if(!name){
-        name=trimmed.replace(/^(资源|分享|更新|发布)[：:]\s*/,'').replace(/[【】\[\]《》]/g,'').trim();
+      }else{
+        const clean=trimmed.replace(/#[^#]*#/g,'').trim();
+        if(!clean){}
+        else if(clean.includes('\u300a')){
+          name=clean;// Line with《》is always the drama name
+        }else if(!name&&clean.length>2&&clean.length<60&&!clean.match(/^(旧|新|和|但|每|让|当)/)){
+          let n=clean.replace(/^(资源|分享|更新|发布|今日分享|今日更新)[：:]\s*/i,'').trim();
+          if(n.length>2)name=n;
+        }
+        // Detect episode
+        if(!ep&&clean.match(/(更新|第|全|共|完结|中字|生肉|熟肉|集)/)){
+          const m=clean.match(/(更新至[^\s]+|第[\d一二三四五六七八九十]+集[^\s]*|全[\d]+集|完结)/);
+          if(m)ep=m[0];
+        }
       }
     }
-    if(name||links.length)results.push({name:name||'未知资源',links});
+    if(name||links.length)results.push({name:name||'未知资源',links,ep});
   }
   return results;
 }
@@ -698,7 +1085,7 @@ function previewQP(){
   if(!items.length){pv.classList.remove('show');return}
   pv.classList.add('show');
   pv.innerHTML='识别到 <b>'+items.length+'</b> 条资源：<br>'+items.map((it,i)=>
-    (i+1)+'. <b>'+it.name+'</b>（'+it.links.length+'个链接）'
+    (i+1)+'. <b>'+it.name+'</b>'+(it.ep?' ['+it.ep+']':'')+'（'+it.links.length+'个链接）'
   ).join('<br>');
 }
 
@@ -709,7 +1096,7 @@ async function submitQP(){
   const cat=document.getElementById('qpCat').value;
   let count=0;
   for(const it of items){
-    const d={name:it.name,cat:cat,baidu:'',uc:'',kk:'',links:it.links,keywords:'',episode:'',date:new Date().toISOString().slice(0,10),pinned:false,reports:0};
+    const d={name:it.name,cat:cat,baidu:'',uc:'',kk:'',links:it.links,keywords:'',episode:it.ep||'',date:new Date().toISOString().slice(0,10),pinned:false,reports:0};
     it.links.forEach(l=>{
       const ln=l.name.toLowerCase();
       if(ln.includes('\u767e\u5ea6'))d.baidu=l.url;
@@ -812,6 +1199,298 @@ function copyWbText(){
   });
 }
 
+
+// ====== ANNOUNCEMENT BAR ======
+const ANN_KEY='lb_announce';
+const ANN_CLOSED='lb_ann_closed';
+
+async function loadAnnounce(){
+  try{
+    // Try to get announcement from Supabase
+    let {data}=await supa.from('resources').select('name').eq('cat','__announce__').limit(1);
+    if(data&&data[0]){
+      const text=data[0].name;
+      if(!text)return;
+      // Check if user closed this announcement
+      try{if(localStorage.getItem(ANN_CLOSED)===text)return}catch{}
+      document.getElementById('announceText').textContent=text;
+      document.getElementById('announceEdit').value=text;
+      document.getElementById('announceBar').classList.add('show');
+    }
+  }catch{}
+}
+
+function closeAnnounce(){
+  const text=document.getElementById('announceText').textContent;
+  try{localStorage.setItem(ANN_CLOSED,text)}catch{}
+  document.getElementById('announceBar').classList.remove('show');
+}
+
+async function saveAnnounce(){
+  const text=document.getElementById('announceEdit').value.trim();
+  // Delete old announcement
+  await supa.from('resources').delete().eq('cat','__announce__');
+  if(text){
+    await supa.from('resources').insert({name:text,cat:'__announce__',baidu:'',uc:'',kk:'',keywords:'',episode:'',date:new Date().toISOString().slice(0,10)});
+    document.getElementById('announceText').textContent=text;
+    document.getElementById('announceBar').classList.add('show');
+    try{localStorage.removeItem(ANN_CLOSED)}catch{}
+  }else{
+    document.getElementById('announceBar').classList.remove('show');
+  }
+  toast('公告已更新 ✓');
+}
+
+// ====== FAVORITES ======
+const FAV_KEY='lb_favs';
+
+function getFavs(){try{return JSON.parse(localStorage.getItem(FAV_KEY)||'[]')}catch{return[]}}
+function saveFavs(f){try{localStorage.setItem(FAV_KEY,JSON.stringify(f))}catch{}}
+function isFav(id){return getFavs().some(f=>f.id===id)}
+
+function toggleFav(id,name){
+  let favs=getFavs();
+  const idx=favs.findIndex(f=>f.id===id);
+  if(idx>=0){
+    favs.splice(idx,1);
+    toast('已取消收藏');
+  }else{
+    favs.unshift({id,name:name.slice(0,30)});
+    if(favs.length>50)favs=favs.slice(0,50);
+    toast('已收藏 ❤️');
+  }
+  saveFavs(favs);
+  renderFavs();
+  // Re-render to update heart icons
+  shown=0;render();
+}
+
+function clearFavs(){
+  if(!confirm('清除所有收藏？'))return;
+  saveFavs([]);renderFavs();shown=0;render();toast('已清除收藏');
+}
+
+function renderFavs(){
+  const favs=getFavs();
+  const bar=document.getElementById('favBar');
+  const list=document.getElementById('favList');
+  if(!favs.length){bar.classList.remove('show');return}
+  bar.classList.add('show');
+  list.innerHTML=favs.map(f=>
+    `<div class="fav-chip" onclick="sf('${f.name.replace(/'/g,"\\'")}')">❤️ ${f.name}</div>`
+  ).join('');
+}
+
+// ====== VISIT COUNTER ======
+async function trackVisit(){
+  try{
+    // Get or create counter
+    let {data}=await supa.from('resources').select('reports').eq('cat','__visits__').limit(1);
+    if(data&&data[0]){
+      const newCount=(data[0].reports||0)+1;
+      await supa.from('resources').update({reports:newCount}).eq('cat','__visits__');
+      document.getElementById('visitCount').innerHTML='累计访问 <b>'+newCount+'</b> 次';
+    }else{
+      await supa.from('resources').insert({name:'visits',cat:'__visits__',baidu:'',uc:'',kk:'',keywords:'',episode:'',date:'',reports:1});
+      document.getElementById('visitCount').innerHTML='累计访问 <b>1</b> 次';
+    }
+  }catch{}
+}
+
+
+
+// ====== BILIBILI-STYLE SPLASH ======
+setTimeout(()=>{
+  const w=document.getElementById('welcomeSplash');
+  if(w)w.classList.add('phase2');
+},1400);
+setTimeout(()=>{
+  const w=document.getElementById('welcomeSplash');
+  if(w){w.classList.add('hide');setTimeout(()=>w.style.display='none',700)}
+},2000);
+
+
+// ====== SUBSCRIBE/FOLLOW ======
+const SUB_KEY='lb_subs';
+function getSubs(){try{return JSON.parse(localStorage.getItem(SUB_KEY)||'[]')}catch{return[]}}
+function saveSubs(s){try{localStorage.setItem(SUB_KEY,JSON.stringify(s))}catch{}}
+function isSub(id){return getSubs().some(s=>s.id===id)}
+
+function isSubUpdated(id,date){
+  if(!date)return false;
+  const subs=getSubs();
+  const s=subs.find(x=>x.id===id);
+  if(!s)return false;
+  // If resource date is newer than when user subscribed
+  return s.lastSeen&&date>s.lastSeen;
+}
+
+function toggleSub(id,name){
+  let subs=getSubs();
+  const idx=subs.findIndex(s=>s.id===id);
+  if(idx>=0){
+    subs.splice(idx,1);
+    toast('已取消追剧');
+  }else{
+    const r=res.find(x=>x.id===id);
+    subs.unshift({id,name:name.slice(0,30),lastSeen:r?r.date:''});
+    if(subs.length>100)subs=subs.slice(0,100);
+    toast('已追剧 📺 有更新会提醒');
+  }
+  saveSubs(subs);
+  shown=0;render();
+}
+
+// ====== CALENDAR ======
+let calYear,calMonth;
+
+function openCalendar(){
+  const now=new Date();
+  calYear=now.getFullYear();
+  calMonth=now.getMonth();
+  renderCalendar();
+  document.getElementById('calOv').classList.add('show');
+}
+document.getElementById('calOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
+
+function calNav(dir){
+  calMonth+=dir;
+  if(calMonth<0){calMonth=11;calYear--}
+  if(calMonth>11){calMonth=0;calYear++}
+  renderCalendar();
+}
+
+function renderCalendar(selectedDate){
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  document.getElementById('calTitle').textContent=calYear+'年'+(calMonth+1)+'月';
+  
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const today=new Date();
+  const todayStr=today.toISOString().slice(0,10);
+  
+  // Get dates that have updates
+  const updateDates={};
+  realRes.forEach(r=>{
+    if(r.date&&r.date.startsWith(calYear+'-'+String(calMonth+1).padStart(2,'0'))){
+      const day=parseInt(r.date.slice(8,10));
+      if(!updateDates[day])updateDates[day]=[];
+      updateDates[day].push(r);
+    }
+  });
+  
+  let html='';
+  const wks=['日','一','二','三','四','五','六'];
+  wks.forEach(w=>{html+=`<div class="cal-wk">${w}</div>`});
+  
+  // Previous month filler
+  for(let i=0;i<firstDay;i++){html+=`<div class="cal-day other"></div>`}
+  
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isToday=dateStr===todayStr;
+    const hasUpdate=updateDates[d];
+    const isSelected=selectedDate===dateStr;
+    let cls='cal-day';
+    if(isToday)cls+=' today';
+    if(hasUpdate)cls+=' has-update';
+    if(isSelected)cls+=' selected';
+    html+=`<div class="${cls}" onclick="selectCalDay('${dateStr}')">${d}</div>`;
+  }
+  
+  document.getElementById('calGrid').innerHTML=html;
+  
+  // Show detail for selected date
+  const detail=document.getElementById('calDetail');
+  if(selectedDate){
+    const day=parseInt(selectedDate.slice(8,10));
+    const items=updateDates[day]||[];
+    if(items.length){
+      detail.innerHTML=`<div class="cal-detail-hd">${selectedDate} 更新了 ${items.length} 部</div>`+
+        items.map(r=>`<div class="cal-item" onclick="document.getElementById('calOv').classList.remove('show');sf('${r.name.slice(0,20).replace(/'/g,"\\'")}')"><span class="ci-flag">${EM[r.cat]||'🎬'}</span><span class="ci-name">${r.name}</span>${r.episode?`<span class="ci-ep">${r.episode}</span>`:''}</div>`).join('');
+    }else{
+      detail.innerHTML=`<div class="cal-detail-hd">${selectedDate} 无更新</div>`;
+    }
+  }else{
+    detail.innerHTML='<div class="cal-detail-hd" style="color:var(--txt4)">点击日期查看当天更新</div>';
+  }
+}
+
+function selectCalDay(dateStr){renderCalendar(dateStr)}
+
+// ====== RANDOM RECOMMEND ======
+function openRandom(){
+  document.getElementById('randomOv').classList.add('show');
+  doRandom();
+}
+document.getElementById('randomOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
+
+function doRandom(){
+  const pool=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  if(!pool.length){toast('没有资源');return}
+  const r=pool[Math.floor(Math.random()*pool.length)];
+  
+  // Fun animation - shake the card
+  const card=document.getElementById('randomCard');
+  card.style.animation='none';
+  card.offsetHeight;// trigger reflow
+  card.style.animation='randomPop .4s cubic-bezier(.16,1,.3,1)';
+  
+  const emojis=['🎬','🍿','📺','🎞️','🎭','🎪','✨','🌟'];
+  document.querySelector('.random-emoji').textContent=emojis[Math.floor(Math.random()*emojis.length)];
+  document.getElementById('randomName').textContent=r.name;
+  document.getElementById('randomCat').textContent=(EM[r.cat]||'🎬')+' '+r.cat;
+  document.getElementById('randomEp').textContent=r.episode||'';
+  document.getElementById('randomGoBtn').onclick=function(){
+    document.getElementById('randomOv').classList.remove('show');
+    sf(r.name.slice(0,20));
+  };
+}
+
+// ====== HOT RANKING ======
+function openHot(){
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  
+  // Calculate "heat score" from favorites count (check all users' favs is impossible, so use reports as proxy + random boost for variety)
+  // Better approach: we count how many features a resource has (links, episode, recent date)
+  const scored=realRes.map(r=>{
+    let score=0;
+    if(r.baidu)score+=1;
+    if(r.uc)score+=1;
+    if(r.kk)score+=1;
+    if(r.episode)score+=2;
+    if(r.pinned)score+=5;
+    if(r.date){
+      const age=(Date.now()-new Date(r.date).getTime())/864e5;
+      if(age<3)score+=10;
+      else if(age<7)score+=5;
+      else if(age<30)score+=2;
+    }
+    // Favorites count (from local favs as a signal)
+    if(isFav(r.id))score+=3;
+    if(isSub(r.id))score+=3;
+    if(r.reports&&r.reports>0)score-=2;// penalize broken links
+    return {...r,score};
+  });
+  
+  scored.sort((a,b)=>b.score-a.score);
+  const top20=scored.slice(0,20);
+  
+  document.getElementById('hotList').innerHTML=top20.map((r,i)=>{
+    const rankCls=i===0?'r1':i===1?'r2':i===2?'r3':'rn';
+    return`<div class="hot-item" onclick="document.getElementById('hotOv').classList.remove('show');sf('${r.name.slice(0,20).replace(/'/g,"\\'")}')">
+<div class="hot-rank ${rankCls}">${i+1}</div>
+<div class="hot-info"><div class="hot-name">${(EM[r.cat]||'🎬')+' '+r.name}</div><div class="hot-meta">${r.cat}${r.episode?' · '+r.episode:''}</div></div>
+<div class="hot-score">${r.score}🔥</div></div>`}).join('');
+  
+  document.getElementById('hotOv').classList.add('show');
+}
+document.getElementById('hotOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
+
+// ====== HELP GUIDE ======
+function openHelp(){document.getElementById('helpOv').classList.add('show')}
+document.getElementById('helpOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
+
 // ====== DARK MODE ======
 function toggleDark(){
   const on=!document.body.classList.contains('dark');
@@ -831,16 +1510,16 @@ function setSort(m){
 
 // ====== STATS ======
 function renderStats(){
-  document.getElementById('stTotal').textContent=res.length;
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');document.getElementById('stTotal').textContent=realRes.length;
   const now=Date.now();
-  const d7=res.filter(r=>r.date&&(now-new Date(r.date).getTime()<7*864e5)).length;
+  const d7=realRes.filter(r=>r.date&&(now-new Date(r.date).getTime()<7*864e5)).length;
   document.getElementById('st7d').textContent=d7;
   // Count reports
-  const reports=res.filter(r=>r.reports&&r.reports>0).length;
+  const reports=realRes.filter(r=>r.reports&&r.reports>0).length;
   document.getElementById('stReport').textContent=reports;
   // Category breakdown
   const catCount={};
-  res.forEach(r=>{catCount[r.cat]=(catCount[r.cat]||0)+1});
+  realRes.forEach(r=>{catCount[r.cat]=(catCount[r.cat]||0)+1});
   document.getElementById('stCats').innerHTML=Object.entries(catCount).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<span class="stats-cat">${c} <b>${n}</b></span>`).join('');
 }
 
@@ -977,7 +1656,7 @@ async function pasteClipboard(){
   
   // Parse clipboard content
   const lines=text.split(/\n/);
-  let foundName='',foundLinks=[];
+  let foundName='',foundLinks=[],foundEp='';
   
   // URL patterns
   const urlReg=/(https?:\/\/[^\s\u3000]+)/g;
@@ -1019,6 +1698,11 @@ async function pasteClipboard(){
   
   // Fill form
   if(foundName)document.getElementById('fn').value=foundName;
+  if(foundEp)document.getElementById('fep').value=foundEp;
+  // Try to find image URL
+  const imgReg=/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)(\?[^\s]*)?)/i;
+  const imgMatch=text.match(imgReg);
+  if(imgMatch)document.getElementById('fcover').value=imgMatch[1];
   
   if(foundLinks.length){
     document.getElementById('lkRows').innerHTML='';
@@ -1109,7 +1793,7 @@ async function loadData(){
   }
   document.getElementById('loadingScreen').classList.add('hide');
   setTimeout(()=>document.getElementById('loadingScreen').style.display='none',500);
-  render();renderLt();renderRc();renderCatEditor();renderStats();
+  render();renderLt();renderRc();renderCatEditor();renderStats();renderFavs();loadAnnounce();trackVisit();
 }
 
 // Recent
@@ -1123,7 +1807,7 @@ function sf(t){document.getElementById('si').value=t;q=t;shown=0;render();updX()
 function isNew(d){if(!d)return false;return Date.now()-new Date(d).getTime()<3*864e5}
 
 function filt(){
-  let l=res;
+  let l=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
   if(cat!=='all')l=l.filter(r=>r.cat===cat);
   if(q.trim()){const s=q.trim().toLowerCase();l=l.filter(r=>r.name.toLowerCase().includes(s)||(r.keywords&&r.keywords.toLowerCase().includes(s))||r.cat.toLowerCase().includes(s))}
   // Sort
@@ -1139,7 +1823,7 @@ function hl(t,qu){if(!qu||!qu.trim())return h(t);const s=h(t);const e=qu.trim().
 
 function render(ap){
   const f=filt(),tot=f.length;
-  document.getElementById('totalN').textContent=res.length;
+  document.getElementById('totalN').textContent=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__').length;
   const el=document.getElementById('feed');
   if(!ap){shown=0;el.innerHTML='';}
   if(!tot&&!ap){el.innerHTML='<div class="empty"><p style="font-size:24px">🍃</p><p>没有找到匹配资源</p></div>';document.getElementById('loader').classList.remove('show');return}
@@ -1157,7 +1841,7 @@ function render(ap){
       if(l.url)lks+=`<a class="dl dl-k" href="${hA(l.url)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-x">${h(l.name.charAt(0))}</div><div class="dl-text"><div class="dl-name">${h(l.name)}</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`})}
     if(!lks)lks='<div class="no-dl">暂无链接</div>';
     const nw=isNew(r.date)?'<span class="c-new">NEW</span>':'';
-    return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><div class="c-check" data-id="${r.id}" onclick="toggleBatchItem(${r.id})"></div><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}${r.pinned?'<span class="c-pin">📌 置顶</span>':''}${r.episode?`<span class="c-ep">${h(r.episode)}</span>`:''}</div></div></div><div class="c-dl">${lks}</div>
+    return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><div class="c-check" data-id="${r.id}" onclick="toggleBatchItem(${r.id})"></div><div class="c-cover">${r.cover?`<img src="${hA(r.cover)}" onerror="this.parentElement.innerHTML='<span class=c-cover-ph>${EM[r.cat]||'🎬'}</span>'">`:`<span class="c-cover-ph">${EM[r.cat]||'🎬'}</span>`}</div><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}${r.pinned?'<span class="c-pin">📌 置顶</span>':''}${r.episode?`<span class="c-ep">${h(r.episode)}</span>`:''}${isSubUpdated(r.id,r.date)?'<span class="sub-badge">有更新</span>':''}</div></div></div><div class="c-dl">${lks}</div>
 <div class="dl-share" onclick="shareRes('${hA(r.name)}',res.find(x=>x.id===${r.id}))">📤 分享给朋友</div>
 <div class="dl-report" onclick="reportBroken(${r.id})">⚠️ 链接失效？点此反馈${r.reports?`<span class="report-badge">${r.reports}人反馈</span>`:''}</div>
 <div class="c-actions"><button class="c-act" onclick="genWeibo(${r.id})">📝 微博</button><button class="c-act pin" onclick="pinRes(${r.id})">${r.pinned?'取消置顶':'📌 置顶'}</button><button class="c-act" onclick="editR(${r.id})">编辑</button><button class="c-act del" onclick="delR(${r.id})">删除</button></div>
@@ -1168,7 +1852,7 @@ function render(ap){
 
 // Latest
 function renderLt(){
-  const s=[...res].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,10);
+  const s=[...res].filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,10);
   if(!s.length){document.getElementById('ltBox').style.display='none';return}
   document.getElementById('ltDate').textContent=s[0].date||'';
   document.getElementById('ltScroll').innerHTML=s.map(r=>{
