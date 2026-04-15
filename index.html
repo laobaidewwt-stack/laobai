@@ -294,7 +294,7 @@ body.dark .sort-btn{background:var(--card);border-color:var(--mint2)}
 
 
 /* ====== TIP/DONATE ====== */
-.tip-card{margin:16px 16px 0;background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);border:1px solid rgba(180,140,50,.08)}
+.tip-card{margin:0 16px 10px;background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);border:1px solid rgba(180,140,50,.08)}
 body.dark .tip-card{background:var(--card);border-color:rgba(180,140,50,.1)}
 .tip-hd{background:linear-gradient(135deg,#fff8e6,#fff2d0);padding:14px 16px;text-align:center;border-bottom:1px solid rgba(180,140,50,.1)}
 .tip-hd span{font-size:14px;font-weight:600;color:#8a6d1e}
@@ -357,6 +357,17 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
     <div class="cat-ed-list" id="catEdList"></div>
   </div>
 
+  
+  <div class="tip-card">
+    <div class="tip-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.querySelector('.arrow').textContent=this.nextElementSibling.classList.contains('show')?'▲':'▼'">
+      ☕ 整理不易，觉得好用可以打赏支持 ~.~ <span class="arrow">▼</span>
+    </div>
+    <div class="tip-content">
+      <img src="https://laobaidewwt-stack.github.io/laobai/tip.jpg" alt="打赏二维码">
+      <div class="tip-text">扫码打赏 · 感谢支持 ❤️</div>
+    </div>
+  </div>
+
   <div class="tabs" id="tabs">
     <button class="tab on" data-cat="all">全部</button>
     <button class="tab" data-cat="泰剧">🇹🇭 泰剧</button>
@@ -382,16 +393,6 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   <div class="feed" id="feed"></div>
   <div class="loader" id="loader"><span class="loader-dot"></span><span class="loader-dot"></span><span class="loader-dot"></span></div>
   
-  <div class="tip-card">
-    <div class="tip-toggle" onclick="this.nextElementSibling.classList.toggle('show');this.querySelector('.arrow').textContent=this.nextElementSibling.classList.contains('show')?'▲':'▼'">
-      ☕ 翻译整理不易，喜欢的话可以打赏支持一下 ~.~ <span class="arrow">▼</span>
-    </div>
-    <div class="tip-content">
-      <img src="https://laobaidewwt-stack.github.io/laobai/tip.jpg" alt="打赏二维码">
-      <div class="tip-text">扫码打赏 · 感谢支持 ❤️</div>
-    </div>
-  </div>
-
   <div class="ft"><a href="https://weibo.com/u/5974858251" target="_blank">@老白的窝窝头123</a><p>资源来自网络 · 仅供学习交流</p></div>
 </div>
 <button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
