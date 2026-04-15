@@ -568,14 +568,24 @@ body.dark .hot-item{background:var(--card)}
 @keyframes subPulse{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
 
 
-/* ====== COVER IMAGE ====== */
-.c-cover{width:48px;height:64px;border-radius:8px;flex-shrink:0;overflow:hidden;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:22px;position:relative}
-.c-cover img{width:100%;height:100%;object-fit:cover;display:block}
-.c-cover .c-cover-ph{font-size:22px}
 
-/* In latest scroll cards */
-.ltc-cover{width:100%;height:80px;border-radius:6px;overflow:hidden;background:var(--mint);margin-bottom:6px;display:flex;align-items:center;justify-content:center}
-.ltc-cover img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ====== HOT TAGS ====== */
+.hot-tags{margin:0 16px 8px;display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none}
+.hot-tags::-webkit-scrollbar{display:none}
+.hot-tags-label{font-size:11px;color:var(--txt4);flex-shrink:0;font-weight:500}
+.hot-tag{flex-shrink:0;padding:4px 12px;border-radius:12px;background:#fff;border:1px solid var(--mint2);font-size:11px;color:var(--txt2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.hot-tag:hover{border-color:var(--green);color:var(--green);background:var(--mint)}
+.hot-tag:active{transform:scale(.96)}
+body.dark .hot-tag{background:var(--card);border-color:var(--mint2)}
+
+/* Admin: edit hot tags */
+.hot-tags-edit{display:none;margin:0 16px 8px;background:#fff;border-radius:var(--r2);padding:8px 12px;box-shadow:var(--sh);border:1px solid rgba(27,143,88,.04)}
+body.admin .hot-tags-edit{display:flex;align-items:center;gap:6px}
+body.dark .hot-tags-edit{background:var(--card)}
+.ht-input{flex:1;padding:6px 10px;border:1px solid var(--mint2);border-radius:8px;font-size:11px;font-family:var(--f);outline:none;color:var(--txt)}
+body.dark .ht-input{background:var(--card);color:var(--txt)}
+.ht-save{padding:6px 12px;border-radius:8px;background:var(--green);color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--f);flex-shrink:0}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.dl{padding:10px 12px}.hd-name{font-size:17px}}
@@ -630,6 +640,14 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
     <button class="s-x" id="sx" onclick="clrS()">✕</button>
   </div></div>
   
+  
+  <div class="hot-tags" id="hotTags"></div>
+  <div class="hot-tags-edit">
+    <span style="font-size:10px;color:var(--txt4);flex-shrink:0">🔥 热搜词：</span>
+    <input class="ht-input" id="htInput" placeholder="用逗号分隔，例：学姐,禁忌,鬼魂">
+    <button class="ht-save" onclick="saveHotTags()">保存</button>
+  </div>
+
   <div class="announce" id="announceBar">
     <div class="announce-text" id="announceText"></div>
     <button class="announce-close" onclick="closeAnnounce()">✕</button>
@@ -737,8 +755,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <div class="pre" onclick="addLk()">自定义</div>
 </div>
 <div id="lkRows"></div>
-<div class="fg"><label>封面图片（选填）</label><input type="text" id="fcover" placeholder="粘贴图片链接，留空用默认封面"></div>
-    <div class="fg"><label>更新集数</label><input type="text" id="fep" placeholder="例：更新至第12集 / 全16集"></div>
+<div class="fg"><label>更新集数</label><input type="text" id="fep" placeholder="例：更新至第12集 / 全16集"></div>
     <div class="fg"><label>关键词</label><input type="text" id="fw" placeholder="空格分隔"></div>
 <div class="btns"><button class="btnC" onclick="closeM()">取消</button><button class="btnS" onclick="saveR()">保存</button></div>
 </div></div>
@@ -923,7 +940,7 @@ if(isAdmin())document.body.classList.add('admin');
 
 // Modal
 function openM(title){document.getElementById('mt').textContent=title||'添加资源';document.getElementById('ov').classList.add('show')}
-function closeM(){document.getElementById('ov').classList.remove('show');['fn','fw','fep','fcover'].forEach(id=>document.getElementById(id).value='');document.getElementById('fc').selectedIndex=0;document.getElementById('lkRows').innerHTML='';_lkCnt=0;_editId=null}
+function closeM(){document.getElementById('ov').classList.remove('show');['fn','fw','fep'].forEach(id=>document.getElementById(id).value='');document.getElementById('fc').selectedIndex=0;document.getElementById('lkRows').innerHTML='';_lkCnt=0;_editId=null}
 document.getElementById('ov').addEventListener('click',e=>{if(e.target===e.currentTarget)closeM()});
 
 // Link rows
@@ -949,7 +966,7 @@ async function saveR(){
   const n=document.getElementById('fn').value.trim();
   if(!n){toast('请输入名称');return}
   const links=collectLks();
-  const d={name:n,cat:document.getElementById('fc').value,baidu:'',uc:'',kk:'',links:links,keywords:document.getElementById('fw').value.trim(),episode:document.getElementById('fep').value.trim(),cover:document.getElementById('fcover').value.trim(),date:new Date().toISOString().slice(0,10)};
+  const d={name:n,cat:document.getElementById('fc').value,baidu:'',uc:'',kk:'',links:links,keywords:document.getElementById('fw').value.trim(),episode:document.getElementById('fep').value.trim(),date:new Date().toISOString().slice(0,10)};
   links.forEach(l=>{
     const ln=l.name.toLowerCase();
     if(ln.includes('\u767e\u5ea6'))d.baidu=l.url;
@@ -981,7 +998,7 @@ function editR(id){
   document.getElementById('fn').value=r.name||'';
   document.getElementById('fw').value=r.keywords||'';
   document.getElementById('fep').value=r.episode||'';
-  document.getElementById('fcover').value=r.cover||'';
+  
   const fc=document.getElementById('fc');
   for(let i=0;i<fc.options.length;i++){if(fc.options[i].value===r.cat){fc.selectedIndex=i;break}}
   document.getElementById('lkRows').innerHTML='';_lkCnt=0;
@@ -1361,7 +1378,7 @@ function calNav(dir){
 }
 
 function renderCalendar(selectedDate){
-  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__');
   document.getElementById('calTitle').textContent=calYear+'年'+(calMonth+1)+'月';
   
   const firstDay=new Date(calYear,calMonth,1).getDay();
@@ -1426,7 +1443,7 @@ function openRandom(){
 document.getElementById('randomOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
 
 function doRandom(){
-  const pool=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  const pool=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__');
   if(!pool.length){toast('没有资源');return}
   const r=pool[Math.floor(Math.random()*pool.length)];
   
@@ -1449,7 +1466,7 @@ function doRandom(){
 
 // ====== HOT RANKING ======
 function openHot(){
-  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__');
   
   // Calculate "heat score" from favorites count (check all users' favs is impossible, so use reports as proxy + random boost for variety)
   // Better approach: we count how many features a resource has (links, episode, recent date)
@@ -1487,6 +1504,41 @@ function openHot(){
 }
 document.getElementById('hotOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
 
+
+// ====== HOT TAGS ======
+const HT_KEY='__hottags__';
+
+async function loadHotTags(){
+  try{
+    const {data}=await supa.from('resources').select('name').eq('cat',HT_KEY).limit(1);
+    if(data&&data[0]&&data[0].name){
+      const tags=data[0].name.split(',').map(t=>t.trim()).filter(Boolean);
+      renderHotTags(tags);
+      // Fill edit input
+      const inp=document.getElementById('htInput');
+      if(inp)inp.value=data[0].name;
+    }
+  }catch{}
+}
+
+function renderHotTags(tags){
+  if(!tags||!tags.length){document.getElementById('hotTags').innerHTML='';return}
+  document.getElementById('hotTags').innerHTML=
+    '<span class="hot-tags-label">🔥 热搜</span>'+
+    tags.map(t=>`<div class="hot-tag" onclick="sf('${t.replace(/'/g,"\\'")}')">${t}</div>`).join('');
+}
+
+async function saveHotTags(){
+  const text=document.getElementById('htInput').value.trim();
+  await supa.from('resources').delete().eq('cat',HT_KEY);
+  if(text){
+    await supa.from('resources').insert({name:text,cat:HT_KEY,baidu:'',uc:'',kk:'',keywords:'',episode:'',date:''});
+  }
+  const tags=text.split(',').map(t=>t.trim()).filter(Boolean);
+  renderHotTags(tags);
+  toast('热搜词已更新 ✓');
+}
+
 // ====== HELP GUIDE ======
 function openHelp(){document.getElementById('helpOv').classList.add('show')}
 document.getElementById('helpOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
@@ -1510,7 +1562,7 @@ function setSort(m){
 
 // ====== STATS ======
 function renderStats(){
-  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');document.getElementById('stTotal').textContent=realRes.length;
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__');document.getElementById('stTotal').textContent=realRes.length;
   const now=Date.now();
   const d7=realRes.filter(r=>r.date&&(now-new Date(r.date).getTime()<7*864e5)).length;
   document.getElementById('st7d').textContent=d7;
@@ -1699,10 +1751,6 @@ async function pasteClipboard(){
   // Fill form
   if(foundName)document.getElementById('fn').value=foundName;
   if(foundEp)document.getElementById('fep').value=foundEp;
-  // Try to find image URL
-  const imgReg=/(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp)(\?[^\s]*)?)/i;
-  const imgMatch=text.match(imgReg);
-  if(imgMatch)document.getElementById('fcover').value=imgMatch[1];
   
   if(foundLinks.length){
     document.getElementById('lkRows').innerHTML='';
@@ -1793,7 +1841,7 @@ async function loadData(){
   }
   document.getElementById('loadingScreen').classList.add('hide');
   setTimeout(()=>document.getElementById('loadingScreen').style.display='none',500);
-  render();renderLt();renderRc();renderCatEditor();renderStats();renderFavs();loadAnnounce();trackVisit();
+  render();renderLt();renderRc();renderCatEditor();renderStats();renderFavs();loadAnnounce();trackVisit();loadHotTags();
 }
 
 // Recent
@@ -1807,7 +1855,7 @@ function sf(t){document.getElementById('si').value=t;q=t;shown=0;render();updX()
 function isNew(d){if(!d)return false;return Date.now()-new Date(d).getTime()<3*864e5}
 
 function filt(){
-  let l=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  let l=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__');
   if(cat!=='all')l=l.filter(r=>r.cat===cat);
   if(q.trim()){const s=q.trim().toLowerCase();l=l.filter(r=>r.name.toLowerCase().includes(s)||(r.keywords&&r.keywords.toLowerCase().includes(s))||r.cat.toLowerCase().includes(s))}
   // Sort
@@ -1823,7 +1871,7 @@ function hl(t,qu){if(!qu||!qu.trim())return h(t);const s=h(t);const e=qu.trim().
 
 function render(ap){
   const f=filt(),tot=f.length;
-  document.getElementById('totalN').textContent=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__').length;
+  document.getElementById('totalN').textContent=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__').length;
   const el=document.getElementById('feed');
   if(!ap){shown=0;el.innerHTML='';}
   if(!tot&&!ap){el.innerHTML='<div class="empty"><p style="font-size:24px">🍃</p><p>没有找到匹配资源</p></div>';document.getElementById('loader').classList.remove('show');return}
@@ -1841,7 +1889,7 @@ function render(ap){
       if(l.url)lks+=`<a class="dl dl-k" href="${hA(l.url)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-x">${h(l.name.charAt(0))}</div><div class="dl-text"><div class="dl-name">${h(l.name)}</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`})}
     if(!lks)lks='<div class="no-dl">暂无链接</div>';
     const nw=isNew(r.date)?'<span class="c-new">NEW</span>':'';
-    return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><div class="c-check" data-id="${r.id}" onclick="toggleBatchItem(${r.id})"></div><div class="c-cover">${r.cover?`<img src="${hA(r.cover)}" onerror="this.parentElement.innerHTML='<span class=c-cover-ph>${EM[r.cat]||'🎬'}</span>'">`:`<span class="c-cover-ph">${EM[r.cat]||'🎬'}</span>`}</div><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}${r.pinned?'<span class="c-pin">📌 置顶</span>':''}${r.episode?`<span class="c-ep">${h(r.episode)}</span>`:''}${isSubUpdated(r.id,r.date)?'<span class="sub-badge">有更新</span>':''}</div></div></div><div class="c-dl">${lks}</div>
+    return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><div class="c-check" data-id="${r.id}" onclick="toggleBatchItem(${r.id})"></div><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}${r.pinned?'<span class="c-pin">📌 置顶</span>':''}${r.episode?`<span class="c-ep">${h(r.episode)}</span>`:''}${isSubUpdated(r.id,r.date)?'<span class="sub-badge">有更新</span>':''}</div></div></div><div class="c-dl">${lks}</div>
 <div class="dl-share" onclick="shareRes('${hA(r.name)}',res.find(x=>x.id===${r.id}))">📤 分享给朋友</div>
 <div class="dl-report" onclick="reportBroken(${r.id})">⚠️ 链接失效？点此反馈${r.reports?`<span class="report-badge">${r.reports}人反馈</span>`:''}</div>
 <div class="c-actions"><button class="c-act" onclick="genWeibo(${r.id})">📝 微博</button><button class="c-act pin" onclick="pinRes(${r.id})">${r.pinned?'取消置顶':'📌 置顶'}</button><button class="c-act" onclick="editR(${r.id})">编辑</button><button class="c-act del" onclick="delR(${r.id})">删除</button></div>
@@ -1852,7 +1900,7 @@ function render(ap){
 
 // Latest
 function renderLt(){
-  const s=[...res].filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,10);
+  const s=[...res].filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,10);
   if(!s.length){document.getElementById('ltBox').style.display='none';return}
   document.getElementById('ltDate').textContent=s[0].date||'';
   document.getElementById('ltScroll').innerHTML=s.map(r=>{
