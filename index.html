@@ -191,6 +191,7 @@ body.admin .wrap{padding-top:28px}
 .lk-del{width:26px;height:26px;border-radius:50%;background:rgba(220,38,38,.05);border:none;color:#dc2626;font-size:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;opacity:.5}
 .lk-del:hover{opacity:1}
 
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.dl{padding:10px 12px}.hd-name{font-size:17px}}
 </style>
@@ -245,6 +246,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 </div>
 <button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
+
 <div class="admin-bar" id="adminBar">🔓 管理模式 <button onclick="exitAdmin()">退出</button></div>
 <button class="fab" id="fab" onclick="openM()">+</button>
 <div class="ov" id="ov">
@@ -283,23 +285,25 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
 const AK='lb_admin';
 let _editId=null,_lkCnt=0;
 
+const SECRET='\u8001\u767d\u7ba1\u7406'; // "老白管理"
+
 function isAdmin(){try{return sessionStorage.getItem(AK)==='1'}catch{return false}}
-function toggleAdmin(){
-  const on=!isAdmin();
-  try{if(on)sessionStorage.setItem(AK,'1');else sessionStorage.removeItem(AK)}catch{}
-  document.body.classList.toggle('admin',on);
-  toast(on?'管理模式 ✓':'已退出管理');
+function enterAdmin(){
+  try{sessionStorage.setItem(AK,'1')}catch{}
+  document.body.classList.add('admin');
+  toast('管理模式 ✓');
 }
 function exitAdmin(){try{sessionStorage.removeItem(AK)}catch{};document.body.classList.remove('admin');toast('已退出管理')}
 
-// Long press avatar
-let _lpt;
-const _av=document.querySelector('.hd-av');
-_av.addEventListener('touchstart',()=>{_lpt=setTimeout(toggleAdmin,800)},{passive:true});
-_av.addEventListener('touchend',()=>clearTimeout(_lpt));
-_av.addEventListener('mousedown',()=>{_lpt=setTimeout(toggleAdmin,800)});
-_av.addEventListener('mouseup',()=>clearTimeout(_lpt));
-_av.addEventListener('mouseleave',()=>clearTimeout(_lpt));
+// Listen for secret code in search box
+const _si=document.getElementById('si');
+_si.addEventListener('input',function(){
+  if(this.value===SECRET){
+    this.value='';q='';render();updX();
+    if(isAdmin()){exitAdmin()}else{enterAdmin()}
+  }
+});
+
 if(isAdmin())document.body.classList.add('admin');
 
 // Modal
