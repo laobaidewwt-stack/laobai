@@ -908,7 +908,7 @@ function saveCats(c){try{localStorage.setItem(CAT_KEY,JSON.stringify(c))}catch{}
 function renderCatEditor(){
   const cats=getCats();
   document.getElementById('catEdList').innerHTML=cats.map(c=>
-    `<div class="cat-ed-item">${c}<button onclick="removeCat('${c}')">✕</button></div>`
+    `<div class="cat-ed-item"><span onclick="renameCat('${c}')" style="cursor:pointer">${c}</span><button onclick="removeCat('${c}')" title="删除">✕</button></div>`
   ).join('');
   // Update tabs
   const tabsEl=document.getElementById('tabs');
@@ -933,8 +933,33 @@ function addCatPrompt(){
   toast('已添加分类: '+n.trim());
 }
 
+async function renameCat(oldName){
+  const newName=prompt('修改分类名称「'+oldName+'」为：',oldName);
+  if(!newName||!newName.trim()||newName.trim()===oldName)return;
+  const nn=newName.trim();
+  // Update category list
+  let cats=getCats();
+  const idx=cats.indexOf(oldName);
+  if(idx>=0)cats[idx]=nn;
+  saveCats(cats);
+  // Update all resources with this category in Supabase
+  const count=res.filter(r=>r.cat===oldName).length;
+  if(count>0){
+    await supa.from('resources').update({cat:nn}).eq('cat',oldName);
+    res.forEach(r=>{if(r.cat===oldName)r.cat=nn});
+  }
+  renderCatEditor();
+  shown=0;render();renderLt();renderStats();
+  toast('已改名：'+oldName+' → '+nn+'（'+count+'条资源已更新）');
+}
+
 function removeCat(c){
-  if(!confirm('删除分类「'+c+'」？'))return;
+  const count=res.filter(r=>r.cat===c).length;
+  if(count>0){
+    if(!confirm('分类「'+c+'」下还有 '+count+' 条资源。\n\n删除后这些资源不会消失，但无法通过标签筛选。\n\n建议先点分类名修改名称。\n\n确定删除？'))return;
+  }else{
+    if(!confirm('删除分类「'+c+'」？'))return;
+  }
   let cats=getCats();
   cats=cats.filter(x=>x!==c);
   saveCats(cats);
