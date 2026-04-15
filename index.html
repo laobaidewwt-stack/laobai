@@ -433,9 +433,14 @@ function render(ap){
   el.insertAdjacentHTML('beforeend',sl.map((r,i)=>{
     let lks='';
     if(r.baidu)lks+=`<a class="dl dl-b" href="${hA(r.baidu)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-b">B</div><div class="dl-text"><div class="dl-name">百度</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
-    if(r.uc)lks+=`<a class="dl dl-u" href="${hA(r.uc)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-u">U</div><div class="dl-text"><div class="dl-name">UC</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
+    if(r.uc)lks+=`<a class="dl dl-u" href="${hA(r.uc)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-u">UC</div><div class="dl-text"><div class="dl-name">UC</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
     if(r.kk)lks+=`<a class="dl dl-k" href="${hA(r.kk)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-k">K</div><div class="dl-text"><div class="dl-name">夸克</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
-    if(r.links&&Array.isArray(r.links)){r.links.forEach(l=>{if(l.url)lks+=`<a class="dl dl-k" href="${hA(l.url)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-x">${h(l.name.charAt(0))}</div><div class="dl-text"><div class="dl-name">${h(l.name)}</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`})}
+    if(r.links&&Array.isArray(r.links)){r.links.forEach(l=>{
+      const ln=l.name.toLowerCase();
+      if((ln.includes('百度')||ln==='bd')&&r.baidu)return;
+      if(ln==='uc'&&r.uc)return;
+      if((ln.includes('夸克')||ln==='kk')&&r.kk)return;
+      if(l.url)lks+=`<a class="dl dl-k" href="${hA(l.url)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-x">${h(l.name.charAt(0))}</div><div class="dl-text"><div class="dl-name">${h(l.name)}</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`})}
     if(!lks)lks='<div class="no-dl">暂无链接</div>';
     const nw=isNew(r.date)?'<span class="c-new">NEW</span>':'';
     return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}</div></div></div><div class="c-dl">${lks}</div>
