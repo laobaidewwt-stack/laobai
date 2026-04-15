@@ -227,6 +227,71 @@ body.batch-mode .c-check{display:flex}
 .c-check.on{background:var(--green);border-color:var(--green);color:#fff;font-size:12px}
 body.batch-mode .c-actions{display:none}
 
+
+/* ====== DARK MODE ====== */
+body.dark{--bg:#0f1a14;--card:#1a2e22;--mint:#1a3328;--mint2:#24432e;--green:#25c06e;--green2:#1b8f58;--green-lt:#3dd88a;
+  --txt:#e0ede6;--txt2:#b0cebe;--txt3:#8aaa98;--txt4:#5f8570;--txt5:#3a5244;--sh:0 1px 2px rgba(0,0,0,.15);--sh2:0 4px 16px rgba(0,0,0,.2)}
+body.dark .sky{background:linear-gradient(178deg,#0a1510 0%,#0f1a14 30%,#0f1a14 100%)}
+body.dark .sun{opacity:.3}
+body.dark .cl i{background:rgba(255,255,255,.03)}
+body.dark .lf{opacity:.06}
+body.dark .grass{background:linear-gradient(to top,rgba(15,26,20,.5),transparent)}
+body.dark .search::before{background:rgba(15,26,20,.65)}
+body.dark .s-box input{background:var(--card);border-color:var(--mint2);color:var(--txt)}
+body.dark .tab{background:var(--card);border-color:var(--mint2);color:var(--txt3)}
+body.dark .card{background:var(--card);border-color:rgba(37,192,110,.06)}
+body.dark .c-dl{background:var(--mint)}
+body.dark .dl{border-bottom-color:rgba(255,255,255,.03)}
+body.dark .latest{background:var(--card);border-color:rgba(37,192,110,.06)}
+body.dark .ltc{background:var(--mint)}
+body.dark .cat-editor{background:var(--card)}
+body.dark .admin-bar{background:linear-gradient(135deg,#0f1a14,#1a3328)}
+body.dark .modal{background:var(--bg)}
+body.dark .fg input,body.dark .fg select{background:var(--card);border-color:var(--mint2);color:var(--txt)}
+body.dark .paste-btn{background:var(--mint);border-color:var(--mint2)}
+body.dark .toast{background:var(--card);border-color:var(--mint2);color:var(--txt)}
+
+.dark-toggle{position:fixed;top:26px;right:max(calc(50% - 210px + 12px),16px);width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.7);backdrop-filter:blur(6px);border:1px solid var(--mint2);color:var(--txt3);font-size:14px;cursor:pointer;z-index:101;display:flex;align-items:center;justify-content:center;transition:all .3s}
+body.dark .dark-toggle{background:rgba(26,46,34,.8);color:#ffd700;border-color:var(--mint2)}
+body.admin .dark-toggle{top:56px}
+
+/* ====== STATS PANEL (admin) ====== */
+.stats-panel{display:none;margin:0 16px 10px;background:#fff;border-radius:var(--r);padding:12px 14px;box-shadow:var(--sh);border:1px solid rgba(27,143,88,.04)}
+body.admin .stats-panel{display:block}
+body.dark .stats-panel{background:var(--card)}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.stat-box{text-align:center;padding:8px 4px;border-radius:8px;background:var(--mint)}
+.stat-box .sv{font-size:20px;font-weight:700;color:var(--green)}
+.stat-box .sl{font-size:9px;color:var(--txt4);margin-top:2px}
+.stats-cats{display:flex;flex-wrap:wrap;gap:4px}
+.stats-cat{font-size:10px;padding:2px 8px;border-radius:4px;background:var(--mint);color:var(--txt3)}
+.stats-cat b{color:var(--green)}
+
+/* ====== SORT ====== */
+.sort-bar{display:flex;align-items:center;gap:6px;padding:0 16px 8px}
+.sort-label{font-size:10px;color:var(--txt4)}
+.sort-btn{padding:3px 10px;border-radius:8px;background:#fff;border:1px solid var(--mint2);font-size:10px;color:var(--txt3);cursor:pointer;font-family:var(--f);transition:all .15s}
+.sort-btn.on{background:var(--green);color:#fff;border-color:var(--green)}
+body.dark .sort-btn{background:var(--card);border-color:var(--mint2)}
+
+/* ====== SHARE BUTTON ====== */
+.dl-share{display:flex;align-items:center;gap:6px;padding:8px 14px;border-top:1px solid rgba(27,143,88,.04);background:rgba(27,143,88,.02);cursor:pointer;transition:all .12s;font-size:11px;color:var(--txt4);justify-content:center}
+.dl-share:hover{background:rgba(27,143,88,.05);color:var(--green)}
+.dl-share:active{transform:scale(.98)}
+
+/* ====== PIN BADGE ====== */
+.c-pin{font-size:9px;font-weight:700;color:#f59e0b;background:rgba(245,158,11,.08);padding:1px 6px;border-radius:3px;margin-left:2px}
+.c-act.pin{color:#f59e0b}
+.c-act.pin:hover{background:rgba(245,158,11,.08)}
+
+/* ====== EPISODE TAG ====== */
+.c-ep{font-size:10px;color:var(--green);font-weight:500;margin-left:4px}
+
+/* ====== REPORT BROKEN ====== */
+.dl-report{font-size:10px;color:var(--txt5);text-align:center;padding:4px 14px 8px;cursor:pointer;transition:color .15s}
+.dl-report:hover{color:#dc2626}
+.report-badge{display:inline-block;padding:1px 5px;border-radius:3px;background:rgba(220,38,38,.06);font-size:9px;color:#dc2626;margin-left:4px;font-weight:500}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.dl{padding:10px 12px}.hd-name{font-size:17px}}
 </style>
@@ -244,6 +309,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   <p>加载资源中...</p>
 </div>
 
+<button class="dark-toggle" id="darkBtn" onclick="toggleDark()">🌙</button>
 <div class="sky"></div><div class="sun"></div>
 <div class="cl cl-1"><i></i><i></i><i></i></div><div class="cl cl-2"><i></i><i></i><i></i></div>
 <div class="lf">🍃</div><div class="lf">🌿</div><div class="lf">🍃</div><div class="lf">🌿</div>
@@ -262,6 +328,16 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   </div></div>
   <div class="recent" id="rcBox"><div class="rc-hd"><span>最近浏览</span><button onclick="clrRc()">清除</button></div><div class="rc-list" id="rcList"></div></div>
   
+  
+  <div class="stats-panel" id="statsPanel">
+    <div class="stats-grid">
+      <div class="stat-box"><div class="sv" id="stTotal">0</div><div class="sl">总资源</div></div>
+      <div class="stat-box"><div class="sv" id="st7d">0</div><div class="sl">7天内更新</div></div>
+      <div class="stat-box"><div class="sv" id="stReport">0</div><div class="sl">失效反馈</div></div>
+    </div>
+    <div class="stats-cats" id="stCats"></div>
+  </div>
+
   <div class="cat-editor" id="catEditor">
     <div class="cat-ed-hd"><span>📂 管理分类</span><button class="cat-ed-add" onclick="addCatPrompt()">+ 新分类</button></div>
     <div class="cat-ed-list" id="catEdList"></div>
@@ -281,6 +357,14 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   <div class="latest" id="ltBox"><div class="lt-hd"><div class="lt-hd-l"><span class="lt-dot"></span><span>最新更新</span></div><div class="lt-hd-r" id="ltDate"></div></div>
     <div class="lt-wrap"><button class="sb sb-l" id="sbL" onclick="slt(-1)">‹</button><div class="lt-scroll" id="ltScroll"></div><button class="sb sb-r show" id="sbR" onclick="slt(1)">›</button></div>
   </div>
+  
+  <div class="sort-bar">
+    <span class="sort-label">排序：</span>
+    <button class="sort-btn on" data-sort="date" onclick="setSort('date')">最新更新</button>
+    <button class="sort-btn" data-sort="name" onclick="setSort('name')">剧名A-Z</button>
+    <button class="sort-btn" data-sort="report" onclick="setSort('report')">失效优先</button>
+  </div>
+
   <div class="feed" id="feed"></div>
   <div class="loader" id="loader"><span class="loader-dot"></span><span class="loader-dot"></span><span class="loader-dot"></span></div>
   <div class="ft"><a href="https://weibo.com/u/5974858251" target="_blank">@老白的窝窝头123</a><p>资源来自网络 · 仅供学习交流</p></div>
@@ -307,7 +391,8 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <div class="pre" onclick="addLk()">自定义</div>
 </div>
 <div id="lkRows"></div>
-<div class="fg"><label>关键词</label><input type="text" id="fw" placeholder="空格分隔"></div>
+<div class="fg"><label>更新集数</label><input type="text" id="fep" placeholder="例：更新至第12集 / 全16集"></div>
+    <div class="fg"><label>关键词</label><input type="text" id="fw" placeholder="空格分隔"></div>
 <div class="btns"><button class="btnC" onclick="closeM()">取消</button><button class="btnS" onclick="saveR()">保存</button></div>
 </div></div>
 
@@ -358,7 +443,7 @@ if(isAdmin())document.body.classList.add('admin');
 
 // Modal
 function openM(title){document.getElementById('mt').textContent=title||'添加资源';document.getElementById('ov').classList.add('show')}
-function closeM(){document.getElementById('ov').classList.remove('show');['fn','fw'].forEach(id=>document.getElementById(id).value='');document.getElementById('fc').selectedIndex=0;document.getElementById('lkRows').innerHTML='';_lkCnt=0;_editId=null}
+function closeM(){document.getElementById('ov').classList.remove('show');['fn','fw','fep'].forEach(id=>document.getElementById(id).value='');document.getElementById('fc').selectedIndex=0;document.getElementById('lkRows').innerHTML='';_lkCnt=0;_editId=null}
 document.getElementById('ov').addEventListener('click',e=>{if(e.target===e.currentTarget)closeM()});
 
 // Link rows
@@ -384,7 +469,7 @@ async function saveR(){
   const n=document.getElementById('fn').value.trim();
   if(!n){toast('请输入名称');return}
   const links=collectLks();
-  const d={name:n,cat:document.getElementById('fc').value,baidu:'',uc:'',kk:'',links:links,keywords:document.getElementById('fw').value.trim(),date:new Date().toISOString().slice(0,10)};
+  const d={name:n,cat:document.getElementById('fc').value,baidu:'',uc:'',kk:'',links:links,keywords:document.getElementById('fw').value.trim(),episode:document.getElementById('fep').value.trim(),date:new Date().toISOString().slice(0,10)};
   links.forEach(l=>{
     const ln=l.name.toLowerCase();
     if(ln.includes('\u767e\u5ea6'))d.baidu=l.url;
@@ -415,6 +500,7 @@ function editR(id){
   _editId=id;
   document.getElementById('fn').value=r.name||'';
   document.getElementById('fw').value=r.keywords||'';
+  document.getElementById('fep').value=r.episode||'';
   const fc=document.getElementById('fc');
   for(let i=0;i<fc.options.length;i++){if(fc.options[i].value===r.cat){fc.selectedIndex=i;break}}
   document.getElementById('lkRows').innerHTML='';_lkCnt=0;
@@ -439,6 +525,90 @@ async function delR(id){
   shown=0;render();renderLt();toast('已删除');
 }
 
+
+
+// ====== DARK MODE ======
+function toggleDark(){
+  const on=!document.body.classList.contains('dark');
+  document.body.classList.toggle('dark',on);
+  document.getElementById('darkBtn').textContent=on?'☀️':'🌙';
+  try{localStorage.setItem('lb_dark',on?'1':'0')}catch{}
+}
+try{if(localStorage.getItem('lb_dark')==='1'){document.body.classList.add('dark');document.getElementById('darkBtn').textContent='☀️'}}catch{}
+
+// ====== SORT ======
+let sortMode='date';
+function setSort(m){
+  sortMode=m;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.toggle('on',b.dataset.sort===m));
+  shown=0;render();
+}
+
+// ====== STATS ======
+function renderStats(){
+  document.getElementById('stTotal').textContent=res.length;
+  const now=Date.now();
+  const d7=res.filter(r=>r.date&&(now-new Date(r.date).getTime()<7*864e5)).length;
+  document.getElementById('st7d').textContent=d7;
+  // Count reports
+  const reports=res.filter(r=>r.reports&&r.reports>0).length;
+  document.getElementById('stReport').textContent=reports;
+  // Category breakdown
+  const catCount={};
+  res.forEach(r=>{catCount[r.cat]=(catCount[r.cat]||0)+1});
+  document.getElementById('stCats').innerHTML=Object.entries(catCount).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<span class="stats-cat">${c} <b>${n}</b></span>`).join('');
+}
+
+// ====== SHARE ======
+function shareRes(name,r){
+  let text=name+'\n';
+  if(r.baidu)text+='\n百度: '+r.baidu;
+  if(r.uc)text+='\nUC: '+r.uc;
+  if(r.kk)text+='\n夸克: '+r.kk;
+  if(r.links&&Array.isArray(r.links))r.links.forEach(l=>{
+    const ln=l.name.toLowerCase();
+    if((ln.includes('\u767e\u5ea6')&&r.baidu)||(ln==='uc'&&r.uc)||(ln.includes('\u5938\u514b')&&r.kk))return;
+    text+='\n'+l.name+': '+l.url;
+  });
+  text+='\n\n来自: 老白的小窝';
+  if(navigator.share){
+    navigator.share({title:name,text}).catch(()=>{});
+  }else{
+    navigator.clipboard.writeText(text).then(()=>toast('已复制到剪贴板')).catch(()=>toast('复制失败'));
+  }
+}
+
+// ====== PIN ======
+async function pinRes(id){
+  const r=res.find(x=>x.id===id);
+  if(!r)return;
+  const newPin=r.pinned?false:true;
+  const {error}=await supa.from('resources').update({pinned:newPin}).eq('id',id);
+  if(error){toast('操作失败');return}
+  r.pinned=newPin;
+  toast(newPin?'已置顶 📌':'已取消置顶');
+  shown=0;render();renderLt();
+}
+
+// ====== REPORT BROKEN ======
+async function reportBroken(id){
+  const r=res.find(x=>x.id===id);
+  if(!r)return;
+  // Check if already reported in this session
+  const rk='lb_reported';
+  let reported=[];
+  try{reported=JSON.parse(sessionStorage.getItem(rk)||'[]')}catch{}
+  if(reported.includes(id)){toast('你已经反馈过了');return}
+  
+  const newCount=(r.reports||0)+1;
+  const {error}=await supa.from('resources').update({reports:newCount}).eq('id',id);
+  if(error){toast('反馈失败');return}
+  r.reports=newCount;
+  reported.push(id);
+  try{sessionStorage.setItem(rk,JSON.stringify(reported))}catch{}
+  toast('已反馈链接失效，感谢！');
+  shown=0;render();
+}
 
 // ====== CUSTOM CATEGORIES ======
 const DEFAULT_CATS=['泰剧','姬片','韩剧','网剧','西班牙剧','美剧','中剧','短剧'];
@@ -629,7 +799,7 @@ async function loadData(){
   }
   document.getElementById('loadingScreen').classList.add('hide');
   setTimeout(()=>document.getElementById('loadingScreen').style.display='none',500);
-  render();renderLt();renderRc();renderCatEditor();
+  render();renderLt();renderRc();renderCatEditor();renderStats();
 }
 
 // Recent
@@ -646,7 +816,13 @@ function filt(){
   let l=res;
   if(cat!=='all')l=l.filter(r=>r.cat===cat);
   if(q.trim()){const s=q.trim().toLowerCase();l=l.filter(r=>r.name.toLowerCase().includes(s)||(r.keywords&&r.keywords.toLowerCase().includes(s))||r.cat.toLowerCase().includes(s))}
-  return l.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  // Sort
+  if(sortMode==='name')l.sort((a,b)=>(a.name||'').localeCompare(b.name||'','zh'));
+  else if(sortMode==='report')l.sort((a,b)=>(b.reports||0)-(a.reports||0));
+  else l.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  // Pinned always on top
+  l.sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+  return l;
 }
 
 function hl(t,qu){if(!qu||!qu.trim())return h(t);const s=h(t);const e=qu.trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return s.replace(new RegExp('('+e+')','gi'),'<mark>$1</mark>')}
@@ -671,8 +847,10 @@ function render(ap){
       if(l.url)lks+=`<a class="dl dl-k" href="${hA(l.url)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-x">${h(l.name.charAt(0))}</div><div class="dl-text"><div class="dl-name">${h(l.name)}</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`})}
     if(!lks)lks='<div class="no-dl">暂无链接</div>';
     const nw=isNew(r.date)?'<span class="c-new">NEW</span>':'';
-    return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><div class="c-check" data-id="${r.id}" onclick="toggleBatchItem(${r.id})"></div><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}</div></div></div><div class="c-dl">${lks}</div>
-<div class="c-actions"><button class="c-act" onclick="editR(${r.id})">编辑</button><button class="c-act del" onclick="delR(${r.id})">删除</button></div>
+    return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><div class="c-check" data-id="${r.id}" onclick="toggleBatchItem(${r.id})"></div><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}${r.pinned?'<span class="c-pin">📌 置顶</span>':''}${r.episode?`<span class="c-ep">${h(r.episode)}</span>`:''}</div></div></div><div class="c-dl">${lks}</div>
+<div class="dl-share" onclick="shareRes('${hA(r.name)}',res.find(x=>x.id===${r.id}))">📤 分享给朋友</div>
+<div class="dl-report" onclick="reportBroken(${r.id})">⚠️ 链接失效？点此反馈${r.reports?`<span class="report-badge">${r.reports}人反馈</span>`:''}</div>
+<div class="c-actions"><button class="c-act pin" onclick="pinRes(${r.id})">${r.pinned?'取消置顶':'📌 置顶'}</button><button class="c-act" onclick="editR(${r.id})">编辑</button><button class="c-act del" onclick="delR(${r.id})">删除</button></div>
 </div>`}).join(''));
   shown+=sl.length;
   document.getElementById('loader').classList.toggle('show',shown<tot);
