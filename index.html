@@ -299,7 +299,7 @@ body.dark .tip-card{background:var(--card);border-color:rgba(180,140,50,.1)}
 .tip-hd{background:linear-gradient(135deg,#fff8e6,#fff2d0);padding:14px 16px;text-align:center;border-bottom:1px solid rgba(180,140,50,.1)}
 .tip-hd span{font-size:14px;font-weight:600;color:#8a6d1e}
 .tip-body{padding:16px;text-align:center}
-.tip-body img{width:180px;height:180px;border-radius:10px;margin:0 auto 10px;display:block}
+.tip-body img{width:160px;height:160px;border-radius:10px;margin:0 auto 10px;display:block;object-fit:contain}
 .tip-text{font-size:12px;color:#a08630;line-height:1.6}
 .tip-toggle{display:flex;align-items:center;justify-content:center;padding:10px;cursor:pointer;font-size:12px;color:#a08630;gap:4px;transition:all .15s}
 .tip-toggle:hover{color:#8a6d1e}
@@ -363,7 +363,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
       ☕ 整理不易，觉得好用可以打赏支持 ~.~ <span class="arrow">▼</span>
     </div>
     <div class="tip-content">
-      <img src="https://laobaidewwt-stack.github.io/laobai/tip.jpg" alt="打赏二维码">
+      <img src="https://laobaidewwt-stack.github.io/laobai/tip.jpg" alt="打赏二维码" style="width:160px;height:160px">
       <div class="tip-text">扫码打赏 · 感谢支持 ❤️</div>
     </div>
   </div>
