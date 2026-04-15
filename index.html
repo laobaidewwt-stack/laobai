@@ -571,22 +571,35 @@ body.dark .hot-item{background:var(--card)}
 
 
 
-/* ====== HOT TAGS ====== */
-.hot-tags{margin:0 16px 8px;display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none}
-.hot-tags::-webkit-scrollbar{display:none}
-.hot-tags-label{font-size:11px;color:var(--txt4);flex-shrink:0;font-weight:500}
-.hot-tag{flex-shrink:0;padding:4px 12px;border-radius:12px;background:#fff;border:1px solid var(--mint2);font-size:11px;color:var(--txt2);cursor:pointer;transition:all .15s;white-space:nowrap}
-.hot-tag:hover{border-color:var(--green);color:var(--green);background:var(--mint)}
-.hot-tag:active{transform:scale(.96)}
-body.dark .hot-tag{background:var(--card);border-color:var(--mint2)}
 
-/* Admin: edit hot tags */
-.hot-tags-edit{display:none;margin:0 16px 8px;background:#fff;border-radius:var(--r2);padding:8px 12px;box-shadow:var(--sh);border:1px solid rgba(27,143,88,.04)}
-body.admin .hot-tags-edit{display:flex;align-items:center;gap:6px}
-body.dark .hot-tags-edit{background:var(--card)}
-.ht-input{flex:1;padding:6px 10px;border:1px solid var(--mint2);border-radius:8px;font-size:11px;font-family:var(--f);outline:none;color:var(--txt)}
-body.dark .ht-input{background:var(--card);color:var(--txt)}
-.ht-save{padding:6px 12px;border-radius:8px;background:var(--green);color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--f);flex-shrink:0}
+
+
+/* ====== MY SUBS PAGE ====== */
+.mysub-ov{display:none;position:fixed;inset:0;background:rgba(17,17,17,.2);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:310;align-items:flex-end;justify-content:center}
+.mysub-ov.show{display:flex}
+.mysub-modal{background:var(--bg);border-radius:18px 18px 0 0;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;padding:14px 20px 34px;animation:up .3s cubic-bezier(.16,1,.3,1)}
+body.dark .mysub-modal{background:var(--bg)}
+.mysub-modal h3{font-size:16px;font-weight:600;text-align:center;margin-bottom:4px}
+.mysub-count{font-size:11px;color:var(--txt4);text-align:center;margin-bottom:14px}
+.mysub-empty{text-align:center;padding:30px 0;color:var(--txt4);font-size:13px}
+.mysub-item{display:flex;align-items:center;gap:10px;padding:12px;background:#fff;border-radius:12px;margin-bottom:8px;transition:all .15s}
+body.dark .mysub-item{background:var(--card)}
+.mysub-item:hover{transform:translateY(-1px);box-shadow:var(--sh2)}
+.mysub-flag{font-size:18px;flex-shrink:0}
+.mysub-info{flex:1;min-width:0}
+.mysub-name{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mysub-meta{font-size:11px;color:var(--txt4);margin-top:2px;display:flex;align-items:center;gap:6px}
+.mysub-updated{color:#2563eb;font-weight:600;font-size:10px;background:rgba(37,99,235,.08);padding:1px 6px;border-radius:3px}
+.mysub-ep{color:var(--green);font-size:10px}
+.mysub-actions{display:flex;gap:6px;flex-shrink:0}
+.mysub-go{padding:5px 12px;border-radius:8px;background:var(--mint);border:none;font-size:11px;color:var(--green);cursor:pointer;font-family:var(--f);font-weight:600}
+.mysub-go:hover{background:var(--mint2)}
+.mysub-del{padding:5px 8px;border-radius:8px;background:rgba(220,38,38,.05);border:none;font-size:11px;color:#dc2626;cursor:pointer;font-family:var(--f)}
+.mysub-del:hover{background:rgba(220,38,38,.1)}
+
+/* Sub notification dot on the button */
+.feat-btn .notif-dot{display:none;width:7px;height:7px;border-radius:50%;background:#f43f5e;margin-left:-2px}
+.feat-btn .notif-dot.show{display:inline-block;animation:dp 2s ease-in-out infinite}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.dl{padding:10px 12px}.hd-name{font-size:17px}}
@@ -640,15 +653,6 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
     <input type="text" id="si" placeholder="搜索剧名、关键词..." autocomplete="off">
     <button class="s-x" id="sx" onclick="clrS()">✕</button>
   </div></div>
-  
-  
-  <div class="hot-tags" id="hotTags"></div>
-  <div class="hot-tags-edit">
-    <span style="font-size:10px;color:var(--txt4);flex-shrink:0">🔥 热搜词：</span>
-    <input class="ht-input" id="htInput" placeholder="用逗号分隔，例：学姐,禁忌,鬼魂">
-    <button class="ht-save" onclick="saveHotTags()">保存</button>
-  </div>
-
   <div class="announce" id="announceBar">
     <div class="announce-text" id="announceText"></div>
     <button class="announce-close" onclick="closeAnnounce()">✕</button>
@@ -712,6 +716,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   </div>
   
   <div class="feat-bar">
+    <button class="feat-btn" onclick="openMySubs()">📺 我的追剧 <span class="notif-dot" id="subNotif"></span></button>
     <button class="feat-btn" onclick="openCalendar()">📅 追剧日历</button>
     <button class="feat-btn" onclick="openHot()">🔥 热度排行</button>
     <button class="feat-btn" onclick="openRandom()">🎲 随机推荐</button>
@@ -899,6 +904,18 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <div id="hotList"></div>
 <div style="text-align:center;margin-top:14px">
 <button class="btnS" style="width:100%;padding:10px;border-radius:14px" onclick="document.getElementById('hotOv').classList.remove('show')">关闭</button>
+</div>
+</div></div>
+
+
+<div class="mysub-ov" id="mysubOv">
+<div class="mysub-modal">
+<div class="mbar"></div>
+<h3>📺 我的追剧</h3>
+<div class="mysub-count" id="mysubCount"></div>
+<div id="mysubList"></div>
+<div style="text-align:center;margin-top:14px">
+<button class="btnS" style="width:100%;padding:10px;border-radius:14px" onclick="document.getElementById('mysubOv').classList.remove('show')">关闭</button>
 </div>
 </div></div>
 
@@ -1379,7 +1396,7 @@ function calNav(dir){
 }
 
 function renderCalendar(selectedDate){
-  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__');
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
   document.getElementById('calTitle').textContent=calYear+'年'+(calMonth+1)+'月';
   
   const firstDay=new Date(calYear,calMonth,1).getDay();
@@ -1444,7 +1461,7 @@ function openRandom(){
 document.getElementById('randomOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
 
 function doRandom(){
-  const pool=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__');
+  const pool=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
   if(!pool.length){toast('没有资源');return}
   const r=pool[Math.floor(Math.random()*pool.length)];
   
@@ -1467,7 +1484,7 @@ function doRandom(){
 
 // ====== HOT RANKING ======
 function openHot(){
-  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__');
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
   
   // Calculate "heat score" from favorites count (check all users' favs is impossible, so use reports as proxy + random boost for variety)
   // Better approach: we count how many features a resource has (links, episode, recent date)
@@ -1506,38 +1523,53 @@ function openHot(){
 document.getElementById('hotOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
 
 
-// ====== HOT TAGS ======
-const HT_KEY='__hottags__';
 
-async function loadHotTags(){
-  try{
-    const {data}=await supa.from('resources').select('name').eq('cat',HT_KEY).limit(1);
-    if(data&&data[0]&&data[0].name){
-      const tags=data[0].name.split(',').map(t=>t.trim()).filter(Boolean);
-      renderHotTags(tags);
-      // Fill edit input
-      const inp=document.getElementById('htInput');
-      if(inp)inp.value=data[0].name;
-    }
-  }catch{}
-}
 
-function renderHotTags(tags){
-  if(!tags||!tags.length){document.getElementById('hotTags').innerHTML='';return}
-  document.getElementById('hotTags').innerHTML=
-    '<span class="hot-tags-label">🔥 热搜</span>'+
-    tags.map(t=>`<div class="hot-tag" onclick="sf('${t.replace(/'/g,"\\'")}')">${t}</div>`).join('');
-}
 
-async function saveHotTags(){
-  const text=document.getElementById('htInput').value.trim();
-  await supa.from('resources').delete().eq('cat',HT_KEY);
-  if(text){
-    await supa.from('resources').insert({name:text,cat:HT_KEY,baidu:'',uc:'',kk:'',keywords:'',episode:'',date:''});
+// ====== MY SUBS PAGE ======
+function openMySubs(){
+  const subs=getSubs();
+  const el=document.getElementById('mysubList');
+  document.getElementById('mysubCount').textContent=subs.length?'追了 '+subs.length+' 部剧':'';
+  
+  if(!subs.length){
+    el.innerHTML='<div class="mysub-empty">还没有追剧<br>点资源卡片上的「+ 追剧」开始追</div>';
+    document.getElementById('mysubOv').classList.add('show');
+    return;
   }
-  const tags=text.split(',').map(t=>t.trim()).filter(Boolean);
-  renderHotTags(tags);
-  toast('热搜词已更新 ✓');
+  
+  el.innerHTML=subs.map(s=>{
+    const r=res.find(x=>x.id===s.id);
+    if(!r)return '';
+    const hasUpdate=s.lastSeen&&r.date&&r.date>s.lastSeen;
+    return `<div class="mysub-item">
+<span class="mysub-flag">${EM[r.cat]||'🎬'}</span>
+<div class="mysub-info">
+<div class="mysub-name">${r.name}</div>
+<div class="mysub-meta">
+${hasUpdate?'<span class="mysub-updated">有更新!</span>':'<span style="color:var(--txt5)">暂无更新</span>'}
+${r.episode?'<span class="mysub-ep">'+r.episode+'</span>':''}
+</div>
+</div>
+<div class="mysub-actions">
+<button class="mysub-go" onclick="document.getElementById('mysubOv').classList.remove('show');sf('${r.name.slice(0,20).replace(/'/g,"\\'")}')">查看</button>
+<button class="mysub-del" onclick="toggleSub(${r.id},'${r.name.slice(0,30).replace(/'/g,"\\'")}');openMySubs()">取消</button>
+</div></div>`}).filter(Boolean).join('');
+  
+  document.getElementById('mysubOv').classList.add('show');
+}
+document.getElementById('mysubOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
+
+// Show notification dot if any sub has updates
+function checkSubNotif(){
+  const subs=getSubs();
+  let hasAny=false;
+  subs.forEach(s=>{
+    const r=res.find(x=>x.id===s.id);
+    if(r&&s.lastSeen&&r.date&&r.date>s.lastSeen)hasAny=true;
+  });
+  const dot=document.getElementById('subNotif');
+  if(dot)dot.classList.toggle('show',hasAny);
 }
 
 // ====== HELP GUIDE ======
@@ -1563,7 +1595,7 @@ function setSort(m){
 
 // ====== STATS ======
 function renderStats(){
-  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__');document.getElementById('stTotal').textContent=realRes.length;
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');document.getElementById('stTotal').textContent=realRes.length;
   const now=Date.now();
   const d7=realRes.filter(r=>r.date&&(now-new Date(r.date).getTime()<7*864e5)).length;
   document.getElementById('st7d').textContent=d7;
@@ -1842,7 +1874,7 @@ async function loadData(){
   }
   document.getElementById('loadingScreen').classList.add('hide');
   setTimeout(()=>document.getElementById('loadingScreen').style.display='none',500);
-  render();renderLt();renderRc();renderCatEditor();renderStats();renderFavs();loadAnnounce();trackVisit();loadHotTags();
+  render();renderLt();renderRc();renderCatEditor();renderStats();renderFavs();loadAnnounce();trackVisit();checkSubNotif();
 }
 
 // Recent
@@ -1856,7 +1888,7 @@ function sf(t){document.getElementById('si').value=t;q=t;shown=0;render();updX()
 function isNew(d){if(!d)return false;return Date.now()-new Date(d).getTime()<3*864e5}
 
 function filt(){
-  let l=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__');
+  let l=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
   if(cat!=='all')l=l.filter(r=>r.cat===cat);
   if(q.trim()){const s=q.trim().toLowerCase();l=l.filter(r=>r.name.toLowerCase().includes(s)||(r.keywords&&r.keywords.toLowerCase().includes(s))||r.cat.toLowerCase().includes(s))}
   // Sort
@@ -1872,7 +1904,7 @@ function hl(t,qu){if(!qu||!qu.trim())return h(t);const s=h(t);const e=qu.trim().
 
 function render(ap){
   const f=filt(),tot=f.length;
-  document.getElementById('totalN').textContent=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__').length;
+  document.getElementById('totalN').textContent=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__').length;
   const el=document.getElementById('feed');
   if(!ap){shown=0;el.innerHTML='';}
   if(!tot&&!ap){el.innerHTML='<div class="empty"><p style="font-size:24px">🍃</p><p>没有找到匹配资源</p></div>';document.getElementById('loader').classList.remove('show');return}
@@ -1901,7 +1933,7 @@ function render(ap){
 
 // Latest
 function renderLt(){
-  const s=[...res].filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__hottags__').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,10);
+  const s=[...res].filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,10);
   if(!s.length){document.getElementById('ltBox').style.display='none';return}
   document.getElementById('ltDate').textContent=s[0].date||'';
   document.getElementById('ltScroll').innerHTML=s.map(r=>{
