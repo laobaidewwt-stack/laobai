@@ -306,6 +306,54 @@ body.dark .tip-card{background:var(--card);border-color:rgba(180,140,50,.1)}
 .tip-content{display:none;padding:0 16px 16px;text-align:center}
 .tip-content.show{display:block}
 
+
+/* ====== ADMIN TOOLS BAR ====== */
+.admin-tools{display:none;margin:0 16px 10px;background:#fff;border-radius:var(--r);padding:10px 12px;box-shadow:var(--sh);border:1px solid rgba(27,143,88,.04)}
+body.admin .admin-tools{display:block}
+body.dark .admin-tools{background:var(--card)}
+.at-row{display:flex;gap:6px;flex-wrap:wrap}
+.at-btn{padding:7px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--f);border:1px solid var(--mint2);background:var(--mint);color:var(--green);transition:all .15s;display:flex;align-items:center;gap:4px}
+.at-btn:hover{background:var(--mint2)}
+.at-btn:active{transform:scale(.97)}
+body.dark .at-btn{background:var(--mint);border-color:var(--mint2)}
+
+/* Quick paste modal */
+.qp-ov{display:none;position:fixed;inset:0;background:rgba(17,17,17,.2);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:310;align-items:flex-end;justify-content:center}
+.qp-ov.show{display:flex}
+.qp-modal{background:var(--bg);border-radius:18px 18px 0 0;width:100%;max-width:420px;max-height:88vh;overflow-y:auto;padding:14px 20px 34px;animation:up .3s cubic-bezier(.16,1,.3,1)}
+body.dark .qp-modal{background:var(--bg)}
+.qp-modal h3{font-size:15px;font-weight:600;text-align:center;margin-bottom:6px}
+.qp-modal p{font-size:11px;color:var(--txt3);text-align:center;margin-bottom:12px;line-height:1.6}
+.qp-ta{width:100%;height:200px;padding:12px;background:#fff;border:1.5px solid var(--mint2);border-radius:var(--r3);color:var(--txt);font-size:13px;font-family:var(--f);outline:none;resize:none;line-height:1.7;transition:border-color .25s}
+body.dark .qp-ta{background:var(--card);color:var(--txt)}
+.qp-ta:focus{border-color:var(--green)}
+.qp-ta::placeholder{color:var(--txt5)}
+.qp-cat{margin:10px 0;display:flex;align-items:center;gap:8px}
+.qp-cat label{font-size:11px;color:var(--txt4)}
+.qp-cat select{padding:6px 10px;border:1px solid var(--mint2);border-radius:6px;font-size:12px;font-family:var(--f);background:#fff;color:var(--txt)}
+body.dark .qp-cat select{background:var(--card);color:var(--txt)}
+.qp-preview{margin:10px 0;padding:10px;background:var(--mint);border-radius:8px;font-size:11px;color:var(--txt2);line-height:1.8;max-height:150px;overflow-y:auto;display:none}
+.qp-preview.show{display:block}
+.qp-preview b{color:var(--green)}
+.qp-btns{display:flex;gap:8px;margin-top:12px}
+.qp-btns button{flex:1;padding:10px;border-radius:16px;font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer;border:none}
+
+/* Undo bar */
+.undo-bar{display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--mint2);padding:8px 16px;border-radius:12px;box-shadow:var(--sh2);z-index:250;align-items:center;gap:10px;font-size:12px;color:var(--txt2)}
+.undo-bar.show{display:flex}
+.undo-btn{padding:4px 12px;border-radius:6px;background:var(--green);color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--f)}
+
+/* Weibo text modal */
+.wb-ov{display:none;position:fixed;inset:0;background:rgba(17,17,17,.2);backdrop-filter:blur(8px);z-index:310;align-items:center;justify-content:center}
+.wb-ov.show{display:flex}
+.wb-modal{background:var(--bg);border-radius:16px;width:calc(100% - 40px);max-width:380px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.12)}
+body.dark .wb-modal{background:var(--bg)}
+.wb-modal h3{font-size:14px;font-weight:600;text-align:center;margin-bottom:10px}
+.wb-ta{width:100%;height:160px;padding:10px;background:#fff;border:1.5px solid var(--mint2);border-radius:var(--r3);color:var(--txt);font-size:12px;font-family:var(--f);outline:none;resize:none;line-height:1.7}
+body.dark .wb-ta{background:var(--card);color:var(--txt)}
+.wb-btns{display:flex;gap:8px;margin-top:10px}
+.wb-btns button{flex:1;padding:9px;border-radius:12px;font-size:12px;font-weight:600;font-family:var(--f);cursor:pointer;border:none}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.dl{padding:10px 12px}.hd-name{font-size:17px}}
 </style>
@@ -350,6 +398,15 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
       <div class="stat-box"><div class="sv" id="stReport">0</div><div class="sl">失效反馈</div></div>
     </div>
     <div class="stats-cats" id="stCats"></div>
+  </div>
+
+  
+  <div class="admin-tools">
+    <div class="at-row">
+      <button class="at-btn" onclick="openQuickPaste()">📋 快捷粘贴</button>
+      <button class="at-btn" onclick="exportBackup()">💾 导出备份</button>
+      <button class="at-btn" onclick="enterBatch()">📑 批量管理</button>
+    </div>
   </div>
 
   <div class="cat-editor" id="catEditor">
@@ -428,6 +485,39 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   <button class="batch-act batch-cat" onclick="batchChangeCat()">改分类</button>
   <button class="batch-act batch-del" onclick="batchDel()">批量删除</button>
   <button class="batch-act batch-cancel" onclick="exitBatch()">取消</button>
+</div>
+
+
+<div class="qp-ov" id="qpOv">
+<div class="qp-modal">
+<div class="mbar"></div>
+<h3>📋 快捷粘贴</h3>
+<p>粘贴微博内容，自动识别剧名和链接<br>支持一次粘贴多条资源（每条资源用空行分隔）</p>
+<textarea class="qp-ta" id="qpText" placeholder="粘贴微博内容...&#10;&#10;例：&#10;禁忌女孩 第三季&#10;百度：https://pan.baidu.com/xxx&#10;夸克：https://pan.quark.cn/xxx&#10;&#10;暗恋 第二季&#10;百度：https://pan.baidu.com/yyy" oninput="previewQP()"></textarea>
+<div class="qp-cat">
+  <label>默认分类：</label>
+  <select id="qpCat"></select>
+</div>
+<div class="qp-preview" id="qpPreview"></div>
+<div class="qp-btns">
+  <button class="btnC" onclick="closeQP()">取消</button>
+  <button class="btnS" onclick="submitQP()">确认添加</button>
+</div>
+</div></div>
+
+<div class="wb-ov" id="wbOv">
+<div class="wb-modal">
+<h3>📝 微博文案</h3>
+<textarea class="wb-ta" id="wbText" readonly></textarea>
+<div class="wb-btns">
+  <button class="btnC" onclick="document.getElementById('wbOv').classList.remove('show')">关闭</button>
+  <button class="btnS" onclick="copyWbText()">复制文案</button>
+</div>
+</div></div>
+
+<div class="undo-bar" id="undoBar">
+  <span>已删除 <b id="undoName"></b></span>
+  <button class="undo-btn" onclick="undoDelete()">撤销</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -552,6 +642,175 @@ async function delR(id){
 }
 
 
+
+
+// ====== QUICK PASTE (multi-resource) ======
+function openQuickPaste(){
+  document.getElementById('qpOv').classList.add('show');
+  const sel=document.getElementById('qpCat');
+  const cats=getCats();
+  sel.innerHTML=cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  document.getElementById('qpText').value='';
+  document.getElementById('qpPreview').classList.remove('show');
+}
+function closeQP(){document.getElementById('qpOv').classList.remove('show')}
+document.getElementById('qpOv').addEventListener('click',e=>{if(e.target===e.currentTarget)closeQP()});
+
+function parseMultiResources(text){
+  const blocks=text.split(/\n\s*\n/);
+  const results=[];
+  const urlReg=/(https?:\/\/[^\s\u3000]+)/g;
+  
+  for(const block of blocks){
+    if(!block.trim())continue;
+    const lines=block.trim().split(/\n/);
+    let name='',links=[];
+    
+    for(const line of lines){
+      const trimmed=line.trim();
+      if(!trimmed)continue;
+      const urls=trimmed.match(urlReg);
+      if(urls){
+        for(const url of urls){
+          const u=url.toLowerCase();
+          let lname='链接';
+          if(u.includes('baidu')||u.includes('pan.baidu'))lname='百度';
+          else if(u.includes('uc.cn')||u.includes('drive.uc'))lname='UC';
+          else if(u.includes('quark'))lname='夸克';
+          else if(u.includes('alipan')||u.includes('aliyun'))lname='阿里';
+          else if(u.includes('xunlei'))lname='迅雷';
+          else if(u.includes('115'))lname='115';
+          links.push({name:lname,url});
+        }
+      }else if(!name){
+        name=trimmed.replace(/^(资源|分享|更新|发布)[：:]\s*/,'').replace(/[【】\[\]《》]/g,'').trim();
+      }
+    }
+    if(name||links.length)results.push({name:name||'未知资源',links});
+  }
+  return results;
+}
+
+function previewQP(){
+  const text=document.getElementById('qpText').value;
+  const items=parseMultiResources(text);
+  const pv=document.getElementById('qpPreview');
+  if(!items.length){pv.classList.remove('show');return}
+  pv.classList.add('show');
+  pv.innerHTML='识别到 <b>'+items.length+'</b> 条资源：<br>'+items.map((it,i)=>
+    (i+1)+'. <b>'+it.name+'</b>（'+it.links.length+'个链接）'
+  ).join('<br>');
+}
+
+async function submitQP(){
+  const text=document.getElementById('qpText').value;
+  const items=parseMultiResources(text);
+  if(!items.length){toast('未识别到资源');return}
+  const cat=document.getElementById('qpCat').value;
+  let count=0;
+  for(const it of items){
+    const d={name:it.name,cat:cat,baidu:'',uc:'',kk:'',links:it.links,keywords:'',episode:'',date:new Date().toISOString().slice(0,10),pinned:false,reports:0};
+    it.links.forEach(l=>{
+      const ln=l.name.toLowerCase();
+      if(ln.includes('\u767e\u5ea6'))d.baidu=l.url;
+      else if(ln==='uc')d.uc=l.url;
+      else if(ln.includes('\u5938\u514b'))d.kk=l.url;
+    });
+    const {data:ins,error}=await supa.from('resources').insert(d).select();
+    if(!error&&ins&&ins[0]){res.unshift(ins[0]);count++}
+  }
+  toast('已添加 '+count+' 条资源 ✓');
+  closeQP();
+  shown=0;render();renderLt();renderStats();
+}
+
+// ====== EXPORT BACKUP ======
+function exportBackup(){
+  const json=JSON.stringify(res,null,1);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='老白的小窝_备份_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('备份已下载 ✓');
+}
+
+// ====== UNDO DELETE ======
+let _lastDeleted=null;
+let _undoTimer=null;
+
+// Override delR to support undo
+const _origDelR=delR;
+delR=async function(id){
+  if(!confirm('确定删除？'))return;
+  const item=res.find(r=>r.id===id);
+  const {error}=await supa.from('resources').delete().eq('id',id);
+  if(error){toast('删除失败');return}
+  res=res.filter(r=>r.id!==id);
+  shown=0;render();renderLt();renderStats();
+  
+  // Show undo bar
+  _lastDeleted=item;
+  document.getElementById('undoName').textContent=item.name.slice(0,15);
+  document.getElementById('undoBar').classList.add('show');
+  clearTimeout(_undoTimer);
+  _undoTimer=setTimeout(()=>{
+    document.getElementById('undoBar').classList.remove('show');
+    _lastDeleted=null;
+  },8000);
+}
+
+async function undoDelete(){
+  if(!_lastDeleted)return;
+  const d={..._lastDeleted};
+  delete d.id;
+  const {data:ins,error}=await supa.from('resources').insert(d).select();
+  if(error){toast('恢复失败');return}
+  if(ins&&ins[0])res.unshift(ins[0]);
+  document.getElementById('undoBar').classList.remove('show');
+  _lastDeleted=null;
+  shown=0;render();renderLt();renderStats();
+  toast('已恢复 ✓');
+}
+
+// ====== GENERATE WEIBO TEXT ======
+function genWeibo(id){
+  const r=res.find(x=>x.id===id);
+  if(!r)return;
+  let text='';
+  text+='【'+r.name+'】\n';
+  if(r.episode)text+=r.episode+'\n';
+  text+='\n';
+  if(r.baidu)text+='百度：'+r.baidu+'\n';
+  if(r.uc)text+='UC：'+r.uc+'\n';
+  if(r.kk)text+='夸克：'+r.kk+'\n';
+  if(r.links&&Array.isArray(r.links)){
+    r.links.forEach(l=>{
+      const ln=l.name.toLowerCase();
+      if((ln.includes('\u767e\u5ea6')&&r.baidu)||(ln==='uc'&&r.uc)||(ln.includes('\u5938\u514b')&&r.kk))return;
+      text+=l.name+'：'+l.url+'\n';
+    });
+  }
+  text+='\n更多资源👉 https://laobaidewwt-stack.github.io/laobai/';
+  
+  document.getElementById('wbText').value=text;
+  document.getElementById('wbOv').classList.add('show');
+}
+document.getElementById('wbOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
+
+function copyWbText(){
+  const ta=document.getElementById('wbText');
+  navigator.clipboard.writeText(ta.value).then(()=>{
+    toast('已复制微博文案 ✓');
+    document.getElementById('wbOv').classList.remove('show');
+  }).catch(()=>{
+    ta.select();
+    document.execCommand('copy');
+    toast('已复制 ✓');
+  });
+}
 
 // ====== DARK MODE ======
 function toggleDark(){
@@ -876,7 +1135,7 @@ function render(ap){
     return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><div class="c-check" data-id="${r.id}" onclick="toggleBatchItem(${r.id})"></div><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}${r.pinned?'<span class="c-pin">📌 置顶</span>':''}${r.episode?`<span class="c-ep">${h(r.episode)}</span>`:''}</div></div></div><div class="c-dl">${lks}</div>
 <div class="dl-share" onclick="shareRes('${hA(r.name)}',res.find(x=>x.id===${r.id}))">📤 分享给朋友</div>
 <div class="dl-report" onclick="reportBroken(${r.id})">⚠️ 链接失效？点此反馈${r.reports?`<span class="report-badge">${r.reports}人反馈</span>`:''}</div>
-<div class="c-actions"><button class="c-act pin" onclick="pinRes(${r.id})">${r.pinned?'取消置顶':'📌 置顶'}</button><button class="c-act" onclick="editR(${r.id})">编辑</button><button class="c-act del" onclick="delR(${r.id})">删除</button></div>
+<div class="c-actions"><button class="c-act" onclick="genWeibo(${r.id})">📝 微博</button><button class="c-act pin" onclick="pinRes(${r.id})">${r.pinned?'取消置顶':'📌 置顶'}</button><button class="c-act" onclick="editR(${r.id})">编辑</button><button class="c-act del" onclick="delR(${r.id})">删除</button></div>
 </div>`}).join(''));
   shown+=sl.length;
   document.getElementById('loader').classList.toggle('show',shown<tot);
