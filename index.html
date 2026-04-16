@@ -1103,6 +1103,15 @@ function parseMultiResources(text){
   
   for(const block of blocks){
     if(!block.trim())continue;
+    
+    // Try share format detection first
+    const shareFormat=detectShareFormat(block);
+    if(shareFormat){
+      const epMatch=block.match(/(更新至[^\s]+|第[\d一二三四五六七八九十]+集[^\s]*|全[\d]+集|完结)/);
+      results.push({name:shareFormat.name,links:shareFormat.links,ep:epMatch?epMatch[0]:''});
+      continue;
+    }
+    
     const lines=block.trim().split(/\n/);
     let name='',links=[],ep='';
     
@@ -1844,6 +1853,71 @@ function removeCat(c){
   toast('已删除分类');
 }
 
+
+// ====== DETECT SHARE FORMAT (百度/夸克/UC/阿里 网盘分享格式) ======
+function detectShareFormat(text){
+  // Returns {name, links: [{name, url}]} or null
+  const result={name:'',links:[]};
+  
+  // 百度网盘: "通过百度网盘分享的文件：<FILENAME>"
+  // Followed by: "链接：<URL>"
+  const baiduFileMatch=text.match(/通过百度网盘分享的文件[：:]\s*([^\n\r]+?)(?:\s*\.\.\.|[\n\r])/);
+  if(baiduFileMatch){
+    result.name=baiduFileMatch[1].trim();
+  }
+  
+  // 夸克网盘: "我用夸克网盘分享了「<FILENAME>」" or "通过夸克网盘分享的文件：<FILENAME>"
+  const quarkFileMatch=text.match(/(?:通过夸克网盘分享的文件|我用夸克网盘分享了)[：:「]\s*([^」\n\r]+?)(?:」|\s*\.\.\.|[\n\r])/);
+  if(!result.name&&quarkFileMatch){
+    result.name=quarkFileMatch[1].trim();
+  }
+  
+  // UC网盘: "通过UC网盘分享的文件：<FILENAME>" or similar
+  const ucFileMatch=text.match(/通过UC网盘分享的文件[：:]\s*([^\n\r]+?)(?:\s*\.\.\.|[\n\r])/i);
+  if(!result.name&&ucFileMatch){
+    result.name=ucFileMatch[1].trim();
+  }
+  
+  // 阿里云盘: 分享文件格式
+  const aliFileMatch=text.match(/(?:阿里云盘|alipan).*?分享的?(?:文件)?[：:「]?\s*([^」\n\r]+?)(?:」|\s*\.\.\.|[\n\r])/);
+  if(!result.name&&aliFileMatch){
+    result.name=aliFileMatch[1].trim();
+  }
+  
+  // Find all URLs and categorize them
+  const urlReg=/(https?:\/\/[^\s\u3000\u300c\u300d]+)/g;
+  const urls=text.match(urlReg);
+  if(urls){
+    for(const url of urls){
+      const u=url.toLowerCase();
+      let lname='';
+      if(u.includes('baidu')||u.includes('pan.baidu'))lname='百度';
+      else if(u.includes('quark')||u.includes('pan.quark'))lname='夸克';
+      else if(u.includes('uc.cn')||u.includes('drive.uc'))lname='UC';
+      else if(u.includes('alipan')||u.includes('aliyun'))lname='阿里';
+      else if(u.includes('xunlei'))lname='迅雷';
+      else if(u.includes('115'))lname='115';
+      if(lname)result.links.push({name:lname,url});
+    }
+  }
+  
+  // Clean up the name - remove common suffixes
+  if(result.name){
+    result.name=result.name.replace(/\s*\.\.\.$/,'').replace(/[\u3010\u3011\[\]]/g,'').trim();
+    // Remove 【xxx会员xxx】 prefixes if present
+    result.name=result.name.replace(/^【[^】]*】\s*/,'').trim();
+  }
+  
+  // Only return if we found both name and links
+  if(result.name&&result.links.length)return result;
+  if(result.links.length&&!result.name){
+    // Fallback: if there are links but no name, check if text has 《》
+    const bookmark=text.match(/《([^》]+)》/);
+    if(bookmark){result.name=bookmark[0];return result}
+  }
+  return null;
+}
+
 // ====== CLIPBOARD AUTO-PASTE ======
 async function pasteClipboard(){
   let text='';
@@ -1851,6 +1925,20 @@ async function pasteClipboard(){
     toast('无法读取剪贴板，请手动粘贴');return;
   }
   if(!text.trim()){toast('剪贴板为空');return}
+  
+  // PRIORITY: Try share format detection first (百度/夸克/UC/阿里)
+  const shareFormat=detectShareFormat(text);
+  if(shareFormat){
+    document.getElementById('fn').value=shareFormat.name;
+    document.getElementById('lkRows').innerHTML='';
+    _lkCnt=0;
+    shareFormat.links.forEach(l=>addLk(l.name,l.url));
+    // Try to find episode
+    const epMatch=text.match(/(更新至[^\s]+|第[\d一二三四五六七八九十]+集[^\s]*|全[\d]+集|完结)/);
+    if(epMatch)document.getElementById('fep').value=epMatch[0];
+    toast('已识别网盘分享「'+shareFormat.name+'」+ '+shareFormat.links.length+'个链接');
+    return;
+  }
   
   // Parse clipboard content
   const lines=text.split(/\n/);
