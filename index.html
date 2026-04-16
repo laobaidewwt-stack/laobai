@@ -1016,9 +1016,14 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <div class="intro-hd">
   <div class="intro-hd-icon">🏠</div>
   <h2>欢迎来到老白的小窝</h2>
-  <p>第一次来？看完再逛吧</p>
+  <p>每 5 次进来提醒一次</p>
 </div>
 <div class="intro-body">
+
+<div style="background:linear-gradient(135deg,#fff1f2,#ffe4e6);border:2px dashed #fb7185;border-radius:12px;padding:12px 14px;margin-bottom:16px;text-align:center">
+<div style="font-size:13px;font-weight:700;color:#be123c;margin-bottom:3px">📢 重要提示</div>
+<div style="font-size:12px;color:#9f1239;line-height:1.6">老白<b>不是客服</b>，遇到问题请：<br><b>① 先看完这个指南</b>　<b>② 再自行百度</b></div>
+</div>
 
 <div class="intro-item">
 <div class="intro-item-num">1</div>
@@ -1051,7 +1056,8 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 ⚠️ <b>重要</b>：所有资源<b>仅作参考 · 仅作私藏 · 请勿传播</b>，请于24小时内删除。资源来自网络，侵权请联系删除。
 </div>
 <div class="intro-btns">
-<button class="intro-btn intro-ok" onclick="closeIntro()">知道了 ✓</button>
+<button class="intro-btn intro-later" onclick="dismissIntroForever()">不再提醒</button>
+<button class="intro-btn intro-ok" onclick="closeIntro()">我已阅读 ✓</button>
 </div>
 </div>
 </div></div>
@@ -1745,20 +1751,31 @@ document.getElementById('hotOv').addEventListener('click',e=>{if(e.target===e.cu
 
 
 
-// ====== FIRST-TIME INTRO ======
-const INTRO_KEY='lb_intro_seen';
+// ====== INTRO POPUP (every 5 visits, or never) ======
+const INTRO_COUNT='lb_intro_count';
+const INTRO_DISMISSED='lb_intro_dismissed';
 function showIntroIfNew(){
-  try{
-    if(localStorage.getItem(INTRO_KEY)==='1')return;
-  }catch{}
-  // Wait for splash to finish
-  setTimeout(()=>{
-    document.getElementById('introOv').classList.add('show');
-  },2200);
+  // Check if user chose to never show again
+  try{if(localStorage.getItem(INTRO_DISMISSED)==='1')return}catch{}
+  
+  let count=0;
+  try{count=parseInt(localStorage.getItem(INTRO_COUNT)||'0')}catch{}
+  count++;
+  try{localStorage.setItem(INTRO_COUNT,String(count))}catch{}
+  // Show on 1st visit, and every 5 visits after (1, 6, 11, 16...)
+  if(count===1||(count-1)%5===0){
+    setTimeout(()=>{
+      document.getElementById('introOv').classList.add('show');
+    },2200);
+  }
 }
 function closeIntro(){
   document.getElementById('introOv').classList.remove('show');
-  try{localStorage.setItem(INTRO_KEY,'1')}catch{}
+}
+function dismissIntroForever(){
+  try{localStorage.setItem(INTRO_DISMISSED,'1')}catch{}
+  document.getElementById('introOv').classList.remove('show');
+  toast('已关闭提醒，如需再看请点 📖 使用指南');
 }
 // Allow closing by clicking outside
 document.getElementById('introOv').addEventListener('click',e=>{
