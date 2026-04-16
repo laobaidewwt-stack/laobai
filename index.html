@@ -384,8 +384,8 @@ body.dark .fav-chip{background:rgba(220,60,60,.08);border-color:rgba(220,60,60,.
 .fav-chip:hover{border-color:#e88;color:#c33}
 
 /* ====== VISIT COUNTER ====== */
-.visit-count{font-size:10px;color:var(--txt5);text-align:center;padding:4px 0}
-.visit-count b{color:var(--txt4)}
+.visit-count{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--txt4);background:var(--mint);padding:2px 8px;border-radius:8px;margin-left:6px}
+.visit-count b{color:var(--green);font-weight:600}
 
 
 /* ====== HELP GUIDE ====== */
@@ -645,7 +645,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <div class="wrap">
   <div class="hd">
     <div class="hd-av">🏠</div>
-    <div class="hd-txt"><div class="hd-name">老白的小窝</div><div class="hd-sub"><span id="totalN">0</span> 部收录 · 持续更新 <button class="help-btn" onclick="openHelp()">📖 使用指南</button></div></div>
+    <div class="hd-txt"><div class="hd-name">老白的小窝</div><div class="hd-sub"><span id="totalN">0</span> 部收录<span class="visit-count" id="visitCount"></span><br><button class="help-btn" onclick="openHelp()" style="margin-top:4px">📖 使用指南</button></div></div>
     <a href="https://weibo.com/u/5974858251" target="_blank" class="hd-follow">+ 关注</a>
   </div>
   <div class="search"><div class="s-box">
@@ -736,7 +736,6 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   <div class="feed" id="feed"></div>
   <div class="loader" id="loader"><span class="loader-dot"></span><span class="loader-dot"></span><span class="loader-dot"></span></div>
   
-  <div class="visit-count" id="visitCount"></div>
   <div class="ft"><a href="https://weibo.com/u/5974858251" target="_blank">@老白的窝窝头123</a><p>资源来自网络 · 仅供学习交流</p></div>
 </div>
 <button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
@@ -1324,10 +1323,10 @@ async function trackVisit(){
     if(data&&data[0]){
       const newCount=(data[0].reports||0)+1;
       await supa.from('resources').update({reports:newCount}).eq('cat','__visits__');
-      document.getElementById('visitCount').innerHTML='累计访问 <b>'+newCount+'</b> 次';
+      document.getElementById('visitCount').innerHTML='👁 <b>'+newCount+'</b>';
     }else{
       await supa.from('resources').insert({name:'visits',cat:'__visits__',baidu:'',uc:'',kk:'',keywords:'',episode:'',date:'',reports:1});
-      document.getElementById('visitCount').innerHTML='累计访问 <b>1</b> 次';
+      document.getElementById('visitCount').innerHTML='👁 <b>1</b>';
     }
   }catch{}
 }
