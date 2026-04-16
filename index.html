@@ -639,6 +639,34 @@ body.dark .maint-toggle{background:var(--card)}
 .maint-switch.on::after{left:24px}
 .maint-switch.on+.maint-toggle-label{color:#dc2626}
 
+
+/* ====== FIRST-TIME GUIDE POPUP ====== */
+.intro-ov{display:none;position:fixed;inset:0;background:rgba(17,17,17,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:500;align-items:center;justify-content:center;padding:20px}
+.intro-ov.show{display:flex;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.intro-box{background:#fff;border-radius:20px;max-width:340px;width:100%;max-height:85vh;overflow-y:auto;animation:introPop .4s cubic-bezier(.16,1,.3,1);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+body.dark .intro-box{background:var(--card)}
+@keyframes introPop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.intro-hd{background:linear-gradient(135deg,#1b8f58,#25c06e);padding:24px 20px;text-align:center;color:#fff;border-radius:20px 20px 0 0;position:relative}
+.intro-hd-icon{font-size:44px;margin-bottom:6px;animation:introIcon 2s ease-in-out infinite}
+@keyframes introIcon{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.intro-hd h2{font-family:var(--fd);font-size:24px;letter-spacing:2px;margin-bottom:4px}
+.intro-hd p{font-size:12px;opacity:.85}
+.intro-body{padding:20px}
+.intro-item{display:flex;gap:10px;margin-bottom:14px;align-items:flex-start}
+.intro-item-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.intro-item-text{flex:1;font-size:13px;color:var(--txt2);line-height:1.7}
+.intro-item-text b{color:var(--green)}
+.intro-item-text .warn{color:#dc2626;font-weight:600}
+.intro-footer{padding:0 20px 20px}
+.intro-disclaimer{background:#fff4e6;border-left:3px solid #f59e0b;padding:10px 12px;border-radius:6px;margin-bottom:14px;font-size:11px;color:#8a6d1e;line-height:1.6}
+body.dark .intro-disclaimer{background:rgba(245,158,11,.1);color:#fbbf24}
+.intro-btns{display:flex;gap:8px}
+.intro-btn{flex:1;padding:11px;border-radius:14px;font-size:13px;font-weight:600;font-family:var(--f);cursor:pointer;border:none;transition:all .2s}
+.intro-later{background:#fff;color:var(--txt3);border:1px solid var(--mint2)!important}
+.intro-ok{background:var(--green);color:#fff}
+.intro-ok:hover{background:var(--green2)}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.dl{padding:10px 12px}.hd-name{font-size:17px}}
 </style>
@@ -922,6 +950,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <div class="help-card"><div class="hc-title">想看的剧没有？</div><div class="hc-desc">微博私信老白，尽量找资源</div></div>
 <div class="help-card"><div class="hc-title">怎么收藏网页？</div><div class="hc-desc">添加到浏览器书签，或「添加到主屏幕」</div></div>
 <div class="help-card"><div class="hc-title">「追剧」和「收藏」有什么区别？</div><div class="hc-desc">追剧 = 关注更新提醒，收藏 = 标记喜欢方便找回</div></div>
+<div class="help-card"><div class="hc-title">换手机后收藏/追剧没了？</div><div class="hc-desc">收藏和追剧的数据存在你<b>当前手机的浏览器里</b>，换手机或清除浏览器缓存就会丢失。建议固定用一个常用浏览器打开本站</div></div>
 </div>
 
 <div class="help-warn">
@@ -978,6 +1007,52 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <div id="mysubList"></div>
 <div style="text-align:center;margin-top:14px">
 <button class="btnS" style="width:100%;padding:10px;border-radius:14px" onclick="document.getElementById('mysubOv').classList.remove('show')">关闭</button>
+</div>
+</div></div>
+
+
+<div class="intro-ov" id="introOv">
+<div class="intro-box">
+<div class="intro-hd">
+  <div class="intro-hd-icon">🏠</div>
+  <h2>欢迎来到老白的小窝</h2>
+  <p>第一次来？看完再逛吧</p>
+</div>
+<div class="intro-body">
+
+<div class="intro-item">
+<div class="intro-item-num">1</div>
+<div class="intro-item-text"><b>怎么找剧？</b>搜索框输入剧名，或点分类标签筛选</div>
+</div>
+
+<div class="intro-item">
+<div class="intro-item-num">2</div>
+<div class="intro-item-text"><b>怎么下载？</b>点资源下方的 <b style="color:#2563eb">B百度</b>／<b style="color:#b45309">UC</b>／<b style="color:#16854a">K夸克</b> 按钮跳转网盘，需要先装网盘 App</div>
+</div>
+
+<div class="intro-item">
+<div class="intro-item-num">3</div>
+<div class="intro-item-text"><b>网页打不开？</b>换网络（WiFi/4G切换）或换浏览器（夸克/Chrome/QQ浏览器）</div>
+</div>
+
+<div class="intro-item">
+<div class="intro-item-num">4</div>
+<div class="intro-item-text"><b>收藏/追剧只在本机有效</b>，换手机或清缓存会丢失，建议固定用一个浏览器</div>
+</div>
+
+<div class="intro-item">
+<div class="intro-item-num">5</div>
+<div class="intro-item-text"><b>链接失效？</b>点资源底部「⚠️ 链接失效？点此反馈」，老白会修</div>
+</div>
+
+</div>
+<div class="intro-footer">
+<div class="intro-disclaimer">
+⚠️ <b>重要</b>：所有资源<b>仅作参考 · 仅作私藏 · 请勿传播</b>，请于24小时内删除。资源来自网络，侵权请联系删除。
+</div>
+<div class="intro-btns">
+<button class="intro-btn intro-ok" onclick="closeIntro()">知道了 ✓</button>
+</div>
 </div>
 </div></div>
 
@@ -1669,6 +1744,27 @@ document.getElementById('hotOv').addEventListener('click',e=>{if(e.target===e.cu
 
 
 
+
+// ====== FIRST-TIME INTRO ======
+const INTRO_KEY='lb_intro_seen';
+function showIntroIfNew(){
+  try{
+    if(localStorage.getItem(INTRO_KEY)==='1')return;
+  }catch{}
+  // Wait for splash to finish
+  setTimeout(()=>{
+    document.getElementById('introOv').classList.add('show');
+  },2200);
+}
+function closeIntro(){
+  document.getElementById('introOv').classList.remove('show');
+  try{localStorage.setItem(INTRO_KEY,'1')}catch{}
+}
+// Allow closing by clicking outside
+document.getElementById('introOv').addEventListener('click',e=>{
+  if(e.target===e.currentTarget)closeIntro();
+});
+
 // ====== MY SUBS PAGE ======
 function openMySubs(){
   const subs=getSubs();
@@ -2092,7 +2188,7 @@ async function loadData(){
   }
   document.getElementById('loadingScreen').classList.add('hide');
   setTimeout(()=>document.getElementById('loadingScreen').style.display='none',500);
-  render();renderLt();renderRc();renderCatEditor();renderStats();renderFavs();loadAnnounce();trackVisit();checkSubNotif();loadMaintenance();
+  render();renderLt();renderRc();renderCatEditor();renderStats();renderFavs();loadAnnounce();trackVisit();checkSubNotif();loadMaintenance();showIntroIfNew();
 }
 
 // Recent
