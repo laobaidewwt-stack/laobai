@@ -601,6 +601,32 @@ body.dark .mysub-item{background:var(--card)}
 .feat-btn .notif-dot{display:none;width:7px;height:7px;border-radius:50%;background:#f43f5e;margin-left:-2px}
 .feat-btn .notif-dot.show{display:inline-block;animation:dp 2s ease-in-out infinite}
 
+
+/* ====== MAINTENANCE MODE ====== */
+.maint-page{position:fixed;inset:0;z-index:998;background:linear-gradient(178deg,#d6eef8 0%,#e2f1ec 30%,#eef6f0 55%,#f4f8f5 75%);display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;text-align:center;overflow-y:auto}
+.maint-page.show{display:flex}
+body.dark .maint-page{background:linear-gradient(178deg,#0a1510 0%,#0f1a14 30%,#0f1a14 100%)}
+.maint-icon{font-size:64px;margin-bottom:20px;animation:maintFloat 3s ease-in-out infinite}
+@keyframes maintFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-10px) rotate(5deg)}}
+.maint-title{font-family:var(--fd);font-size:32px;color:var(--green);margin-bottom:12px;letter-spacing:2px}
+.maint-text{font-size:14px;color:var(--txt2);line-height:1.8;margin-bottom:30px;max-width:280px}
+.maint-text b{color:var(--green)}
+.maint-weibo{padding:10px 24px;border-radius:22px;background:var(--green);color:#fff;border:none;font-size:13px;font-weight:600;font-family:var(--f);cursor:pointer;text-decoration:none;display:inline-block;box-shadow:0 4px 16px rgba(27,143,88,.2);transition:all .2s}
+.maint-weibo:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(27,143,88,.25)}
+.maint-hint{position:absolute;bottom:20px;font-size:10px;color:var(--txt5);opacity:.5}
+
+/* Admin maintenance toggle */
+.maint-toggle{display:none;margin:0 16px 10px;background:#fff;border-radius:var(--r2);padding:10px 12px;box-shadow:var(--sh);border:1px solid rgba(27,143,88,.04);align-items:center;gap:10px}
+body.admin .maint-toggle{display:flex}
+body.dark .maint-toggle{background:var(--card)}
+.maint-toggle-label{flex:1;font-size:12px;color:var(--txt2)}
+.maint-toggle-label b{color:var(--green)}
+.maint-switch{position:relative;width:46px;height:24px;background:#ddd;border-radius:12px;cursor:pointer;transition:all .25s;flex-shrink:0}
+.maint-switch.on{background:#dc2626}
+.maint-switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:all .25s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.maint-switch.on::after{left:24px}
+.maint-switch.on+.maint-toggle-label{color:#dc2626}
+
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.dl{padding:10px 12px}.hd-name{font-size:17px}}
 </style>
@@ -619,6 +645,15 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 </div>
 
 <button class="dark-toggle" id="darkBtn" onclick="toggleDark()">🌙</button>
+
+
+<div class="maint-page" id="maintPage">
+  <div class="maint-icon">🏠</div>
+  <div class="maint-title">小窝正在建设中</div>
+  <div class="maint-text">老白正在给大家整理新资源<br>请稍后再来，谢谢理解 <b>❤️</b></div>
+  <a class="maint-weibo" href="https://weibo.com/u/5974858251" target="_blank">关注微博 @老白的窝窝头123</a>
+  <div class="maint-hint" id="maintHint">🔒</div>
+</div>
 
 <div class="welcome" id="welcomeSplash">
   <div class="w-particle"></div><div class="w-particle"></div><div class="w-particle"></div>
@@ -673,6 +708,12 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
   </div>
 
   
+  
+  <div class="maint-toggle">
+    <div class="maint-switch" id="maintSwitch" onclick="toggleMaintenance()"></div>
+    <div class="maint-toggle-label"><b id="maintLabel">维护模式</b>：开启后粉丝将看不到资源</div>
+  </div>
+
   <div class="admin-tools">
     <div class="at-row">
       <button class="at-btn" onclick="openQuickPaste()">📋 快捷粘贴</button>
@@ -1333,6 +1374,79 @@ async function trackVisit(){
 
 
 
+
+// ====== MAINTENANCE MODE ======
+const MAINT_KEY='__maintenance__';
+let maintStatus=false;
+
+async function loadMaintenance(){
+  try{
+    const {data}=await supa.from('resources').select('name').eq('cat',MAINT_KEY).limit(1);
+    if(data&&data[0]&&data[0].name==='1'){
+      maintStatus=true;
+      // Show maint page ONLY if not admin
+      if(!isAdmin()){
+        document.getElementById('maintPage').classList.add('show');
+      }
+      const sw=document.getElementById('maintSwitch');
+      if(sw)sw.classList.add('on');
+      const lbl=document.getElementById('maintLabel');
+      if(lbl)lbl.textContent='维护中';
+    }
+  }catch{}
+}
+
+async function toggleMaintenance(){
+  maintStatus=!maintStatus;
+  // Save to Supabase
+  await supa.from('resources').delete().eq('cat',MAINT_KEY);
+  if(maintStatus){
+    await supa.from('resources').insert({name:'1',cat:MAINT_KEY,baidu:'',uc:'',kk:'',keywords:'',episode:'',date:''});
+  }
+  
+  const sw=document.getElementById('maintSwitch');
+  const lbl=document.getElementById('maintLabel');
+  if(maintStatus){
+    sw.classList.add('on');
+    lbl.textContent='维护中';
+    toast('🔒 维护模式已开启，粉丝将看不到资源');
+  }else{
+    sw.classList.remove('on');
+    lbl.textContent='维护模式';
+    toast('🔓 维护模式已关闭，网站恢复正常');
+  }
+}
+
+// Let admin enter via secret code even during maintenance
+// The existing search SECRET listener handles this - when admin enters,
+// we need to hide the maint page
+const _origEnterAdmin=enterAdmin;
+enterAdmin=function(){
+  _origEnterAdmin();
+  document.getElementById('maintPage').classList.remove('show');
+};
+
+// Add hidden exit from maintenance page - click the 🔒 icon
+document.addEventListener('DOMContentLoaded',()=>{
+  const hint=document.getElementById('maintHint');
+  if(hint){
+    let clickCount=0;
+    hint.addEventListener('click',()=>{
+      clickCount++;
+      if(clickCount>=5){
+        clickCount=0;
+        // Show search box briefly so admin can enter secret
+        document.getElementById('maintPage').classList.remove('show');
+        document.getElementById('si').focus();
+        toast('请在搜索框输入暗号');
+        setTimeout(()=>{
+          if(!isAdmin())document.getElementById('maintPage').classList.add('show');
+        },15000);
+      }
+    });
+  }
+});
+
 // ====== BILIBILI-STYLE SPLASH ======
 setTimeout(()=>{
   const w=document.getElementById('welcomeSplash');
@@ -1395,7 +1509,7 @@ function calNav(dir){
 }
 
 function renderCalendar(selectedDate){
-  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__maintenance__');
   document.getElementById('calTitle').textContent=calYear+'年'+(calMonth+1)+'月';
   
   const firstDay=new Date(calYear,calMonth,1).getDay();
@@ -1460,7 +1574,7 @@ function openRandom(){
 document.getElementById('randomOv').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('show')});
 
 function doRandom(){
-  const pool=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  const pool=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__maintenance__');
   if(!pool.length){toast('没有资源');return}
   const r=pool[Math.floor(Math.random()*pool.length)];
   
@@ -1483,7 +1597,7 @@ function doRandom(){
 
 // ====== HOT RANKING ======
 function openHot(){
-  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__maintenance__');
   
   // Calculate "heat score" from favorites count (check all users' favs is impossible, so use reports as proxy + random boost for variety)
   // Better approach: we count how many features a resource has (links, episode, recent date)
@@ -1594,7 +1708,7 @@ function setSort(m){
 
 // ====== STATS ======
 function renderStats(){
-  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');document.getElementById('stTotal').textContent=realRes.length;
+  const realRes=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__maintenance__');document.getElementById('stTotal').textContent=realRes.length;
   const now=Date.now();
   const d7=realRes.filter(r=>r.date&&(now-new Date(r.date).getTime()<7*864e5)).length;
   document.getElementById('st7d').textContent=d7;
@@ -1873,7 +1987,7 @@ async function loadData(){
   }
   document.getElementById('loadingScreen').classList.add('hide');
   setTimeout(()=>document.getElementById('loadingScreen').style.display='none',500);
-  render();renderLt();renderRc();renderCatEditor();renderStats();renderFavs();loadAnnounce();trackVisit();checkSubNotif();
+  render();renderLt();renderRc();renderCatEditor();renderStats();renderFavs();loadAnnounce();trackVisit();checkSubNotif();loadMaintenance();
 }
 
 // Recent
@@ -1887,7 +2001,7 @@ function sf(t){document.getElementById('si').value=t;q=t;shown=0;render();updX()
 function isNew(d){if(!d)return false;return Date.now()-new Date(d).getTime()<3*864e5}
 
 function filt(){
-  let l=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__');
+  let l=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__maintenance__');
   if(cat!=='all')l=l.filter(r=>r.cat===cat);
   if(q.trim()){const s=q.trim().toLowerCase();l=l.filter(r=>r.name.toLowerCase().includes(s)||(r.keywords&&r.keywords.toLowerCase().includes(s))||r.cat.toLowerCase().includes(s))}
   // Sort
@@ -1903,7 +2017,7 @@ function hl(t,qu){if(!qu||!qu.trim())return h(t);const s=h(t);const e=qu.trim().
 
 function render(ap){
   const f=filt(),tot=f.length;
-  document.getElementById('totalN').textContent=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__').length;
+  document.getElementById('totalN').textContent=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__maintenance__').length;
   const el=document.getElementById('feed');
   if(!ap){shown=0;el.innerHTML='';}
   if(!tot&&!ap){el.innerHTML='<div class="empty"><p style="font-size:24px">🍃</p><p>没有找到匹配资源</p></div>';document.getElementById('loader').classList.remove('show');return}
@@ -1932,7 +2046,7 @@ function render(ap){
 
 // Latest
 function renderLt(){
-  const s=[...res].filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,10);
+  const s=[...res].filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__maintenance__').sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,10);
   if(!s.length){document.getElementById('ltBox').style.display='none';return}
   document.getElementById('ltDate').textContent=s[0].date||'';
   document.getElementById('ltScroll').innerHTML=s.map(r=>{
