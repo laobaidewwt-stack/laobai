@@ -388,6 +388,18 @@ body.dark .fav-chip{background:rgba(220,60,60,.08);border-color:rgba(220,60,60,.
 .visit-count b{color:var(--green);font-weight:600}
 
 
+
+/* ====== HELP TIP BOX ====== */
+.help-tip-top{background:linear-gradient(135deg,#fff4e6,#ffe8cc);border:2px solid #ffa94d;border-radius:12px;padding:14px 16px;margin-bottom:18px;position:relative}
+.help-tip-top::before{content:'📌';position:absolute;top:-10px;left:14px;font-size:20px;background:#fff;padding:0 6px}
+.help-tip-top h4{font-size:14px;font-weight:700;color:#d97706;margin-bottom:8px}
+.help-tip-top p{font-size:12px;color:#78350f;line-height:1.8;margin-bottom:4px}
+.help-tip-top b{color:#dc2626}
+.help-tip-top .step-num{display:inline-block;width:18px;height:18px;border-radius:50%;background:#f59e0b;color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:18px;margin-right:4px;flex-shrink:0}
+body.dark .help-tip-top{background:linear-gradient(135deg,#2a1810,#3a2410);border-color:#f59e0b}
+body.dark .help-tip-top h4{color:#fbbf24}
+body.dark .help-tip-top p{color:#fcd34d}
+
 /* ====== HELP GUIDE ====== */
 .help-btn{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:12px;background:var(--mint);border:1px solid var(--mint2);font-size:10px;color:var(--green);cursor:pointer;font-family:var(--f);font-weight:500;transition:all .15s;margin-left:6px}
 .help-btn:hover{background:var(--mint2)}
@@ -854,6 +866,15 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 <h2>🏠 老白的小窝</h2>
 <div class="help-sub">使用指南 · 仅作参考 · 仅作私藏</div>
 
+<div class="help-tip-top">
+<h4>⚠️ 链接打不开？先看这里！</h4>
+<p><span class="step-num">1</span>点击网盘按钮后，手机会跳转到<b>网盘 App</b>（百度网盘/UC浏览器/夸克），如果没装请先去应用商店下载</p>
+<p><span class="step-num">2</span>跳转后需要在网盘里<b>「保存到我的网盘」</b>，才能观看</p>
+<p><span class="step-num">3</span>如果提示<b>失效</b>或<b>404</b>，可能是被和谐了，请点资源下方的「⚠️ 链接失效？点此反馈」</p>
+<p><span class="step-num">4</span>尝试换一个网盘再点（比如百度不行就点夸克）</p>
+<p><span class="step-num">5</span>多等几秒或刷新页面，可能是网络问题</p>
+</div>
+
 <div class="help-sec">
 <h3>🔎 怎么找剧</h3>
 <div class="help-card"><div class="hc-title">搜索</div><div class="hc-desc">输入剧名或关键词，命中内容会绿色高亮</div></div>
@@ -1032,14 +1053,13 @@ async function saveR(){
     else if(ln.includes('\u5938\u514b'))d.kk=l.url;
   });
   if(_editId){
-    // Update existing
-    const idx=res.findIndex(r=>r.id===_editId);
-    const origDate=idx>=0?res[idx].date:d.date;
-    d.date=origDate;
+    // Update existing - refresh date to today so subscribers get notified
+    d.date=new Date().toISOString().slice(0,10);
     const {error}=await supa.from('resources').update(d).eq('id',_editId);
     if(error){toast('更新失败: '+error.message);return}
+    const idx=res.findIndex(r=>r.id===_editId);
     if(idx>=0){d.id=_editId;res[idx]=d}
-    toast('已更新 ✓');
+    toast('已更新 ✓ 追剧粉丝将收到提醒');
   }else{
     // Insert new
     const {data:inserted,error}=await supa.from('resources').insert(d).select();
@@ -1856,65 +1876,61 @@ function removeCat(c){
 
 // ====== DETECT SHARE FORMAT (百度/夸克/UC/阿里 网盘分享格式) ======
 function detectShareFormat(text){
-  // Returns {name, links: [{name, url}]} or null
   const result={name:'',links:[]};
   
-  // 百度网盘: "通过百度网盘分享的文件：<FILENAME>"
-  // Followed by: "链接：<URL>"
-  const baiduFileMatch=text.match(/通过百度网盘分享的文件[：:]\s*([^\n\r]+?)(?:\s*\.\.\.|[\n\r])/);
-  if(baiduFileMatch){
-    result.name=baiduFileMatch[1].trim();
+  // More flexible matching - try multiple patterns
+  // Pattern 1: "通过X网盘分享的文件：FILENAME"
+  let m=text.match(/通过[^\n]*?网盘分享的文件[：:]\s*([^\n\r]+)/);
+  if(m)result.name=m[1];
+  
+  // Pattern 2: "我用X网盘分享了「FILENAME」"
+  if(!result.name){
+    m=text.match(/我用[^\n]*?网盘分享了[「\[【]([^」\]】\n]+)[」\]】]/);
+    if(m)result.name=m[1];
   }
   
-  // 夸克网盘: "我用夸克网盘分享了「<FILENAME>」" or "通过夸克网盘分享的文件：<FILENAME>"
-  const quarkFileMatch=text.match(/(?:通过夸克网盘分享的文件|我用夸克网盘分享了)[：:「]\s*([^」\n\r]+?)(?:」|\s*\.\.\.|[\n\r])/);
-  if(!result.name&&quarkFileMatch){
-    result.name=quarkFileMatch[1].trim();
+  // Pattern 3: Just "分享的文件：FILENAME"
+  if(!result.name){
+    m=text.match(/分享的?文件[：:]\s*([^\n\r]+)/);
+    if(m)result.name=m[1];
   }
   
-  // UC网盘: "通过UC网盘分享的文件：<FILENAME>" or similar
-  const ucFileMatch=text.match(/通过UC网盘分享的文件[：:]\s*([^\n\r]+?)(?:\s*\.\.\.|[\n\r])/i);
-  if(!result.name&&ucFileMatch){
-    result.name=ucFileMatch[1].trim();
+  // Pattern 4: fallback to 《》 title
+  if(!result.name){
+    m=text.match(/《([^》]+)》/);
+    if(m)result.name='《'+m[1]+'》';
   }
   
-  // 阿里云盘: 分享文件格式
-  const aliFileMatch=text.match(/(?:阿里云盘|alipan).*?分享的?(?:文件)?[：:「]?\s*([^」\n\r]+?)(?:」|\s*\.\.\.|[\n\r])/);
-  if(!result.name&&aliFileMatch){
-    result.name=aliFileMatch[1].trim();
-  }
-  
-  // Find all URLs and categorize them
-  const urlReg=/(https?:\/\/[^\s\u3000\u300c\u300d]+)/g;
+  // Find all URLs - improved regex to handle Chinese URL endings better
+  const urlReg=/https?:\/\/[\w\-\.]+(?:\/[\w\-\.\/?#=&%_\+]*)?/g;
   const urls=text.match(urlReg);
   if(urls){
     for(const url of urls){
       const u=url.toLowerCase();
       let lname='';
-      if(u.includes('baidu')||u.includes('pan.baidu'))lname='百度';
-      else if(u.includes('quark')||u.includes('pan.quark'))lname='夸克';
+      if(u.includes('baidu'))lname='百度';
+      else if(u.includes('quark'))lname='夸克';
       else if(u.includes('uc.cn')||u.includes('drive.uc'))lname='UC';
       else if(u.includes('alipan')||u.includes('aliyun'))lname='阿里';
       else if(u.includes('xunlei'))lname='迅雷';
       else if(u.includes('115'))lname='115';
-      if(lname)result.links.push({name:lname,url});
+      else if(u.includes('t.cn'))continue;// skip short links in share format
+      if(lname)result.links.push({name:lname,url:url.trim()});
     }
   }
   
-  // Clean up the name - remove common suffixes
+  // Clean up the name
   if(result.name){
-    result.name=result.name.replace(/\s*\.\.\.$/,'').replace(/[\u3010\u3011\[\]]/g,'').trim();
-    // Remove 【xxx会员xxx】 prefixes if present
-    result.name=result.name.replace(/^【[^】]*】\s*/,'').trim();
+    result.name=result.name
+      .replace(/\s*\.\.\.$/g,'')// trailing ...
+      .replace(/\s*…$/g,'')// Chinese ellipsis
+      .replace(/\s*复制这段内容.*$/g,'')// remove "复制这段..."
+      .replace(/^【[^】]*】\s*/,'')// remove 【...】 prefix
+      .trim();
   }
   
-  // Only return if we found both name and links
-  if(result.name&&result.links.length)return result;
-  if(result.links.length&&!result.name){
-    // Fallback: if there are links but no name, check if text has 《》
-    const bookmark=text.match(/《([^》]+)》/);
-    if(bookmark){result.name=bookmark[0];return result}
-  }
+  // Return only if we found links AND (name or book-title)
+  if(result.links.length&&result.name)return result;
   return null;
 }
 
