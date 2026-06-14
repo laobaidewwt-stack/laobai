@@ -1090,7 +1090,8 @@ function exitAdmin(){try{sessionStorage.removeItem(AK)}catch{};document.body.cla
 
 // Listen for secret code in search box
 const _si=document.getElementById('si');
-_si.addEventListener('input',function(){
+_si.addEventListener('input',function(e){
+  if(e.isComposing)return;
   if(this.value===SECRET){
     this.value='';q='';render();updX();
     if(isAdmin()){exitAdmin()}else{enterAdmin()}
@@ -1666,7 +1667,7 @@ function renderCalendar(selectedDate){
     const items=updateDates[day]||[];
     if(items.length){
       detail.innerHTML=`<div class="cal-detail-hd">${selectedDate} 更新了 ${items.length} 部</div>`+
-        items.map(r=>`<div class="cal-item" onclick="document.getElementById('calOv').classList.remove('show');sf('${r.name.slice(0,20).replace(/'/g,"\\'")}')"><span class="ci-flag">${EM[r.cat]||'🎬'}</span><span class="ci-name">${r.name}</span>${r.episode?`<span class="ci-ep">${r.episode}</span>`:''}</div>`).join('');
+        items.map(r=>`<div class="cal-item" onclick="document.getElementById('calOv').classList.remove('show');sf('${(r.name||'').slice(0,20).replace(/'/g,"\\'")}')"><span class="ci-flag">${EM[r.cat]||'🎬'}</span><span class="ci-name">${r.name}</span>${r.episode?`<span class="ci-ep">${r.episode}</span>`:''}</div>`).join('');
     }else{
       detail.innerHTML=`<div class="cal-detail-hd">${selectedDate} 无更新</div>`;
     }
@@ -1702,7 +1703,7 @@ function doRandom(){
   document.getElementById('randomEp').textContent=r.episode||'';
   document.getElementById('randomGoBtn').onclick=function(){
     document.getElementById('randomOv').classList.remove('show');
-    sf(r.name.slice(0,20));
+    sf((r.name||'').slice(0,20));
   };
 }
 
@@ -1737,7 +1738,7 @@ function openHot(){
   
   document.getElementById('hotList').innerHTML=top20.map((r,i)=>{
     const rankCls=i===0?'r1':i===1?'r2':i===2?'r3':'rn';
-    return`<div class="hot-item" onclick="document.getElementById('hotOv').classList.remove('show');sf('${r.name.slice(0,20).replace(/'/g,"\\'")}')">
+    return`<div class="hot-item" onclick="document.getElementById('hotOv').classList.remove('show');sf('${(r.name||'').slice(0,20).replace(/'/g,"\\'")}')">
 <div class="hot-rank ${rankCls}">${i+1}</div>
 <div class="hot-info"><div class="hot-name">${(EM[r.cat]||'🎬')+' '+r.name}</div><div class="hot-meta">${r.cat}${r.episode?' · '+r.episode:''}</div></div>
 <div class="hot-score">${r.score}🔥</div></div>`}).join('');
@@ -1808,8 +1809,8 @@ ${r.episode?'<span class="mysub-ep">'+r.episode+'</span>':''}
 </div>
 </div>
 <div class="mysub-actions">
-<button class="mysub-go" onclick="document.getElementById('mysubOv').classList.remove('show');sf('${r.name.slice(0,20).replace(/'/g,"\\'")}')">查看</button>
-<button class="mysub-del" onclick="toggleSub(${r.id},'${r.name.slice(0,30).replace(/'/g,"\\'")}');openMySubs()">取消</button>
+<button class="mysub-go" onclick="document.getElementById('mysubOv').classList.remove('show');sf('${(r.name||'').slice(0,20).replace(/'/g,"\\'")}')">查看</button>
+<button class="mysub-del" onclick="toggleSub(${r.id},'${(r.name||'').slice(0,30).replace(/'/g,"\\'")}');openMySubs()">取消</button>
 </div></div>`}).filter(Boolean).join('');
   
   document.getElementById('mysubOv').classList.add('show');
@@ -2213,7 +2214,7 @@ const RK='lb_rc';
 function getRc(){try{return JSON.parse(localStorage.getItem(RK)||'[]')}catch{return[]}}
 function addRc(n){let r=getRc();r=r.filter(x=>x!==n);r.unshift(n);if(r.length>10)r=r.slice(0,10);try{localStorage.setItem(RK,JSON.stringify(r))}catch{};renderRc()}
 function clrRc(){try{localStorage.removeItem(RK)}catch{};renderRc()}
-function renderRc(){const r=getRc(),b=document.getElementById('rcBox'),l=document.getElementById('rcList');if(!r.length){b.classList.remove('show');return}b.classList.add('show');l.innerHTML=r.map(n=>`<div class="rc-chip" onclick="sf('${hA(n.slice(0,20))}')">${h(n.slice(0,18))}</div>`).join('')}
+function renderRc(){const r=getRc(),b=document.getElementById('rcBox'),l=document.getElementById('rcList');if(!r.length){b.classList.remove('show');return}b.classList.add('show');l.innerHTML=r.map(n=>`<div class="rc-chip" onclick="sf('${hA((n||'').slice(0,20))}')">${h((n||'').slice(0,18))}</div>`).join('')}
 function sf(t){document.getElementById('si').value=t;q=t;shown=0;render();updX()}
 
 function isNew(d){if(!d)return false;return Date.now()-new Date(d).getTime()<3*864e5}
@@ -2242,15 +2243,15 @@ function render(ap){
   const sl=f.slice(shown,shown+B);
   el.insertAdjacentHTML('beforeend',sl.map((r,i)=>{
     let lks='';
-    if(r.baidu)lks+=`<a class="dl dl-b" href="${hA(r.baidu)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-b">B</div><div class="dl-text"><div class="dl-name">百度</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
-    if(r.uc)lks+=`<a class="dl dl-u" href="${hA(r.uc)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-u">UC</div><div class="dl-text"><div class="dl-name">UC</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
-    if(r.kk)lks+=`<a class="dl dl-k" href="${hA(r.kk)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-k">K</div><div class="dl-text"><div class="dl-name">夸克</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
+    if(r.baidu)lks+=`<a class="dl dl-b" href="${hA(r.baidu)}" target="_blank" onclick="addRc('${hA((r.name||'').slice(0,30))}')"><div class="dl-badge db-b">B</div><div class="dl-text"><div class="dl-name">百度</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
+    if(r.uc)lks+=`<a class="dl dl-u" href="${hA(r.uc)}" target="_blank" onclick="addRc('${hA((r.name||'').slice(0,30))}')"><div class="dl-badge db-u">UC</div><div class="dl-text"><div class="dl-name">UC</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
+    if(r.kk)lks+=`<a class="dl dl-k" href="${hA(r.kk)}" target="_blank" onclick="addRc('${hA((r.name||'').slice(0,30))}')"><div class="dl-badge db-k">K</div><div class="dl-text"><div class="dl-name">夸克</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
     if(r.links&&Array.isArray(r.links)){r.links.forEach(l=>{
       const ln=(l.name||'').toLowerCase();
       if((ln.includes('百度')||ln==='bd')&&r.baidu)return;
       if(ln==='uc'&&r.uc)return;
       if((ln.includes('夸克')||ln==='kk')&&r.kk)return;
-      if(l.url)lks+=`<a class="dl dl-k" href="${hA(l.url)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-x">${h(l.name.charAt(0))}</div><div class="dl-text"><div class="dl-name">${h(l.name)}</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`})}
+      if(l.url)lks+=`<a class="dl dl-k" href="${hA(l.url)}" target="_blank" onclick="addRc('${hA((r.name||'').slice(0,30))}')"><div class="dl-badge db-x">${h(l.name.charAt(0))}</div><div class="dl-text"><div class="dl-name">${h(l.name)}</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`})}
     if(!lks)lks='<div class="no-dl">暂无链接</div>';
     const nw=isNew(r.date)?'<span class="c-new">NEW</span>':'';
     return`<div class="card" style="animation:fadeUp .3s var(--ease) ${i*0.025}s both"><div class="c-top"><div class="c-check" data-id="${r.id}" onclick="toggleBatchItem(${r.id})"></div><span class="c-flag">${EM[r.cat]||'🎬'}</span><div class="c-body"><div class="c-title">${hl(r.name,q)}</div><div class="c-row"><span class="c-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span>${r.date?`<span class="c-date">${r.date}</span>`:''}${nw}${r.pinned?'<span class="c-pin">📌 置顶</span>':''}${r.episode?`<span class="c-ep">${h(r.episode)}</span>`:''}${isSubUpdated(r.id,r.date)?'<span class="sub-badge">有更新</span>':''}</div></div><button class="sub-btn ${isSub(r.id)?'on':''}" onclick="event.stopPropagation();toggleSub(${r.id},'${hA(r.name)}')">${isSub(r.id)?'追更中':'+ 追剧'}</button><button class="fav-btn" onclick="event.stopPropagation();toggleFav(${r.id},'${hA(r.name)}')" title="收藏">${isFav(r.id)?'❤️':'🤍'}</button></div><div class="c-dl">${lks}</div>
@@ -2272,7 +2273,7 @@ function renderLt(){
     if(r.baidu)lk+=`<a class="ltl ltl-b" href="${hA(r.baidu)}" target="_blank" onclick="event.stopPropagation()">B</a>`;
     if(r.uc)lk+=`<a class="ltl ltl-u" href="${hA(r.uc)}" target="_blank" onclick="event.stopPropagation()">U</a>`;
     if(r.kk)lk+=`<a class="ltl ltl-k" href="${hA(r.kk)}" target="_blank" onclick="event.stopPropagation()">K</a>`;
-    return`<div class="ltc" onclick="sf('${hA(r.name.slice(0,20))}')"><div class="ltc-flag">${EM[r.cat]||'🎬'}</div><div class="ltc-name">${h(r.name)}</div><div class="ltc-bot"><span class="ltc-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span><span class="ltc-date">${r.date||''}</span></div><div class="ltc-lks">${lk}</div></div>`}).join('');
+    return`<div class="ltc" onclick="sf('${hA((r.name||'').slice(0,20))}')"><div class="ltc-flag">${EM[r.cat]||'🎬'}</div><div class="ltc-name">${h(r.name)}</div><div class="ltc-bot"><span class="ltc-tag ${TX[r.cat]||'tg-fi'}">${h(r.cat)}</span><span class="ltc-date">${r.date||''}</span></div><div class="ltc-lks">${lk}</div></div>`}).join('');
   setTimeout(updSb,300);
 }
 function slt(d){const e=document.getElementById('ltScroll');e.scrollBy({left:d*170,behavior:'smooth'})}
@@ -2283,7 +2284,19 @@ document.getElementById('ltScroll')?.addEventListener('scroll',updSb);
 let sT;window.addEventListener('scroll',()=>{clearTimeout(sT);sT=setTimeout(()=>{document.getElementById('btt').classList.toggle('show',window.scrollY>400);if(window.innerHeight+window.scrollY>=document.body.offsetHeight-300){const f=filt();if(shown<f.length)render(true)}},80)});
 
 // Search
-let st;document.getElementById('si').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{q=e.target.value;shown=0;render();updX()},180)});
+let st;
+function doSearch(val){q=val;shown=0;render();updX()}
+const siEl=document.getElementById('si');
+siEl.addEventListener('input',e=>{
+  // Skip if mid-IME-composition (Chinese/Japanese input)
+  if(e.isComposing)return;
+  clearTimeout(st);
+  st=setTimeout(()=>doSearch(siEl.value),150);
+});
+siEl.addEventListener('compositionend',e=>{
+  clearTimeout(st);
+  doSearch(siEl.value);
+});
 function updX(){document.getElementById('sx').style.display=q?'flex':'none'}
 function clrS(){document.getElementById('si').value='';q='';shown=0;render();updX()}
 
