@@ -1129,7 +1129,7 @@ async function saveR(){
   const links=collectLks();
   const d={name:n,cat:document.getElementById('fc').value,baidu:'',uc:'',kk:'',links:links,keywords:document.getElementById('fw').value.trim(),episode:document.getElementById('fep').value.trim(),date:new Date().toISOString().slice(0,10)};
   links.forEach(l=>{
-    const ln=l.name.toLowerCase();
+    const ln=(l.name||'').toLowerCase();
     if(ln.includes('\u767e\u5ea6'))d.baidu=l.url;
     else if(ln==='uc')d.uc=l.url;
     else if(ln.includes('\u5938\u514b'))d.kk=l.url;
@@ -1167,7 +1167,7 @@ function editR(id){
   if(r.kk)addLk('夸克',r.kk);
   if(r.links&&Array.isArray(r.links)){
     r.links.forEach(l=>{
-      const ln=l.name.toLowerCase();
+      const ln=(l.name||'').toLowerCase();
       if((ln.includes('\u767e\u5ea6')&&r.baidu)||(ln==='uc'&&r.uc)||(ln.includes('\u5938\u514b')&&r.kk))return;
       addLk(l.name,l.url);
     });
@@ -1225,7 +1225,7 @@ function parseMultiResources(text){
         // Check line prefix FIRST (B：, U：, K：, 百度：, etc.)
         const prefix=trimmed.split(/[：:]/)[0].trim().toUpperCase();
         for(const url of urls){
-          const u=url.toLowerCase();
+          const u=(url||'').toLowerCase();
           let lname='链接';
           // Priority 1: line prefix
           if(prefix==='B'||prefix==='BD'||prefix.includes('\u767e\u5ea6'))lname='百度';
@@ -1284,7 +1284,7 @@ async function submitQP(){
   for(const it of items){
     const d={name:it.name,cat:cat,baidu:'',uc:'',kk:'',links:it.links,keywords:'',episode:it.ep||'',date:new Date().toISOString().slice(0,10),pinned:false,reports:0};
     it.links.forEach(l=>{
-      const ln=l.name.toLowerCase();
+      const ln=(l.name||'').toLowerCase();
       if(ln.includes('\u767e\u5ea6'))d.baidu=l.url;
       else if(ln==='uc')d.uc=l.url;
       else if(ln.includes('\u5938\u514b'))d.kk=l.url;
@@ -1361,7 +1361,7 @@ function genWeibo(id){
   if(r.kk)text+='夸克：'+r.kk+'\n';
   if(r.links&&Array.isArray(r.links)){
     r.links.forEach(l=>{
-      const ln=l.name.toLowerCase();
+      const ln=(l.name||'').toLowerCase();
       if((ln.includes('\u767e\u5ea6')&&r.baidu)||(ln==='uc'&&r.uc)||(ln.includes('\u5938\u514b')&&r.kk))return;
       text+=l.name+'：'+l.url+'\n';
     });
@@ -1871,7 +1871,7 @@ function shareRes(name,r){
   if(r.uc)text+='\nUC: '+r.uc;
   if(r.kk)text+='\n夸克: '+r.kk;
   if(r.links&&Array.isArray(r.links))r.links.forEach(l=>{
-    const ln=l.name.toLowerCase();
+    const ln=(l.name||'').toLowerCase();
     if((ln.includes('\u767e\u5ea6')&&r.baidu)||(ln==='uc'&&r.uc)||(ln.includes('\u5938\u514b')&&r.kk))return;
     text+='\n'+l.name+': '+l.url;
   });
@@ -2020,7 +2020,7 @@ function detectShareFormat(text){
   const urls=text.match(urlReg);
   if(urls){
     for(const url of urls){
-      const u=url.toLowerCase();
+      const u=(url||'').toLowerCase();
       let lname='';
       if(u.includes('baidu'))lname='百度';
       else if(u.includes('quark'))lname='夸克';
@@ -2085,7 +2085,7 @@ async function pasteClipboard(){
     const urls=trimmed.match(urlReg);
     if(urls){
       for(const url of urls){
-        const u=url.toLowerCase();
+        const u=(url||'').toLowerCase();
         if(u.includes('baidu')||u.includes('pan.baidu')||u.includes('yun.baidu')){
           foundLinks.push({name:'百度',url});
         }else if(u.includes('uc.cn')||u.includes('drive.uc')){
@@ -2221,7 +2221,7 @@ function isNew(d){if(!d)return false;return Date.now()-new Date(d).getTime()<3*8
 function filt(){
   let l=res.filter(r=>r.cat!=='__announce__'&&r.cat!=='__visits__'&&r.cat!=='__maintenance__');
   if(cat!=='all')l=l.filter(r=>r.cat===cat);
-  if(q.trim()){const s=q.trim().toLowerCase();l=l.filter(r=>r.name.toLowerCase().includes(s)||(r.keywords&&r.keywords.toLowerCase().includes(s))||r.cat.toLowerCase().includes(s))}
+  if(q.trim()){const s=q.trim().toLowerCase();l=l.filter(r=>(r.name||'').toLowerCase().includes(s)||(r.keywords||'').toLowerCase().includes(s)||(r.cat||'').toLowerCase().includes(s))}
   // Sort
   if(sortMode==='name')l.sort((a,b)=>(a.name||'').localeCompare(b.name||'','zh'));
   else if(sortMode==='report')l.sort((a,b)=>(b.reports||0)-(a.reports||0));
@@ -2246,7 +2246,7 @@ function render(ap){
     if(r.uc)lks+=`<a class="dl dl-u" href="${hA(r.uc)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-u">UC</div><div class="dl-text"><div class="dl-name">UC</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
     if(r.kk)lks+=`<a class="dl dl-k" href="${hA(r.kk)}" target="_blank" onclick="addRc('${hA(r.name.slice(0,30))}')"><div class="dl-badge db-k">K</div><div class="dl-text"><div class="dl-name">夸克</div><div class="dl-sub">点击跳转</div></div><div class="dl-go">›</div></a>`;
     if(r.links&&Array.isArray(r.links)){r.links.forEach(l=>{
-      const ln=l.name.toLowerCase();
+      const ln=(l.name||'').toLowerCase();
       if((ln.includes('百度')||ln==='bd')&&r.baidu)return;
       if(ln==='uc'&&r.uc)return;
       if((ln.includes('夸克')||ln==='kk')&&r.kk)return;
