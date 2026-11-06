@@ -284,6 +284,7 @@ select.in{appearance:auto}
   </header>
   <div class="rule"></div>
   <div class="status" id="status" hidden></div>
+  <div class="status" id="inboxStatus" role="status" hidden></div>
   <section id="ledgerAccess" class="pw" aria-labelledby="ledgerAccessTitle" hidden style="margin-top:18px">
     <div class="paper gold stack" style="gap:12px">
       <h2 id="ledgerAccessTitle" style="font-size:22px;margin:0">第一次打开，输入钥匙</h2>
@@ -1199,6 +1200,44 @@ function supaDb(){
   };
   const COLS=['works','logs','days'],cache={works:new Map(),logs:new Map(),days:new Map()},seen={works:new Map(),logs:new Map(),days:new Map()},subs={works:[],logs:[],days:[]};
   let since=null,timer=null,loaded=false,broken=false,running=false;
+  let inboxAfter=null,inboxProblems=new Map(),inboxScanProblems=new Map();
+  function showInboxProblems(){
+    const issues=new Map([...inboxProblems,...inboxScanProblems]),el=$('#inboxStatus');
+    el.hidden=!issues.size;
+    el.textContent=issues.size?'有 '+issues.size+' 篇云端文案暂未导入，已保留，其他文案照常接收。'+[...issues].slice(0,5).map(([id,reason])=>'#'+id+'：'+reason).join('；')+(issues.size>5?'；其余待补全':'')+'。补全后会自动重试。':'';
+  }
+  function inboxInput(r){
+    if(typeof r.copy!=='string'||!r.copy.trim())return {problem:'文案为空'};
+    const parsed=parseCopy(r.copy),fan=(r.line&&parseFan(r.line))||parsed.fan;
+    const zh=normName(r.zh)||normName(fan&&fan.zh)||parsed.zh;
+    if(!zh)return {problem:'缺少剧名'};
+    const created=new Date(r.created_at);
+    if(!r.created_at||!Number.isFinite(created.getTime()))return {problem:'日期无效'};
+    return {input:{zh,en:String(r.en||''),line:String(r.line||''),copy:r.copy,date:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(created)}};
+  }
+  async function drainInbox(){
+    let count=0;
+    // Bound each poll; resume after the last examined ID, then start a new pass.
+    for(let page=0;page<5;page++){
+      const rows=await call('ledger_inbox_pending_page',{p_after:inboxAfter})||[];
+      if(!Array.isArray(rows))throw new Error('invalid inbox response');
+      for(const r of rows){
+        if(!r||!/^\d+$/.test(String(r.id))||String(r.id)===inboxAfter)throw new Error('invalid inbox cursor');
+        const id=String(r.id),entry=inboxInput(r);
+        if(entry.problem){inboxScanProblems.set(id,entry.problem);showInboxProblems()}
+        else{
+          // Never acknowledge rejected data or a failed/uncertain save.
+          await importCopy(entry.input);
+          await call('ledger_inbox_ack',{p_id:id});count++;
+          inboxProblems.delete(id);inboxScanProblems.delete(id);
+        }
+        inboxAfter=id;
+      }
+      if(rows.length<50){inboxAfter=null;inboxProblems=inboxScanProblems;inboxScanProblems=new Map();break}
+    }
+    showInboxProblems();
+    if(count)toast('收到 '+count+' 篇新文案，放进「今日文案」了');
+  }
   const snap=c=>({docs:[...cache[c].entries()].map(([id,d])=>({id,data:()=>JSON.parse(JSON.stringify(d))})),metadata:{fromCache:false,hasPendingWrites:false}});
   const fire=c=>{if(loaded&&subs[c])subs[c].forEach(s=>s.cb(snap(c)))};
   const local=(c,id,d)=>{if(!cache[c])return;if(d==null){cache[c].delete(id);seen[c].delete(id)}else{cache[c].set(id,d);seen[c].set(id,JSON.stringify(d))}fire(c)};
@@ -1213,8 +1252,7 @@ function supaDb(){
     if(running)return;running=true;
     try{const t=await pull();if(!loaded){loaded=true;COLS.forEach(fire)}else t.forEach(fire);
       if(broken){broken=false;writable=true;confirmLedgerAccess();setStatus('');render()}
-      const rows=await call('ledger_inbox_pending')||[];let count=0;for(const r of rows){await importCopy({zh:r.zh,en:r.en,line:r.line,copy:r.copy,date:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(r.created_at))});await call('ledger_inbox_ack',{p_id:r.id});count++;}
-      if(count)toast('收到 '+count+' 篇新文案，放进「今日文案」了');
+      await drainInbox();
     }catch(e){broken=true;COLS.forEach(c=>subs[c].forEach(s=>s.err&&s.err(e)))}
     running=false;clearTimeout(timer);timer=setTimeout(loop,document.hidden?60000:10000)}
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){clearTimeout(timer);loop()}});
