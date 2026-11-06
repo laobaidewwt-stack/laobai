@@ -4,9 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="作品账本">
+<meta name="apple-mobile-web-app-title" content="老白笔记">
 <meta name="format-detection" content="telephone=no">
-<title>作品账本</title>
+<title>老白笔记</title>
+<meta name="description" content="老白的作品、灵感与日常记录。">
+<meta name="theme-color" content="#173c60">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -208,6 +210,27 @@ select.in{appearance:auto}
 .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%) translateY(-12px);background:var(--p-ink);color:var(--paper);padding:8px 18px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:30;max-width:calc(100% - 32px);text-align:center;letter-spacing:.06em}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+
+/* Lao Bai's notebook: a quiet blue-hour cover, keeping the original star-chart palette. */
+.notebook-cover{position:relative;display:block;isolation:isolate;min-height:226px;margin:10px 0 0;padding:16px 25px 17px;overflow:hidden;border:1px solid rgba(220,205,165,.48);border-radius:5px 22px 5px 5px;background:radial-gradient(ellipse at 78% 18%,rgba(91,132,150,.42),transparent 61%),linear-gradient(135deg,#1d486a,#132e4a);color:#f2e4c5;box-shadow:0 9px 22px rgba(15,43,66,.15),inset 5px 0 0 rgba(6,27,44,.21)}
+.notebook-cover::before{content:"";position:absolute;inset:8px;z-index:0;border:1px solid rgba(221,207,170,.2);border-radius:2px 15px 2px 2px;pointer-events:none}
+.notebook-cover::after{content:"";position:absolute;inset:0;z-index:3;background-image:var(--grain);opacity:.42;mix-blend-mode:soft-light;pointer-events:none}
+.cover-topline{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:38px}
+.cover-edition{font-family:var(--mono);font-size:8px;letter-spacing:.19em;color:#d1c8ae;white-space:nowrap}
+.cover-tools{display:flex;gap:2px;margin-right:-11px}
+.notebook-cover .circ{width:40px;height:40px;border:0;color:#e6dbbd;font-size:20px;background:rgba(15,40,61,.12)}
+.notebook-cover .circ:hover{background:rgba(240,225,190,.12)}
+.notebook-cover .circ:focus-visible{outline-color:#f2deb0}
+.cover-copy{position:relative;z-index:2;pointer-events:none;margin-top:11px}
+.cover-kicker{display:block;font-size:10px;letter-spacing:.25em;color:#d4cbb5;margin-bottom:9px}
+.notebook-cover h1{font-size:36px;line-height:1.3;text-align:left;font-weight:500;letter-spacing:.19em;text-indent:0;color:#f5e8c9;text-shadow:0 2px 14px rgba(8,27,43,.2)}
+.cover-description{margin:9px 0 0;font-size:10px;letter-spacing:.08em;color:#d1d6cf}
+.cover-footer{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:25px;padding-top:10px;border-top:1px solid rgba(222,209,173,.22)}
+.notebook-cover .cap{margin:0;text-align:left;font-size:8px;letter-spacing:.12em;color:#d1c8ae}
+.cover-star{font-size:10px;color:#d9c18d;line-height:1}
+.cover-art{position:absolute;z-index:1;top:8px;right:1px;width:56%;height:214px;opacity:.94;pointer-events:none}
+@media (max-width:500px){.notebook-cover{min-height:211px;padding:12px 19px 14px}.cover-edition{font-size:7px;letter-spacing:.13em}.cover-copy{margin-top:8px}.notebook-cover h1{font-size:31px;letter-spacing:.12em}.cover-kicker{font-size:9px;letter-spacing:.17em}.cover-description{font-size:9px;letter-spacing:0;max-width:170px}.cover-art{width:59%;height:177px;top:30px;right:-17px;opacity:.85}.cover-footer{margin-top:24px}.notebook-cover .cap{font-size:7px;letter-spacing:.08em}.cover-tools{margin-right:-9px}}
+@media (max-width:359px){.cover-edition{font-size:6px;letter-spacing:.07em}.notebook-cover{padding-left:16px;padding-right:16px}.notebook-cover h1{font-size:28px}.cover-art{right:-27px;opacity:.72}.cover-description{max-width:148px;font-size:8px}.cover-kicker{font-size:8px}}
 </style>
 </head>
 <body>
@@ -215,10 +238,49 @@ select.in{appearance:auto}
 <canvas id="sky" aria-hidden="true"></canvas>
 
 <div class="app">
-  <header class="hd">
-    <button class="circ" data-act="go-today" aria-label="回到今天">◎</button>
-    <div><h1 id="hTitle">作品账本</h1><span class="cap" id="hCap">Work Ledger · Daily Harbor</span></div>
-    <button class="circ" data-act="open-skin" aria-label="外观">◐</button>
+  <header class="hd notebook-cover" aria-label="老白笔记封面">
+    <div class="cover-topline">
+      <span class="cover-edition">LAO BAI / PERSONAL NOTES</span>
+      <div class="cover-tools">
+        <button class="circ" data-act="go-today" aria-label="回到今天" title="回到今天">◎</button>
+        <button class="circ" data-act="open-skin" aria-label="外观" title="切换外观">◐</button>
+      </div>
+    </div>
+    <div class="cover-copy">
+      <span class="cover-kicker">日有所记 · 心有所藏</span>
+      <h1 id="hTitle">老白笔记</h1>
+      <p class="cover-description">作品、灵感，和认真生活的痕迹。</p>
+    </div>
+    <div class="cover-footer"><span class="cap" id="hCap">Lao Bai’s Notes · Daily Pages</span><span class="cover-star" aria-hidden="true">✦</span></div>
+    <svg class="cover-art" viewBox="0 0 340 240" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="coverWindow" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#527e98"/><stop offset="1" stop-color="#203d5b"/></linearGradient>
+        <linearGradient id="coverPaper" x1="0" x2=".7" y1="0" y2="1"><stop stop-color="#fff0ce"/><stop offset="1" stop-color="#d5bc88"/></linearGradient>
+        <linearGradient id="coverHills" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#5e8997"/><stop offset="1" stop-color="#2b5770"/></linearGradient>
+        <clipPath id="coverArch"><path d="M119 176V85a70 70 0 0 1 140 0v91Z"/></clipPath>
+      </defs>
+      <!-- An engraved little window, open to the moon and a sea of pages. -->
+      <path d="M112 177V85a77 77 0 0 1 154 0v92" fill="none" stroke="#c6b78d" stroke-width=".7" opacity=".48"/>
+      <path d="M119 176V85a70 70 0 0 1 140 0v91Z" fill="url(#coverWindow)" stroke="#d1bd8e" stroke-width="1"/>
+      <g clip-path="url(#coverArch)">
+        <circle cx="206" cy="64" r="22" fill="#ebd7a7"/><circle cx="215" cy="57" r="21" fill="#426982"/>
+        <g fill="#e8d8af" opacity=".8"><circle cx="150" cy="58" r="1.1"/><circle cx="170" cy="91" r=".8"/><circle cx="234" cy="102" r="1.2"/><circle cx="133" cy="107" r=".8"/><circle cx="242" cy="51" r=".8"/></g>
+        <path d="M110 140Q147 116 181 141T269 135V180H110Z" fill="url(#coverHills)"/><path d="M109 156Q162 130 207 153T273 152V182H109Z" fill="#204961"/>
+        <g stroke="#a7bdba" stroke-width=".65" fill="none" opacity=".5"><path d="M141 150h20m26 0h25m9 11h23m-95 6h35m21 6h40"/></g>
+      </g>
+      <path d="M104 178h174M109 182h164" fill="none" stroke="#c7b58d" stroke-width=".8" opacity=".7"/>
+      <!-- A cloth-bound notebook with fine ruled pages and a ribbon. -->
+      <path d="M98 188q33-15 71 0q33-18 76-10l24 25q-54-5-98 14q-42-17-87-7Z" fill="#122e49" stroke="#aeaa8f" stroke-width=".8"/>
+      <path d="m96 184-12 21q46-4 87 12v-25q-37-19-75-8Z" fill="url(#coverPaper)"/>
+      <path d="M171 192q32-21 71-17l23 26q-52-1-94 16Z" fill="#f0dfb9"/>
+      <path d="M171 192v25m-86-10q45-3 86 12q43-17 96-15" stroke="#9c875e" stroke-width=".8" fill="none"/>
+      <g stroke="#aa956e" stroke-width=".65" fill="none" opacity=".65"><path d="M106 190q26-4 48 5m-52 1q29-4 52 5m-56 1q31-3 56 5m28-15q22-10 48-10m-47 15q26-10 53-9m-52 14q28-10 58-9"/></g>
+      <path d="m188 186 12 29-7-2-3 6-11-29" fill="#b77861"/>
+      <!-- A small pressed branch, gold like the existing star-chart accents. -->
+      <g stroke="#c7b788" stroke-width="1" fill="none" stroke-linecap="round"><path d="M283 196q-6-34 13-69m-9 38q-13-11-13-25m15 11q13-6 17-20m-21 48q-12-8-17-20"/><path d="M274 140q10 1 13 17q-12-3-13-17Zm32-9q-1 13-16 21q1-16 16-21Zm-38 28q12 1 17 20q-14-6-17-20Z" fill="#b5ad80" fill-opacity=".28"/></g>
+      <g fill="none" stroke="#e6d0a0" stroke-width=".8" opacity=".65"><path d="m85 86 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/><path d="m285 91 1.4 3.6 3.6 1.4-3.6 1.4-1.4 3.6-1.4-3.6-3.6-1.4 3.6-1.4Z"/></g>
+      <path d="M85 225h204" stroke="#b9b18f" stroke-width=".6" opacity=".3"/>
+    </svg>
   </header>
   <div class="rule"></div>
   <div class="status" id="status" hidden></div>
@@ -559,7 +621,7 @@ function render(){
 
 function renderToday(ws,tot){
   const d=toDate(S.date),isToday=S.date===ymd(new Date());
-  $('#hCap').textContent='Work Ledger · '+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+WKE[d.getDay()];
+  $('#hCap').textContent='Lao Bai’s Notes · '+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+WKE[d.getDay()];
   $('#dayTitle').innerHTML='<b>'+esc(md(S.date))+'</b><small>星期'+WK[d.getDay()]+(isToday?' · 今天':' · <button class="linkbtn" data-act="go-today">回到今天</button>')+'</small>';
   const L=logsOn(S.date);
   $('#noteCap').textContent='Today · '+S.date.replace(/-/g,'.')+' · '+(S.ready<3?'connecting':L.length?L.length+(L.length>1?' cues':' cue'):'blank page');
@@ -628,7 +690,7 @@ function monthSummary(ym,m){
 }
 function renderMonth(){renderBackup();
   const ym=S.month,m=monthData(ym),[y,mo]=ym.split('-').map(Number);
-  $('#hCap').textContent='Work Ledger · '+y+'.'+pad(mo);
+  $('#hCap').textContent='Lao Bai’s Notes · '+y+'.'+pad(mo);
   $('#monTitle').innerHTML='<b>'+y+'年'+mo+'月</b><small>'+(ym===ymd(new Date()).slice(0,7)?'本月':'<button class="linkbtn" data-act="mon-now">回到本月</button>')+'</small>';
   $('#monNoteTitle').textContent=mo+'月｜攒下了什么';
   $('#monNote').textContent=monthSummary(ym,m);
@@ -672,7 +734,7 @@ function workRow(w,s,compact){
   return h+'</div>';
 }
 function renderWorks(){
-  $('#hCap').textContent='Work Ledger · Archive';
+  $('#hCap').textContent='Lao Bai’s Notes · Archive';
   $('#wfChips').innerHTML=['全部'].concat(STATUS).map(k=>{const c=k==='全部'?S.works.size:[...S.works.values()].filter(w=>w.status===k).length;return '<button class="chip" data-act="wf" data-v="'+k+'" aria-pressed="'+(S.wf===k)+'">'+k+' '+c+'</button>'}).join('');
   const q=S.wq.trim().toLowerCase(),ws=workStats();
   let list=[...S.works.values()];
@@ -700,7 +762,7 @@ async function loadSubs(){
   render();
 }
 function renderBest(){
-  $('#hCap').textContent='Work Ledger · My Taste';
+  $('#hCap').textContent='Lao Bai’s Notes · My Taste';
   const all=[...S.days.entries()].filter(([k,d])=>d.best&&d.best.text).map(([k,d])=>Object.assign({date:k},d.best)).sort((a,b)=>b.date.localeCompare(a.date));
   $('#bfChips').innerHTML=['全部'].concat(BEST_KINDS).map(k=>{const c=k==='全部'?all.length:all.filter(b=>b.kind===k).length;return '<button class="chip" data-act="bf" data-v="'+k+'" aria-pressed="'+(S.bf===k)+'">'+k+' '+c+'</button>'}).join('');
   const q=S.bq.trim().toLowerCase();
@@ -930,7 +992,7 @@ async function buildBackup(){
 }
 let bkPending=null;
 function planRestore(o){
-  if(!o||o.app!=='作品账本'||!Array.isArray(o.works)){$('#bkPlan').hidden=false;$('#bkPlan').innerHTML='<div class="muted">这个文件不是作品账本的备份。</div>';return}
+  if(!o||o.app!=='作品账本'||!Array.isArray(o.works)){$('#bkPlan').hidden=false;$('#bkPlan').innerHTML='<div class="muted">这个文件不是老白笔记的备份。</div>';return}
   const n=k=>Array.isArray(o[k])?o[k].filter(x=>x&&typeof x.id==='string'&&/^[A-Za-z0-9_\-.~:@+]{1,200}$/.test(x.id)).length:0;
   bkPending=o;$('#bkPlan').hidden=false;
   $('#bkPlan').innerHTML='<hr><div>备份时间：'+esc((()=>{const d=new Date(o.exportedAt);return isNaN(d)?'不详':md(ymd(d))})())+'</div><div class="muted">里面有作品 '+n('works')+' 部、记录 '+n('logs')+' 条、日子 '+n('days')+' 天、字幕台词 '+n('subs')+' 份。恢复会补回缺的，同一条以备份为准；账本里比备份多出来的不会删。</div><div class="acts" style="margin-top:8px"><button class="btn" id="bkApply" data-act="bk-apply">确认恢复</button><button class="btn ghost" data-act="bk-cancel">算了</button></div>';
@@ -996,11 +1058,7 @@ function ledgerViewFromHash(){
   return ['today','month','works','best'].includes(v)?v:'';
 }
 const go=v=>{S.view=v;try{
-  let persisted=false;try{persisted=!!CLOUD.key&&localStorage.getItem('ledger_key')===CLOUD.key}catch(e){}
-  const u=new URL(location.href);
-  // A blocked storage area must not lose access when switching tabs or refreshing.
-  u.hash=CLOUD.key&&!persisted?new URLSearchParams({k:CLOUD.key,view:v}).toString():v;
-  if(CLOUD.key)u.searchParams.delete('k');
+  const u=new URL(location.href);u.searchParams.delete('k');u.hash=v;
   history.replaceState(null,'',u.pathname+u.search+u.hash);
 }catch(x){}render();window.scrollTo(0,0)};
 document.addEventListener('click',e=>{
@@ -1035,7 +1093,7 @@ document.addEventListener('click',e=>{
       cb.readText().then(t=>{if(!t){toast('剪贴板是空的');return}$('#pText').value=t;renderPastePreview()},()=>toast('读不到剪贴板，长按输入框粘贴'));break}
     case 'paste-save':savePaste();break;
     case 'bk-save':{if(!db)return toast('还连不上账本');const btn=$('#bkSave');btn.disabled=true;
-      buildBackup().then(async o=>{const text=JSON.stringify(o,null,1),name='作品账本备份_'+ymd(new Date())+'.json';
+      buildBackup().then(async o=>{const text=JSON.stringify(o,null,1),name='老白笔记备份_'+ymd(new Date())+'.json';
         try{await offerFile(name,text,'application/json');try{localStorage.setItem('ledger_backup',ymd(new Date()))}catch(e){}renderBackup();toast('备份存下了')}catch(err){if(err&&err.code==='declined')return;toast('没存成，稍后再试')}
       }).catch(()=>toast('备份没生成出来')).finally(()=>{btn.disabled=false});break}
     case 'bk-load':$('#bkFile').value='';$('#bkFile').click();break;
@@ -1077,29 +1135,22 @@ window.addEventListener('hashchange',()=>{const v=ledgerViewFromHash();if(v){S.v
 drawSky();render();
 
 /* ---------- cloud (GitHub Pages + Supabase) ---------- */
-const CLOUD={url:'https://tvoynrohczmovuyorplm.supabase.co',anon:'sb_publishable_Gmn9YRMI7NmoUWRT5AG5wA_wGzM40DN',key:''};
-function readLedgerAccess(){
-  const supplied=new URLSearchParams(location.hash.slice(1)).get('k')||new URLSearchParams(location.search).get('k')||'';
-  let saved='';try{saved=localStorage.getItem('ledger_key')||''}catch(e){}
-  CLOUD.key=supplied||saved;
-  if(supplied){
-    let persisted=false;try{localStorage.setItem('ledger_key',supplied);persisted=localStorage.getItem('ledger_key')===supplied}catch(e){}
-    // Keep access in memory even when this browser cannot persist it.
-    // Strip it from the URL only after persistent storage is verified.
-    if(persisted){try{const clean=new URL(location.href);clean.searchParams.delete('k');clean.hash=ledgerViewFromHash();history.replaceState(null,'',clean.pathname+clean.search+clean.hash)}catch(e){}}
-  }
+const CLOUD={url:'https://tvoynrohczmovuyorplm.supabase.co',anon:'sb_publishable_Gmn9YRMI7NmoUWRT5AG5wA_wGzM40DN'};
+// The owner explicitly chose open link access. No browser key is needed.
+// Clean legacy private entry URLs without reading or preserving their credentials.
+function cleanLegacyLedgerEntry(){
+  try{const u=new URL(location.href),h=new URLSearchParams(u.hash.slice(1));
+    if(u.searchParams.has('k')||h.has('k')){u.searchParams.delete('k');u.hash=ledgerViewFromHash();history.replaceState(null,'',u.pathname+u.search+u.hash)}
+  }catch(e){}
 }
-readLedgerAccess();
-window.addEventListener('hashchange',()=>{
-  const next=new URLSearchParams(location.hash.slice(1)).get('k');
-  if(next){const u=new URL(location.href);u.searchParams.set('entry',Date.now().toString());location.replace(u.href)}
-});
+cleanLegacyLedgerEntry();
+window.addEventListener('hashchange',cleanLegacyLedgerEntry);
 function supaDb(){
   const call=async(fn,args)=>{
     const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
     try{
-      const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',signal:controller.signal,headers:{apikey:CLOUD.anon,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_key:CLOUD.key},args||{}))});
-      const t=await r.text();if(!r.ok){const e=new Error(t);e.code=/bad key/.test(t)?'bad_key':(r.status===413?'quota_exceeded':'http_'+r.status);throw e}
+      const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',signal:controller.signal,headers:{apikey:CLOUD.anon,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_key:null},args||{}))});
+      const t=await r.text();if(!r.ok){const e=new Error(t);e.code=r.status===413?'quota_exceeded':'http_'+r.status;throw e}
       return t?JSON.parse(t):null;
     }finally{clearTimeout(timeout)}
   };
@@ -1150,11 +1201,10 @@ async function offerFile(name,data,mime){
 /* ---------- connect ---------- */
 (async()=>{
   // Every device uses the same cloud ledger, never an embedded preview database.
-  db=CLOUD.key?supaDb():null;
-  if(!db){setStatus(CLOUD.key?'账本没连上，刷新再试。':'第一次在这台手机上打开，请用带钥匙的专属链接打开一次，以后就不用了。');render();return}
+  db=supaDb();
   writable=false;setStatus('正在读取云端账本…');
   const timer=setTimeout(()=>{if(S.ready<3)setStatus('暂时连不上账本，显示的可能不是最新内容。')},10000);
-  const fail=e=>{clearTimeout(timer);writable=false;if(e&&e.code==='bad_key'){writable=false;setStatus('钥匙不对，请用专属链接重新打开一次。')}else if(e&&e.code==='revoked'){writable=false;setStatus('这个页面的访问权限变了，暂时只能看')}else setStatus(S.ready<3?'云端数据尚未加载成功 正在自动重试 这不代表今天没有记录':'云端连接暂时中断 正在自动重试 当前显示上次读取的记录');render()};
+  const fail=e=>{clearTimeout(timer);writable=false;if(e&&e.code==='revoked'){writable=false;setStatus('这个页面的访问权限变了，暂时只能看')}else setStatus(S.ready<3?'云端数据尚未加载成功 正在自动重试 这不代表今天没有记录':'云端连接暂时中断 正在自动重试 当前显示上次读取的记录');render()};
   const seen={works:false,logs:false,days:false};
   const mark=(k,snap)=>{if(!seen[k]&&!snap.metadata.fromCache){seen[k]=true;S.ready++;if(S.ready>=3){clearTimeout(timer);writable=true;setStatus('')}}};
   db.collection('works').onSnapshot(snap=>{S.works=new Map(snap.docs.map(d=>[d.id,Object.assign({id:d.id},d.data())]));mark('works',snap);render()},fail);
