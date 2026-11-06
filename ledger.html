@@ -60,8 +60,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* Locked artwork: fixed layer for iPhone, explicit skins override system colors. */
 #scene{position:fixed;inset:0;z-index:0;pointer-events:none;background:#cfe0ec url("bg/bg-day.webp") center bottom/cover no-repeat}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #scene{background:#0f1d3a url("bg/bg-night.webp") center bottom/cover no-repeat}}
-:root[data-theme="dark"] #scene,html:root[data-skin="night"] #scene,html:root[data-skin="dream"] #scene{background:#0f1d3a url("bg/bg-night.webp") center bottom/cover no-repeat}
-html:root[data-skin="day"] #scene,html:root[data-skin="dusk"] #scene{background:#cfe0ec url("bg/bg-day.webp") center bottom/cover no-repeat}
+:root[data-theme="dark"] #scene,html:root[data-skin="night"] #scene{background:#0f1d3a url("bg/bg-night.webp") center bottom/cover no-repeat}
+html:root[data-skin="day"] #scene{background:#cfe0ec url("bg/bg-day.webp") center bottom/cover no-repeat}
+html:root[data-skin="dusk"] #scene{background:#efd6b4 url("bg/bg-dusk.webp") center bottom/cover no-repeat}
+html:root[data-skin="dream"] #scene{background:#392e4d url("bg/bg-dream.webp") center bottom/cover no-repeat}
 #sky{display:none!important}
 #sky{position:fixed;inset:0;z-index:0;pointer-events:none;display:block}
 .app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px calc(130px + env(safe-area-inset-bottom,0px))}
@@ -376,7 +378,7 @@ html:root[data-skin="dream"]{
 .chart-head .legend #hdPicks{font-size:inherit;letter-spacing:inherit;color:inherit}
 .chart-head .tool[hidden]{display:none!important}
 .chart-head .tool.r2{right:50px}
-@media(max-width:360px){.chart-head:has(#installEntry:not([hidden])) .kicker{font-size:10px;letter-spacing:.08em}}
+@media(max-width:420px){.chart-head:has(#installEntry:not([hidden])) .kicker{font-size:10px;letter-spacing:.08em}}
 .arch{height:calc(84px + env(safe-area-inset-bottom,0px));padding-top:16px}
 .ni[aria-selected="true"] span{border-bottom:0}
 .pk-feed-card.paper{background:var(--paper-bg)}
