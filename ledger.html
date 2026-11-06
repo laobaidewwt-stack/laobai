@@ -383,7 +383,8 @@ html:root[data-skin="dream"]{
 .month-return{text-align:center}.month-return:has([hidden]){display:none}
 #todayRecords{scroll-margin-top:18px}
 /* Dream keeps its locked light paper/nav; only night-art foreground contrast is lifted. */
-html:root[data-skin="dream"]{--ink:#e7e1ff;--ink2:#c6bddf;--ink3:#a79cbd;--chart:rgba(230,225,255,.28)}
+html:root[data-skin="dream"] .app>section[id^="v-"]{--ink:#e7e1ff;--ink2:#c6bddf;--ink3:#a79cbd;--chart:rgba(230,225,255,.28);color:var(--ink)}
+html:root[data-skin="dream"] .app>section[id^="v-"] :is(.paper,.status,.app-offline){--ink:#4b3d8f;--ink2:#6d61a8;--ink3:#9c92c6;--chart:rgba(75,61,143,.2)}
 html:root[data-skin="dream"] .chart-head{--hd-ink:#e7e1ff;--hd-ink2:#c6bddf;--hd-line:rgba(224,214,255,.48);--hd-line2:rgba(224,214,255,.26);--hd-wash:rgba(25,22,48,.25)}
 </style>
 </head>
