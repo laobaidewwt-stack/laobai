@@ -105,7 +105,7 @@ export function createActivityFeed({request,getActor,storage,view,onError=()=>{}
   connect(){if(connected)return running||Promise.resolve();connected=true;epoch++;foregroundReady=false;suspendedMode=null;needsRefresh=true;openRequested=false;seen=readSeen(storage)??'0';fetched=seen;loaded=false;publishUnread();return sync()},
   sync,
   away(){foregroundReady=false;suspendedMode='modal';needsRefresh=true;openRequested=false;},
-  reconsider(){reconcileStorage();if(view.blocked()){openRequested=false;needsRefresh=true;if(shown){suspendedMode=suspendedMode||shown.mode;shown=null;view.hide()}return}if(needsRefresh)return sync();maybeShow()},
+  reconsider(){reconcileStorage();if(view.blocked()){openRequested=false;needsRefresh=true;if(shown){suspendedMode=suspendedMode||shown.mode;shown=null;view.hide()}return}if(needsRefresh)return running||sync();maybeShow()},
   // Explicit header entry also works while a single foreground banner is visible.
   async open(){
    if(!connected||view.blocked())return{...unreadState(),refreshed:false};

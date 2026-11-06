@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-c19pOYCZ5exNA1Yj8LfJpRVm5OWKwBvYgLvp/9W5MAw='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-EsoAey/GV+hL5HLd1+cM6nUwVOQcl5H5NZBwDedGd20='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -379,6 +379,11 @@ html:root[data-skin="dream"]{
 .chart-head .tool[hidden]{display:none!important}
 .chart-head .tool.r2{right:50px}
 @media(max-width:420px){.chart-head:has(#installEntry:not([hidden])) .kicker{font-size:10px;letter-spacing:.08em}}
+/* Hide the tiny masthead at narrow widths without moving the locked title geometry. */
+@media(max-width:360px){.chart-head .kicker{visibility:hidden}}
+/* Day-only exterior labels use the same muted chart ink; other skins/paper stay unchanged. */
+:is(html:root[data-skin="day"],html:root[data-theme="light"]:not([data-skin])) .app :is(.sh,.sky-chips){--ink:var(--hd-ink);--ink2:var(--hd-ink2);--ink3:var(--hd-ink2);--chart:var(--hd-line2);color:var(--hd-ink)}
+@media(prefers-color-scheme:light){html:root:not([data-skin]):not([data-theme="dark"]) .app :is(.sh,.sky-chips){--ink:var(--hd-ink);--ink2:var(--hd-ink2);--ink3:var(--hd-ink2);--chart:var(--hd-line2);color:var(--hd-ink)}}
 .arch{height:calc(84px + env(safe-area-inset-bottom,0px));padding-top:16px}
 .ni[aria-selected="true"] span{border-bottom:0}
 .pk-feed-card.paper{background:var(--paper-bg)}
@@ -704,7 +709,7 @@ html:root[data-skin="dream"] .chart-head{--hd-ink:#e7e1ff;--hd-ink2:#c6bddf;--hd
 <script type="module">
 import {ReactionController,summaryHTML as pkResponseSummary,panelHTML as pkResponsePanel,unanswered as pkUnanswered,captureResponseFocus,restoreResponseFocus,charCount} from './reactions.js?v=20261106-reactions1';
 import {createNoticeUI} from './notifications.js?v=20261106-push1';
-import {createActivityUI} from './activity.js?v=20261107-chart1';
+import {createActivityUI} from './activity.js?v=20261107-chart2';
 import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261106-reactions1';
 const SHARED_ONLY=false;
 
@@ -811,7 +816,7 @@ function cueText(l,said){
   const bk=w?((said&&said.has(w)&&l.type!=='交付'&&l.type!=='返修'&&l.type!=='发布')?'':'《'+w+'》'):'';
   if(said&&w)said.add(w);
   switch(l.type){
-    case '交付':return '交付'+bk+'中文字幕'+(+l.lines||0)+'条'+(+l.eps?'（'+l.eps+'集）':'')+(t?'，'+t:'');
+    case '交付':return (l.lines===0&&Number.isSafeInteger(l.completedWorks)&&l.completedWorks>0&&Number.isSafeInteger(l.sourceSubtitleLines)&&l.sourceSubtitleLines>0?'完成'+bk+'官中'+l.sourceSubtitleLines+'条，本次未新增翻译':'交付'+bk+'中文字幕'+(+l.lines||0)+'条')+(+l.eps?'（'+l.eps+'集）':'')+(t?'，'+t:'');
     case '返修':return '返修'+bk+(+l.lines?(+l.lines)+'条':'')+(t?'：'+t:'');
     case '发布':return '发布'+bk+(t?'，'+t:'');
     case '文案':return (bk&&!t.includes(w)?bk:'')+(t||'文案修订');
