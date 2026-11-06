@@ -327,10 +327,11 @@ select.in{appearance:auto}
       <div class="ptitle" id="noteTitle"></div>
       <p class="sum" id="noteText"></p>
       <hr>
-      <div class="acts" style="justify-content:space-between"><button class="arrow" data-act="copy-day">复制总结</button><button class="arrow" data-act="open-log">记一条</button></div>
+      <div class="acts" style="justify-content:space-between"><button class="arrow" data-act="copy-day">复制剧单</button><button class="arrow" data-act="open-log">记一条</button></div>
     </div></div>
 
     <div class="sh row"><div><h2>今日文案</h2><span class="cap">Copy · Tap To Copy</span></div><button class="arrow" data-act="open-paste">粘贴新文案</button></div>
+    <div class="acts" id="copyFiltersToday" aria-label="文案版本筛选"></div>
     <div class="pw"><div class="paper b stack" id="copyToday" style="gap:12px"></div></div>
 
     <div class="sh"><h2>今日最佳</h2><span class="cap">Pick Of The Day · For Fans</span></div>
@@ -408,7 +409,7 @@ select.in{appearance:auto}
     </div>
     <div class="chips sky-chips" id="wfChips"></div>
     <div class="pw" id="hitsWrap" hidden style="margin-top:16px"><div class="paper c" id="hits"></div></div>
-    <div class="pw" style="margin-top:16px"><div class="paper" id="worksList"></div></div>
+    <div class="pw" style="margin-top:16px"><div class="paper"><div class="acts" id="copyFiltersWorks" aria-label="文案版本筛选"></div><div id="worksList"></div></div></div>
   </section>
 
   <!-- 满意集 -->
@@ -468,7 +469,8 @@ select.in{appearance:auto}
     <label class="f">一句推荐<input class="in" id="wRec" placeholder="给粉丝的一句话"></label>
     <label class="f">最新字幕链接<input class="in" id="wSub" placeholder="https://"></label>
     <label class="f">发布标题<input class="in" id="wTitle"></label>
-    <label class="f">完整文案<textarea class="in" id="wCopy" rows="5"></textarea></label>
+    <div id="wVersionArchive" aria-label="文案版本只读查看"></div>
+    <label class="f">旧版工作文案（独立发布版和历史稿只读，不在此编辑）<textarea class="in" id="wCopy" rows="5"></textarea></label>
     <label class="f">发布链接<input class="in" id="wPub" placeholder="https://"></label>
     <label class="f">备注<textarea class="in" id="wNotes" rows="2"></textarea></label>
     <label class="f">字幕全文（可不填，贴进来以后能搜台词）<textarea class="in" id="wSubs" rows="4" placeholder="把 SRT 或纯文本贴在这里"></textarea></label>
@@ -566,7 +568,7 @@ const normName=s=>String(s||'').trim().replace(/^《(.+)》$/,'$1').trim();
 const md=s=>{const d=toDate(s);return (d.getMonth()+1)+'月'+d.getDate()+'日'};
 
 const S={works:new Map(),logs:[],days:new Map(),ready:0,view:'today',date:ymd(new Date()),month:ymd(new Date()).slice(0,7),
-  wq:'',wf:'全部',bq:'',bf:'全部',subs:null,subOn:false,type:'交付',bestKind:'对白',editId:null,score:{look:0,plot:0,spice:0},
+  copyView:'all',wq:'',wf:'全部',bq:'',bf:'全部',subs:null,subOn:false,type:'交付',bestKind:'对白',editId:null,score:{look:0,plot:0,spice:0},
   exp:{range:'week',style:'self',from:'',to:''}};
 let db=null,writable=false;
 
@@ -615,6 +617,7 @@ function renderSkins(){const cur=getSkin();$('#swatches').innerHTML=SKINS.map(([
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2200)}
 function setStatus(m){const s=$('#status');s.textContent=m||'';s.hidden=!m}
 function copyText(text){
+  text=withoutResourceLinks(text);
   const fallback=()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();toast(ok?'已复制':'复制失败，请长按文字手动复制')};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(()=>toast('已复制'),fallback);else fallback();
 }
@@ -653,6 +656,141 @@ function cueText(l,said){
     default:return (bk&&t&&!t.includes(w)?bk:'')+(t||bk);
   }
 }
+/* Compact note only; detailed logs and exports keep daySummary. */
+function noteTitle(value){
+  let title=typeof value==='string'?value.normalize('NFC').replace(/\s+/g,' ').trim():'';
+  while(title.startsWith('《')&&title.endsWith('》'))title=title.slice(1,-1).trim();
+  return title;
+}
+function noteDetail(work){
+  if(!work)return '';
+  const state=typeof work.state==='string'?work.state.trim():'';
+  // Workflow delivery/publication is not proof that a series is complete.
+  if(/^(?:已)?完结(?:中字)?$|^全剧完结$/.test(state))return state;
+  const cp=typeof work.cp==='string'?work.cp.trim():'';
+  if([...cp].length<=26&&/^[^×]+×[^×]+$/.test(cp)&&
+    !/[\r\n<>｜|。！？!?;；:]|\d+\s*(?:条|集)|字幕|校轴|听译|待确认|待核|未确认/.test(cp))return cp;
+  return '';
+}
+function dayNoteItems(date){
+  const items=[],ids=new Map(),names=new Map();
+  for(const log of logsOn(date)){
+    const work=log.workId&&S.works.get(log.workId);
+    const title=noteTitle(work&&work.zh)||noteTitle(log.work)||noteTitle(work&&work.en);
+    if(!title)continue;
+    const key=title.toLowerCase(),detail=noteDetail(work);
+    const existing=(log.workId&&ids.get(log.workId))||names.get(key);
+    if(existing){
+      if(!existing.detail&&detail)existing.detail=detail;
+      if(log.workId)ids.set(log.workId,existing);
+      names.set(key,existing);
+      continue;
+    }
+    const item={title,detail,en:noteTitle(work&&work.en),chineseMissing:!noteTitle(work&&work.zh)&&!noteTitle(log.work)};items.push(item);names.set(key,item);
+    if(log.workId)ids.set(log.workId,item);
+  }
+  return items;
+}
+function dayNoteText(date){
+  return dayNoteItems(date).map(item=>(item.chineseMissing?'中文名待补':'《'+item.title+'》')+(item.en&&(item.chineseMissing||item.en.toLowerCase()!==item.title.toLowerCase())?' / '+item.en:'')+(item.detail?' · '+item.detail:'')).join('\n');
+}
+
+/* Read-only copy versions. These helpers never merge or save version bodies. */
+function withoutResourceLinks(value){
+  const original=String(value==null?'':value);let changed=false;
+  const filtered=original.replace(/https?:\/\/[^\s<>"'）)】\]]+/gi,raw=>{
+    try{const host=new URL(raw).hostname.toLowerCase();
+      const blocked=['drive.google.com','pan.baidu.com','yun.baidu.com','pan.quark.cn','drive.uc.cn','alipan.com','aliyundrive.com','cloud.189.cn','123pan.com','123684.com','123865.com','lanzou.com','lanzoui.com','lanzoux.com','lanzoub.com','lanzouj.com','dropbox.com','onedrive.live.com','1drv.ms','mega.nz','pan.xunlei.com','115.com','t.cn'];
+      if(blocked.some(domain=>host===domain||host.endsWith('.'+domain))){changed=true;return ''}
+    }catch(e){}return raw;
+  }).replace(/(?:提取码|提取密码|网盘密码|网盘访问码|资源密码|解压密码)\s*[：:]?\s*[A-Za-z0-9_-]+/g,()=>{changed=true;return ''});
+  if(!changed)return original;
+  return filtered.split('\n').map(line=>line.replace(/\[(?:网盘|资源|下载)[^\]]*\]\(\s*\)/g,'').replace(/(?:百度网盘|夸克网盘|网盘(?:链接|地址)?|资源(?:链接|地址)|下载(?:链接|地址))\s*[：:]\s*$/g,'').trim()).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function savedCopyText(value){return typeof value==='string'&&value.trim()?value:''}
+function copySourceInfo(work){
+  const source=work&&work.copySource;
+  return source&&typeof source==='object'&&!Array.isArray(source)?source:{url:typeof source==='string'?source:''};
+}
+function copySourceUrl(value){
+  if(typeof value!=='string')return '';
+  try{
+    const url=new URL(value);
+    if(url.protocol!=='https:'||url.username||url.password)return '';
+    if(!['chatgpt.com','chat.openai.com','weibo.com','www.weibo.com','m.weibo.cn','weibo.cn','www.weibo.cn'].includes(url.hostname))return '';
+    return url.href;
+  }catch(e){return ''}
+}
+function copyVersions(work){
+  if(!work)return [];
+  const versions=[],source=copySourceInfo(work),status=savedCopyText(work.copyStatus);
+  const published=savedCopyText(work.publishedCopy),draft=savedCopyText(work.draftCopy),legacy=savedCopyText(work.copy);
+  const screenshot=/截图|可见部分|片段/.test(status)||source.screenshotTextComplete===true||source.screenshotTextComplete===false;
+  const completeScreenshot=source.screenshotTextComplete===true;
+  const partialScreenshot=source.screenshotTextComplete===false||/折叠|截断|未展开|部分正文/.test(savedCopyText(source.scope));
+  const publishedLegacy=/微博发布版/.test(status);
+  const verifiedOriginal=status==='微博发布版'&&source.type==='微博原博';
+  const publication=(key,text)=>({key,text,
+    label:completeScreenshot?'微博发布文字（截图时点完整短帖，原博待核）':screenshot?(partialScreenshot?'微博截图部分文字（折叠或截断）':'微博截图可见文字（完整性待核）'):verifiedOriginal?'微博发布文字（原博已核）':'已存微博发布文字（核验状态待确认）',
+    note:completeScreenshot?'该截图时点的短帖文字完整可见，但尚未核对当前原博；短帖不等同完整中文长文案。':screenshot?(partialScreenshot?'截图仅保留部分正文，不能当作完整发布文字或完整中文长文案。':'只确认截图内可见文字，尚未确认短帖是否完整，也未核对当前原博。'):verifiedOriginal?'按原博可见文字保存，不代表图片内全部文字；与下方聊天历史稿分开。':'单独保存的发布版本；未确认是否为完整原博正文。',
+    source:copySourceUrl(source.url),title:'',archived:!!published});
+  if(published)versions.push(publication('publishedCopy',published));
+  else if(legacy&&publishedLegacy)versions.push(publication('copy',legacy));
+  const episode=status.match(/第\s*([0-9一二三四五六七八九十百]+)\s*集/);
+  const singleEpisode=!!episode||/单集文案/.test(savedCopyText(source.type));
+  const shortDraft=singleEpisode||/短文案|历史片段/.test(status);
+  const corrected=/实质纠正|已发现.{0,6}纠正|已纠错|已纠正|人设误用/.test(status+' '+savedCopyText(source.versionNote)+' '+savedCopyText(source.scope));
+  if(draft)versions.push({key:'draftCopy',text:draft,
+    label:singleEpisode?(episode?'第'+episode[1]+'集历史短文案':'单集历史文案')+'（非整剧完整稿）':shortDraft?'聊天历史短文案（非整剧完整稿）':corrected?'聊天历史稿（已发现实质纠正，当前全文待核）':'完整中文文案（聊天历史稿，非微博定稿）',
+    note:shortDraft?'仅保留当时的单集或短文案；整剧全文及微博发布文字仍待核。':corrected?'这份旧稿已发现需要纠正之处，请先查看版本说明；不要作为当前完整定稿直接发布。':'保留当时的完整聊天稿，题名或人设可能早于后续修订；不替换微博发布文字。',
+    fullHistorical:!shortDraft,currentNeedsReview:corrected,
+    title:savedCopyText(work.draftTitle),
+    source:copySourceUrl(source.draftSource)||(!publishedLegacy?copySourceUrl(source.url):''),archived:true});
+  if(legacy&&legacy!==published&&legacy!==draft&&!(!published&&publishedLegacy)){
+    const complete=/聊天完整文案/.test(status);
+    versions.push({key:'copy',text:legacy,
+      label:complete?'完整中文文案（聊天历史稿，微博待核）':'旧版工作文案（版本待核）',
+      note:'独立保留的工作稿，不自动当作微博定稿。',
+      title:complete?savedCopyText(work.draftTitle):'',
+      source:!publishedLegacy?copySourceUrl(source.url):'',archived:false});
+  }
+  return versions;
+}
+function renderCopyVersions(work){
+  const versions=visibleCopyVersions(work),source=copySourceInfo(work);
+  const warnings=[savedCopyText(work&&work.copyStatus),savedCopyText(source.versionNote),savedCopyText(source.scope)].filter(Boolean);
+  const intro=warnings.length?'<div class="muted" style="margin-top:10px">'+warnings.map(value=>esc(withoutResourceLinks(value))).join('<br>')+'</div>':'';
+  const missing=(!savedCopyText(work&&work.draftCopy)&&!(/聊天完整文案/.test(savedCopyText(work&&work.copyStatus))&&savedCopyText(work&&work.copy)))||versions.some(version=>version.key==='draftCopy'&&!version.fullHistorical);
+  if(S.copyView==='weibo'&&!versions.length)return '<div class="muted">尚无可查看的微博中文文案。</div>';
+  return intro+versions.map(version=>'<section class="copy-version" style="margin-top:12px" aria-label="'+esc(version.label)+'">'+
+    '<details><summary style="cursor:pointer;line-height:1.7"><b>'+esc(version.label)+'</b> · 展开全文</summary>'+
+    '<div class="muted" style="margin-top:6px">'+esc(version.note)+'</div>'+
+    (version.title?'<div class="muted">该稿题名：'+esc(version.title)+'</div>':'')+
+    '<div class="copybox" style="max-height:none">'+esc(versionDisplayText(version,work)||'此记录没有可核实的中文微博文案，不把英文或字幕当作文案显示。')+'</div></details>'+
+    '<div class="acts" style="margin-top:6px"><button type="button" class="chip" data-act="copy-version" data-id="'+esc(work.id)+'" data-field="'+esc(version.key)+'">复制'+(version.key==='draftCopy'?'这份历史稿':version.key==='publishedCopy'||(/微博发布版/.test(savedCopyText(work.copyStatus))&&version.key==='copy')?'微博文字':'这份文案')+'</button>'+
+    (version.source?'<a class="chip" href="'+esc(version.source)+'" target="_blank" rel="noopener noreferrer">查看来源 ↗</a>':'')+'</div></section>').join('')+
+    (missing&&S.copyView!=='weibo'?'<div class="muted" style="margin-top:10px">完整中文文案尚未补齐；现有微博短帖或单集稿不能代替整剧全文。</div>':'');
+}
+
+function workChineseTitle(work){return savedCopyText(work&&work.zh)||'中文名待补'}
+function visibleCopyVersions(work){
+  const versions=copyVersions(work);
+  if(S.copyView==='weibo')return versions.filter(version=>version.key==='publishedCopy'||(version.key==='copy'&&/微博发布版/.test(savedCopyText(work.copyStatus))));
+  if(S.copyView==='draft')return versions.filter(version=>version.key==='draftCopy'||(version.key==='copy'&&!/微博发布版/.test(savedCopyText(work.copyStatus))));
+  return versions;
+}
+function versionDisplayText(version,work){
+  const text=withoutResourceLinks(version.text);
+  if(S.copyView!=='weibo')return text;
+  if(/\d{2}:\d{2}:\d{2}[,.]\d{3}\s*-->/.test(text)||!/[\u3400-\u9fff]/.test(text))return '';
+  const en=savedCopyText(work.en).trim().toLowerCase();
+  return en?text.split('\n').filter(line=>line.trim().toLowerCase()!==en).join('\n'):text;
+}
+function renderCopyFilters(){
+  const html=[['all','全部版本'],['weibo','微博中文文案'],['draft','聊天历史稿']].map(([value,label])=>'<button type="button" class="chip" data-act="copy-view" data-v="'+value+'" aria-pressed="'+(S.copyView===value)+'">'+label+'</button>').join('');
+  $('#copyFiltersToday').innerHTML=html;$('#copyFiltersWorks').innerHTML=html;
+}
+
 function daySummary(date){
   const L=logsOn(date),d=S.days.get(date)||{};
   const said=new Set(),parts=L.map(l=>cueText(l,said)).filter(Boolean);
@@ -666,11 +804,12 @@ function daySummary(date){
 
 /* ---------- render ---------- */
 function render(){
+  renderCopyFilters();
   const ws=workStats();
   let totLines=0;for(const s of ws.values())totLines+=s.lines;
   const doneWorks=[...ws.keys()].filter(id=>S.works.has(id)).length;
   const bestCount=[...S.days.values()].filter(d=>d.best&&d.best.text).length;
-  $('#workNames').innerHTML=[...S.works.values()].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).map(w=>'<option value="'+esc(w.zh)+'">').join('');
+  $('#workNames').innerHTML=[...S.works.values()].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).map(w=>'<option value="'+esc(workChineseTitle(w))+'">').join('');
   document.querySelectorAll('.ni').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.view===S.view)));
   for(const v of ['today','month','works','best'])$('#v-'+v).hidden=v!==S.view;
   ({today:renderToday,month:renderMonth,works:renderWorks,best:renderBest})[S.view](ws,{totLines,doneWorks,bestCount});
@@ -681,10 +820,10 @@ function renderToday(ws,tot){
   $('#hCap').textContent='Lao Bai’s Notes · '+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+WKE[d.getDay()];
   $('#dayTitle').innerHTML='<b>'+esc(md(S.date))+'</b><small>星期'+WK[d.getDay()]+(isToday?' · 今天':' · <button class="linkbtn" data-act="go-today">回到今天</button>')+'</small>';
   const L=logsOn(S.date);
-  $('#noteCap').textContent='Today · '+S.date.replace(/-/g,'.')+' · '+(S.ready<3?'connecting':L.length?L.length+(L.length>1?' cues':' cue'):'blank page');
+  const noteItems=dayNoteItems(S.date),sum=dayNoteText(S.date);
+  $('#noteCap').textContent='Today · '+S.date.replace(/-/g,'.')+' · '+(S.ready<3?'connecting':noteItems.length?noteItems.length+' 部':'blank page');
   $('#noteTitle').textContent=md(S.date)+'｜'+(isToday?'今日完成':'当日完成');
-  const sum=daySummary(S.date);
-  $('#noteText').innerHTML=S.ready<3?'<span style="opacity:.7">云端记录尚未加载 请查看上方连接提示</span>':sum?esc(sum):'<span style="opacity:.7">这一天还没有记录。修好一处重复字幕、定下一个标题，也算。点下面的星星记一条。</span>';
+  $('#noteText').textContent=S.ready<3?'云端记录尚未加载 请查看上方连接提示':sum||(L.length?'这一天没有可显示的剧名，详细记录保留在下方。':'这一天还没有剧目记录。点下面的星星记一条。');
   const dayLines=L.filter(l=>l.type==='交付').reduce((a,l)=>a+(+l.lines||0),0);
   const dayWorks=new Set(L.filter(l=>l.type==='交付').map(l=>l.workId)).size;
   $('#mDayLines').textContent=S.ready<3?'…':dayLines;
@@ -692,15 +831,14 @@ function renderToday(ws,tot){
   $('#mAllWorks').textContent=S.ready||!db?tot.doneWorks:'…';
   $('#mAllSub').textContent=tot.totLines+' 条字幕 · '+tot.bestCount+' 条满意';
   $('#cueCount').textContent=L.length?L.length+(L.length>1?' cues':' cue'):'';
-  $('#cues').innerHTML=L.length?L.map((l,i)=>'<div class="cue"><div class="ix">'+pad(i+1)+'</div><div class="t"><span class="tag t-'+esc(l.type)+'">'+esc(l.type)+'</span>'+esc(cueText(l))+(l.link?'<div class="muted"><a href="'+esc(l.link)+'" target="_blank" rel="noopener" style="color:inherit">'+esc(l.link)+'</a></div>':'')+'</div><button class="x" data-act="del-log" data-id="'+esc(l.id)+'" aria-label="删除这条">删</button></div>').join(''):'<div class="muted">点下面的星星记一条，这里会按顺序排好。</div>';
+  $('#cues').innerHTML=L.length?L.map((l,i)=>'<div class="cue"><div class="ix">'+pad(i+1)+'</div><div class="t"><span class="tag t-'+esc(l.type)+'">'+esc(l.type)+'</span>'+esc(withoutResourceLinks(cueText(l)))+(copySourceUrl(l.link)?'<div class="muted"><a href="'+esc(copySourceUrl(l.link))+'" target="_blank" rel="noopener noreferrer" style="color:inherit">查看来源 ↗</a></div>':'')+'</div><button class="x" data-act="del-log" data-id="'+esc(l.id)+'" aria-label="删除这条">删</button></div>').join(''):'<div class="muted">点下面的星星记一条，这里会按顺序排好。</div>';
   const cids=new Set(L.map(l=>l.workId).filter(Boolean));
   for(const w of S.works.values())if(w.updatedAt&&ymd(new Date(w.updatedAt))===S.date)cids.add(w.id);
-  const cws=[...cids].map(id=>S.works.get(id)).filter(w=>w&&(w.copy||w.hook||w.cp||w.genre)).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-  $('#copyToday').innerHTML=cws.length?cws.map((w,i)=>{const one=w.hook||w.cp||w.genre,id=esc(w.id);
-    return (i?'<hr>':'')+'<div><div class="best" style="font-size:17px">《'+esc(w.zh)+'》</div>'+(w.en?'<div class="muted">'+esc(w.en)+'</div>':'')+
-      (one?'<div class="fan">'+esc(fanLine(w))+'</div>':'')+(w.copy?'<div class="copybox" style="max-height:200px">'+esc(w.copy)+'</div>':'')+
-      '<div class="acts" style="margin-top:10px">'+(one?'<button class="btn" data-act="copy-fan" data-id="'+id+'">复制一句话</button>':'')+(w.copy?'<button class="btn ghost" data-act="copy-copy" data-id="'+id+'">复制整篇</button>':'')+'</div></div>'}).join('')
-    :'<div class="muted">写好的整篇文案，点右上「粘贴新文案」贴进来，会自动存好。换一部手机打开，这里就能一键复制。</div>';
+  const cws=[...cids].map(id=>S.works.get(id)).filter(w=>w&&(visibleCopyVersions(w).length||(S.copyView!=='weibo'&&(w.hook||w.cp||w.genre)))).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  $('#copyToday').innerHTML=cws.length?cws.map((w,i)=>{const one=S.copyView!=='weibo'&&(w.hook||w.cp||w.genre),id=esc(w.id);
+    return (i?'<hr>':'')+'<div><div class="best" style="font-size:17px">《'+esc(workChineseTitle(w))+'》</div>'+(w.en?'<div class="muted">'+esc(w.en)+'</div>':'')+
+      renderCopyVersions(w)+(one?'<div class="muted" style="margin-top:12px">资料汇总句（以归档原文为准）</div><div class="fan">'+esc(withoutResourceLinks(fanLine(w)))+'</div><div class="acts"><button class="chip" data-act="copy-fan" data-id="'+id+'">复制资料汇总句</button></div>':'')+'</div>'}).join('')
+    :'<div class="muted">这一天还没有可查看的文案。历史聊天稿和已核微博文字会分开显示，不会相互覆盖。</div>';
   const day=S.days.get(S.date)||{};
   const fillKey=S.date+':'+(day.updatedAt||0);
   if($('#fBest').dataset.for!==fillKey&&!document.activeElement.matches('#fBest,#fBestWork,#fPending')){
@@ -709,10 +847,10 @@ function renderToday(ws,tot){
     $('#fPending').value=day.pending||'';
   }
   const pk=day.pick&&S.works.get(day.pick.workId);
-  $('#pickShow').innerHTML=pk?'<div class="cap">'+esc(pk.kind||'')+' · '+esc(pk.status||'')+'</div><div class="best" style="font-size:17px">《'+esc(pk.zh)+'》</div>'+((pk.hook||pk.cp||pk.genre)?'<div class="fan">'+esc(fanLine(pk))+'</div>':'')+'<div class="stars">'+DIMS.map(([k,n])=>'<span>'+n+' <b>'+stars((pk.score||{})[k])+'</b></span>').join('')+'</div>'+(pk.rec?'<div class="muted" style="margin-top:6px">'+esc(pk.rec)+'</div>':'')+(hasScore(pk)?'':'<div class="muted" style="margin-top:6px">还没打分，去作品库点「编辑」给它打分。</div>')+'<hr>':'<div class="muted">从今天做完的作品里挑一部，导出给粉丝时会放在最前面。</div>';
+  $('#pickShow').innerHTML=pk?'<div class="cap">'+esc(pk.kind||'')+' · '+esc(pk.status||'')+'</div><div class="best" style="font-size:17px">《'+esc(workChineseTitle(pk))+'》</div>'+((pk.hook||pk.cp||pk.genre)?'<div class="fan">'+esc(withoutResourceLinks(fanLine(pk)))+'</div>':'')+'<div class="stars">'+DIMS.map(([k,n])=>'<span>'+n+' <b>'+stars((pk.score||{})[k])+'</b></span>').join('')+'</div>'+(pk.rec?'<div class="muted" style="margin-top:6px">'+esc(withoutResourceLinks(pk.rec))+'</div>':'')+(hasScore(pk)?'':'<div class="muted" style="margin-top:6px">还没打分，去作品库点「编辑」给它打分。</div>')+'<hr>':'<div class="muted">从今天做完的作品里挑一部，导出给粉丝时会放在最前面。</div>';
   if(document.activeElement!==$('#fPick')&&$('#fPick').dataset.for!==fillKey){$('#fPick').value=pk?pk.zh:'';$('#fPick').dataset.for=fillKey}
   $('#pickBtn').disabled=!writable;
-  $('#bestShow').innerHTML=day.best&&day.best.text?'<div class="best"><span class="hlt">'+esc(day.best.text)+'</span></div><div class="muted">'+esc(day.best.kind||'')+(day.best.work?' · 《'+esc(day.best.work)+'》':'')+'</div><hr>':'';
+  $('#bestShow').innerHTML=day.best&&day.best.text?'<div class="best"><span class="hlt">'+esc(withoutResourceLinks(day.best.text))+'</span></div><div class="muted">'+esc(day.best.kind||'')+(day.best.work?' · 《'+esc(day.best.work)+'》':'')+'</div><hr>':'';
   $('#bestChips').innerHTML=BEST_KINDS.map(k=>'<button type="button" class="chip" data-act="bkind" data-v="'+k+'" aria-pressed="'+(S.bestKind===k)+'">'+k+'</button>').join('');
   $('#bestBtn').disabled=$('#pendBtn').disabled=!writable;
 }
@@ -773,20 +911,21 @@ function workRow(w,s,compact){
   const facts=[];
   if(s.lines)facts.push(s.lines+' 条字幕');if(s.eps)facts.push(s.eps+' 集');
   if(s.first)facts.push('交付于 '+md(s.first));if(w.pubDate)facts.push('发布于 '+md(w.pubDate));
-  let h='<div class="work"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0"><h4>《'+esc(w.zh)+'》</h4>'+(w.en?'<div class="en">'+esc(w.en)+'</div>':'')+'</div><button class="arrow" data-act="edit-work" data-id="'+esc(w.id)+'">编辑</button></div>';
+  let h='<div class="work"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0"><h4>《'+esc(workChineseTitle(w))+'》</h4>'+(w.en?'<div class="en">'+esc(w.en)+'</div>':'')+'</div><button class="arrow" data-act="edit-work" data-id="'+esc(w.id)+'">编辑</button></div>';
   h+='<div style="margin-top:4px"><span class="pill s-'+esc(w.status||'翻译中')+'">'+esc(w.status||'翻译中')+'</span><span class="pill">'+esc(w.kind||'完整剧')+'</span><span class="muted">'+esc(facts.join(' · '))+'</span></div>';
   if(!compact){
     const links=[];
-    if(w.subLink)links.push('<a href="'+esc(w.subLink)+'" target="_blank" rel="noopener">字幕链接 ↗</a>');
-    if(w.pubLink)links.push('<a href="'+esc(w.pubLink)+'" target="_blank" rel="noopener">发布链接 ↗</a>');
+    // Subtitle storage links are retained in the data, not shown in work cards.
+    const publicLink=copySourceUrl(w.pubLink);
+    if(publicLink)links.push('<a href="'+esc(publicLink)+'" target="_blank" rel="noopener noreferrer">发布链接 ↗</a>');
     if(links.length)h+='<div class="wlinks">'+links.join('')+'</div>';
-    if(w.hook||w.cp||w.genre)h+='<div class="fan">'+esc(fanLine(w))+'</div>';
+    if(S.copyView!=='weibo'&&(w.hook||w.cp||w.genre))h+='<div class="muted" style="margin-top:8px">资料汇总句（以归档原文为准）</div><div class="fan">'+esc(withoutResourceLinks(fanLine(w)))+'</div>';
     if(hasScore(w))h+='<div class="stars">'+DIMS.map(([k,n])=>'<span>'+n+' <b>'+stars((w.score||{})[k])+'</b></span>').join('')+'</div>';
-    if(w.rec)h+='<div class="muted" style="margin-top:4px">'+esc(w.rec)+'</div>';
-    if(w.title)h+='<div class="copybox"><b>标题</b>　'+esc(w.title)+'</div>';
-    if(w.copy)h+='<div class="copybox">'+esc(w.copy)+'</div>';
-    if(w.title||w.copy||w.hook||w.cp)h+='<div class="acts" style="margin-top:6px">'+((w.hook||w.cp||w.genre)?'<button class="chip" data-act="copy-fan" data-id="'+esc(w.id)+'">复制发布文案</button>':'')+(w.title?'<button class="chip" data-act="copy-title" data-id="'+esc(w.id)+'">复制标题</button>':'')+(w.copy?'<button class="chip" data-act="copy-copy" data-id="'+esc(w.id)+'">复制文案</button>':'')+'</div>';
-    if(w.notes)h+='<div class="muted" style="margin-top:6px">'+esc(w.notes)+'</div>';
+    if(w.rec)h+='<div class="muted" style="margin-top:4px">'+esc(withoutResourceLinks(w.rec))+'</div>';
+    if(S.copyView!=='weibo'&&w.title)h+='<div class="copybox"><b>保存标题（以各版本为准）</b>　'+esc(withoutResourceLinks(w.title))+'</div>';
+    h+=renderCopyVersions(w);
+    if(S.copyView!=='weibo'&&(w.title||w.hook||w.cp||w.genre))h+='<div class="acts" style="margin-top:6px">'+((w.hook||w.cp||w.genre)?'<button class="chip" data-act="copy-fan" data-id="'+esc(w.id)+'">复制资料汇总句</button>':'')+(w.title?'<button class="chip" data-act="copy-title" data-id="'+esc(w.id)+'">复制保存标题</button>':'')+'</div>';
+    if(w.notes)h+='<div class="muted" style="margin-top:6px">'+esc(withoutResourceLinks(w.notes))+'</div>';
   }
   return h+'</div>';
 }
@@ -795,8 +934,9 @@ function renderWorks(){
   $('#wfChips').innerHTML=['全部'].concat(STATUS).map(k=>{const c=k==='全部'?S.works.size:[...S.works.values()].filter(w=>w.status===k).length;return '<button class="chip" data-act="wf" data-v="'+k+'" aria-pressed="'+(S.wf===k)+'">'+k+' '+c+'</button>'}).join('');
   const q=S.wq.trim().toLowerCase(),ws=workStats();
   let list=[...S.works.values()];
+  if(S.copyView==='weibo')list=list.filter(work=>visibleCopyVersions(work).length);
   if(S.wf!=='全部')list=list.filter(w=>w.status===S.wf);
-  if(q)list=list.filter(w=>[w.zh,w.en,w.title,w.copy,w.notes].join('\n').toLowerCase().includes(q)||(S.subOn&&S.subs&&String(S.subs.get(w.id)||'').toLowerCase().includes(q)));
+  if(q)list=list.filter(w=>[w.zh,w.en,w.title,w.notes,...copyVersions(w).flatMap(version=>[version.title,version.text])].join('\n').toLowerCase().includes(q)||(S.subOn&&S.subs&&String(S.subs.get(w.id)||'').toLowerCase().includes(q)));
   list.sort((a,b)=>((ws.get(b.id)||{}).last||b.pubDate||'').localeCompare((ws.get(a.id)||{}).last||a.pubDate||'')||(b.updatedAt||0)-(a.updatedAt||0));
   $('#worksList').innerHTML=list.length?list.map(w=>workRow(w,ws.get(w.id),false)).join(''):'<div class="muted">'+(S.works.size?'没有找到。':'还没有作品。记一条交付，或者点「＋ 新作品」。')+'</div>';
   const wrap=$('#hitsWrap'),hits=$('#hits');
@@ -807,7 +947,7 @@ function renderWorks(){
     for(const [id,text] of S.subs){
       const w=S.works.get(id);if(!w)continue;
       String(text).split(/\r?\n/).filter(x=>x.toLowerCase().includes(q)&&!/^\d+$/.test(x.trim())&&!/-->/.test(x)).slice(0,6)
-        .forEach(x=>out.push('<div class="hit"><span class="muted">《'+esc(w.zh)+'》</span> '+esc(x).replace(re,m=>'<b>'+m+'</b>')+'</div>'));
+        .forEach(x=>out.push('<div class="hit"><span class="muted">《'+esc(workChineseTitle(w))+'》</span> '+esc(x).replace(re,m=>'<b>'+m+'</b>')+'</div>'));
     }
     hits.innerHTML='<div class="cap">Lines · '+out.length+' found</div>'+(out.length?out.join(''):'<div class="muted" style="margin-top:6px">字幕里没有这句。只有贴过字幕全文的作品能搜到。</div>');
   }else wrap.hidden=true;
@@ -824,7 +964,7 @@ function renderBest(){
   $('#bfChips').innerHTML=['全部'].concat(BEST_KINDS).map(k=>{const c=k==='全部'?all.length:all.filter(b=>b.kind===k).length;return '<button class="chip" data-act="bf" data-v="'+k+'" aria-pressed="'+(S.bf===k)+'">'+k+' '+c+'</button>'}).join('');
   const q=S.bq.trim().toLowerCase();
   let list=all;if(S.bf!=='全部')list=list.filter(b=>b.kind===S.bf);if(q)list=list.filter(b=>(b.text+' '+(b.work||'')).toLowerCase().includes(q));
-  $('#bestList').innerHTML=list.length?list.map((b,i)=>(i?'<hr>':'')+'<div class="cap">'+esc(b.date.replace(/-/g,'.'))+' · '+esc(b.kind||'')+'</div><div class="best"><span class="hlt">'+esc(b.text)+'</span></div><div class="acts" style="justify-content:space-between"><span class="muted">'+(b.work?'《'+esc(b.work)+'》':'')+'</span><button class="chip" data-act="copy-best" data-v="'+esc(b.date)+'">复制</button></div>').join(''):'<div class="muted">'+(all.length?'没有找到。':'每天在「今天」写下最满意的一项，会收进这里。')+'</div>';
+  $('#bestList').innerHTML=list.length?list.map((b,i)=>(i?'<hr>':'')+'<div class="cap">'+esc(b.date.replace(/-/g,'.'))+' · '+esc(b.kind||'')+'</div><div class="best"><span class="hlt">'+esc(withoutResourceLinks(b.text))+'</span></div><div class="acts" style="justify-content:space-between"><span class="muted">'+(b.work?'《'+esc(b.work)+'》':'')+'</span><button class="chip" data-act="copy-best" data-v="'+esc(b.date)+'">复制</button></div>').join(''):'<div class="muted">'+(all.length?'没有找到。':'每天在「今天」写下最满意的一项，会收进这里。')+'</div>';
 }
 
 /* ---------- writes ---------- */
@@ -865,6 +1005,7 @@ function openWork(id){
   $('#wZh').value=w?w.zh:'';$('#wEn').value=w?w.en||'':'';$('#wKind').value=w?w.kind||'完整剧':'完整剧';$('#wStatus').value=w?w.status||'翻译中':'翻译中';
   $('#wSub').value=w?w.subLink||'':'';$('#wTitle').value=w?w.title||'':'';$('#wCopy').value=w?w.copy||'':'';$('#wPub').value=w?w.pubLink||'':'';$('#wNotes').value=w?w.notes||'':'';
   $('#wHook').value=w?w.hook||'':'';$('#wGenre').value=w?w.genre||'':'';$('#wState').value=w?w.state||'':'';$('#wCp').value=w?w.cp||'':'';$('#wRec').value=w?w.rec||'':'';$('#wPaste').value='';
+  $('#wVersionArchive').innerHTML=w?renderCopyVersions(w):'';
   S.score=Object.assign({look:0,plot:0,spice:0},w&&w.score||{});renderScoreInputs();
   $('#wSubs').value='';$('#wSubs').dataset.orig='';$('#wDel').hidden=!w;
   openOv('workOv');
@@ -932,7 +1073,7 @@ function genExport(){
     m.dayKeys.forEach(k=>{const d=toDate(k);out.push(md(k)+' 星期'+WK[d.getDay()]);out.push(daySummary(k)||'（无）');out.push('')});
     if(list.length){out.push('【本期作品】');list.forEach((x,i)=>{const w=x.w,s=x.s||{};out.push((i+1)+'. 《'+w.zh+'》'+(w.en?' / '+w.en:'')+' · '+(w.kind||'完整剧')+' · '+(w.status||'')+(s.lines?' · '+s.lines+' 条':''));if(w.hook||w.cp||w.genre)out.push('   发布文案：'+fanLine(w));if(hasScore(w))out.push('   评分：'+scoreLine(w))})}
   }
-  return {text:out.join('\n').replace(/\n{3,}/g,'\n\n').trim(),from,to};
+  return {text:withoutResourceLinks(out.join('\n').replace(/\n{3,}/g,'\n\n').trim()),from,to};
 }
 function renderExport(){
   const e=S.exp,R=[['week','本周'],['month','本月'],['last','上月'],['custom','自选日期']];
@@ -950,7 +1091,29 @@ const IMG={W:1080,pad:56,ip:72,bg:'#1b2a47',bg2:'#28406a',paper:'#f5f0e6',ink:'#
   F:'"Noto Serif SC","Songti SC","STSong",serif',M:'"IBM Plex Mono",ui-monospace,Menlo,monospace'};
 function getSign(){try{return localStorage.getItem('ledger_sign')||'老白的窝窝头'}catch(e){return '老白的窝窝头'}}
 function setSign(v){try{localStorage.setItem('ledger_sign',v)}catch(e){}}
-function wrapLines(ctx,text,maxW){const out=[];for(const para of String(text).split('\n')){let line='';for(const ch of para){const t=line+ch;if(line&&ctx.measureText(t).width>maxW){out.push(line);line=ch}else line=t}out.push(line)}return out}
+function wrapLines(ctx,text,maxW){
+  const out=[];
+  for(const para of String(text).split('\n')){
+    let line='';
+    const tokens=para.match(/《[^》\n]*》|[A-Za-z0-9]+(?:['’\-][A-Za-z0-9]+)*|[^]/g)||[];
+    for(const token of tokens){
+      if(ctx.measureText(token).width<=maxW){
+        if(line&&ctx.measureText(line+token).width>maxW){out.push(line);line=''}
+        line+=token;continue;
+      }
+      for(const ch of token){
+        if(line&&ctx.measureText(line+ch).width>maxW){
+          const chars=[...line],last=chars[chars.length-1];
+          if(chars.length>1&&(/[》」』）】、，。！？；：]/.test(ch)||/[《「『（【]/.test(last))){
+            chars.pop();out.push(chars.join(''));line=last+ch;
+          }else{out.push(line);line=ch}
+        }else line+=ch;
+      }
+    }
+    out.push(line);
+  }
+  return out;
+}
 function starPath(ctx,cx,cy,r){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;ctx.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a))}ctx.closePath()}
 function sparkle(ctx,x,y,r,color){ctx.beginPath();ctx.moveTo(x,y-r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.quadraticCurveTo(x,y,x,y+r);ctx.quadraticCurveTo(x,y,x-r,y);ctx.quadraticCurveTo(x,y,x,y-r);ctx.fillStyle=color;ctx.fill()}
 function spacedText(ctx,t,cx,y,sp){const cs=[...t],tw=cs.reduce((a,c)=>a+ctx.measureText(c).width,0)+sp*Math.max(0,cs.length-1);let x=cx-tw/2;ctx.textAlign='left';for(const c of cs){ctx.fillText(c,x,y);x+=ctx.measureText(c).width+sp}}
@@ -959,7 +1122,7 @@ function painter(ctx,dry){
   const font=(size,weight,f)=>{ctx.font=(weight||500)+' '+size+'px '+(f||IMG.F)};
   const P={y:0,x0,w,ctx,dry,
     text(t,o){o=o||{};const size=o.size||28,lh=o.lh||1.6;font(size,o.weight,o.font);
-      for(const l of wrapLines(ctx,t,w)){if(!dry){ctx.fillStyle=o.color||IMG.ink;ctx.textAlign=o.align||'left';ctx.textBaseline='middle';ctx.fillText(l,o.align==='center'?x0+w/2:x0,P.y+size*lh/2)}P.y+=size*lh}},
+      for(const l of wrapLines(ctx,withoutResourceLinks(t),w)){if(!dry){ctx.fillStyle=o.color||IMG.ink;ctx.textAlign=o.align||'left';ctx.textBaseline='middle';ctx.fillText(l,o.align==='center'?x0+w/2:x0,P.y+size*lh/2)}P.y+=size*lh}},
     space(n){P.y+=n},
     rule(color,dash,spark){if(!dry){const m=spark?12:0;ctx.strokeStyle=color||IMG.rule;ctx.lineWidth=2;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(x0+m,P.y);ctx.lineTo(x0+w-m,P.y);ctx.stroke();ctx.setLineDash([]);
       if(spark){sparkle(ctx,x0+m,P.y,11,IMG.gold);sparkle(ctx,x0+w-m,P.y,11,IMG.gold);ctx.fillStyle=IMG.paper;ctx.fillRect(x0+w/2-14,P.y-3,28,6);sparkle(ctx,x0+w/2,P.y,8,IMG.gold)}}},
@@ -971,7 +1134,7 @@ function painter(ctx,dry){
         x+=iw});P.y+=lh},
     tags(arr,lead){const size=20;font(size,500,IMG.M);let x=x0;const h=40;
       if(lead){if(!dry){ctx.fillStyle=IMG.gold;ctx.textAlign='left';ctx.textBaseline='middle';font(24,600,IMG.M);ctx.fillText(lead,x,P.y+h/2)}font(24,600,IMG.M);x+=ctx.measureText(lead).width+18}
-      font(size,500);arr.filter(Boolean).forEach(t=>{const tw=ctx.measureText(t).width+28;if(!dry){ctx.strokeStyle='rgba(184,134,43,.6)';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(x,P.y+4,tw,h-8,16);ctx.stroke();ctx.fillStyle=IMG.gold;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,x+tw/2,P.y+h/2+1)}x+=tw+10});P.y+=h},
+      font(size,500);arr.map(withoutResourceLinks).filter(Boolean).forEach(t=>{const tw=ctx.measureText(t).width+28;if(!dry){ctx.strokeStyle='rgba(184,134,43,.6)';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(x,P.y+4,tw,h-8,16);ctx.stroke();ctx.fillStyle=IMG.gold;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,x+tw/2,P.y+h/2+1)}x+=tw+10});P.y+=h},
     cols(items){const cw=w/items.length;font(56,600,IMG.M);if(!dry)items.forEach((it,i)=>{const cx=x0+cw*i+cw/2;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=IMG.gold;font(56,600,IMG.M);ctx.fillText(it[0],cx,P.y+36);if(it[2]){const vw=ctx.measureText(it[0]).width;font(22,500,IMG.M);ctx.fillStyle=IMG.ink3;ctx.textAlign='left';ctx.fillText(it[2],cx+vw/2+8,P.y+50);ctx.textAlign='center'}ctx.fillStyle=IMG.ink2;font(22,500);ctx.fillText(it[1],cx,P.y+92)});P.y+=120}
   };
   return P;
@@ -986,17 +1149,17 @@ function paintContent(P){
     P.text(dot(from)+' 至 '+dot(to)+'　共 '+list.length+' 部',{size:24,color:IMG.ink2});
     P.space(30);P.rule(IMG.gold,null,true);
     const feat=top&&list.length>1?top:null,rest=list.filter(x=>!feat||x.w.id!==feat.id);
-    if(feat){P.space(34);const best=Q=>{Q.space(30);Q.tags([feat.genre,feat.state],'本期最佳');Q.space(8);Q.text('《'+feat.zh+'》',{size:46,weight:900,lh:1.4});
+    if(feat){P.space(34);const best=Q=>{Q.space(30);Q.tags([feat.genre,feat.state],'本期最佳');Q.space(8);Q.text('《'+workChineseTitle(feat)+'》',{size:46,weight:900,lh:1.4});if(savedCopyText(feat.en))Q.text(feat.en,{size:22,color:IMG.ink2,lh:1.5});
         if(feat.hook)Q.text(feat.hook,{size:27,lh:1.65});if(feat.cp)Q.text(feat.cp,{size:24,color:IMG.ink2,lh:1.65});Q.space(6);Q.scores(feat.score,26);if(feat.rec)Q.text('「'+feat.rec+'」',{size:24,color:IMG.ink2,lh:1.65});Q.space(26)};
       if(!P.dry){const D=painter(P.ctx,true);D.y=P.y;best(D);const c=P.ctx,g=c.createLinearGradient(0,P.y,0,D.y);g.addColorStop(0,'#f1e2c0');g.addColorStop(1,'#e8d3a6');c.fillStyle=g;c.beginPath();c.roundRect(P.x0-30,P.y,P.w+60,D.y-P.y,14);c.fill()}
       best(P);P.space(4);if(rest.length)P.space(0)}
     const compact=rest.length>8;
     if(compact)rest.forEach((x,i)=>{const w=x.w;P.space(22);P.tags([w.genre,w.state],String(i+1).padStart(2,'0'));P.space(4);
-      P.text('《'+w.zh+'》',{size:30,weight:700,lh:1.4});if(w.hook)P.text(w.hook,{size:23,color:IMG.ink2,lh:1.6});
+      P.text('《'+workChineseTitle(w)+'》',{size:30,weight:700,lh:1.4});if(savedCopyText(w.en))P.text(w.en,{size:20,color:IMG.ink2,lh:1.5});if(w.hook)P.text(w.hook,{size:23,color:IMG.ink2,lh:1.6});
       if(hasScore(w))P.scores(w.score,20);P.space(18);if(i<rest.length-1)P.rule(IMG.rule,[6,8])});
     else rest.forEach((x,i)=>{const w=x.w;P.space(34);
       P.tags([w.genre,w.state],String(i+1).padStart(2,'0'));P.space(8);
-      P.text('《'+w.zh+'》',{size:38,weight:700,lh:1.45});
+      P.text('《'+workChineseTitle(w)+'》',{size:38,weight:700,lh:1.45});if(savedCopyText(w.en))P.text(w.en,{size:22,color:IMG.ink2,lh:1.5});
       if(w.hook)P.text(w.hook,{size:26,lh:1.65});
       if(w.cp)P.text(w.cp,{size:24,color:IMG.ink2,lh:1.65});
       if(hasScore(w)){P.space(4);P.scores(w.score,23)}
@@ -1034,7 +1197,7 @@ async function makeImage(){
   for(let x=x1;x<x2;x+=18)ctx.lineTo(x,y1+R2()*7);ctx.lineTo(x2,y1+4);ctx.lineTo(x2,y2-4);for(let x=x2;x>x1;x-=18)ctx.lineTo(x,y2-R2()*7);ctx.lineTo(x1,y2-4);ctx.closePath();ctx.fillStyle=IMG.paper;ctx.fill();ctx.restore();
   ctx.save();ctx.translate(0,IMG.pad+IMG.ip);paintContent(painter(ctx,false));ctx.restore();
   ctx.textAlign='center';ctx.textBaseline='middle';let fy=y2+56;
-  if(sign){ctx.fillStyle='rgba(255,255,255,.88)';ctx.font='700 30px '+IMG.F;spacedText(ctx,sign,IMG.W/2,fy,12);fy+=44}ctx.textAlign='center';
+  if(sign){ctx.fillStyle='rgba(255,255,255,.88)';ctx.font='700 30px '+IMG.F;spacedText(ctx,withoutResourceLinks(sign),IMG.W/2,fy,12);fy+=44}ctx.textAlign='center';
   ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='500 18px '+IMG.M;ctx.fillText('WORK LEDGER · '+dot(ymd(new Date())),IMG.W/2,fy);
   return new Promise(res=>cv.toBlob(b=>res(b),'image/png'));
 }
@@ -1136,11 +1299,12 @@ document.addEventListener('click',e=>{
     case 'type':S.type=v;renderLogForm();break;
     case 'bkind':S.bestKind=v;render();break;
     case 'wf':S.wf=v;render();break;case 'bf':S.bf=v;render();break;
-    case 'copy-day':{const t=daySummary(S.date);t?copyText(md(S.date)+'｜今日完成\n'+t):toast('这一天还没有记录');break}
+    case 'copy-day':{if(S.ready<3){toast('请等云端记录加载后再复制');break}const t=dayNoteText(S.date);t?copyText(md(S.date)+'｜'+(S.date===ymd(new Date())?'今日完成':'当日完成')+'\n'+t):toast('这一天还没有可复制的剧名');break}
     case 'copy-month':copyText($('#monNote').textContent);break;
     case 'copy-best':{const d=S.days.get(v);if(d&&d.best)copyText(d.best.text);break}
     case 'copy-title':{const w=S.works.get(b.dataset.id);if(w)copyText(w.title);break}
-    case 'copy-copy':{const w=S.works.get(b.dataset.id);if(w)copyText(w.copy);break}
+    case 'copy-view':{if(['all','weibo','draft'].includes(v)){S.copyView=v;render()}break}
+    case 'copy-version':{const w=S.works.get(b.dataset.id),version=copyVersions(w).find(item=>item.key===b.dataset.field);if(version){const text=versionDisplayText(version,w);text?copyText(text):toast('没有可复制的中文微博文案')}else toast('这份文案已变化，请刷新后重试');break}
     case 'copy-fan':{const w=S.works.get(b.dataset.id);if(w)copyText(fanLine(w));break}
     case 'score':{const k=b.dataset.d,n=+v;S.score[k]=S.score[k]===n?0:n;renderScoreInputs();break}
     case 'save-pick':{const w=findWork($('#fPick').value);if(!$('#fPick').value.trim()){saveDay({pick:null},'已清空今日最佳');break}if(!w){toast('作品库里没有这部，先记一条交付或新建作品');break}saveDay({pick:{workId:w.id,name:w.zh}},'定为今日最佳了');break}
