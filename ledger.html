@@ -2,6 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-1s4dRzpZh35qPV7CcuZuBKsxtvnBY4sFW4EO3NFFfYc='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -202,6 +204,48 @@ select.in{appearance:auto}
 .ov{position:fixed;inset:0;z-index:20;background:rgba(6,12,30,.45);display:flex;align-items:flex-end;justify-content:center}
 .sheet-wrap{width:100%;max-width:640px;max-height:92vh;overflow:auto;padding:0 max(8px,env(safe-area-inset-right,0px)) 0 max(8px,env(safe-area-inset-left,0px))}
 .sheet-wrap .paper{padding:26px 20px calc(24px + env(safe-area-inset-bottom,0px));clip-path:var(--torn-top)}
+.ni-dot{position:absolute;top:2px;right:calc(50% - 24px);min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#c99a2e;color:#fff;font:700 10px/16px var(--mono);font-style:normal;letter-spacing:0;text-indent:0}
+.seg{display:flex;align-items:baseline;gap:10px}
+.seg button{position:relative;border:0;background:none;padding:0 0 4px;font:inherit;letter-spacing:inherit;color:var(--ink3)}
+.seg button[aria-selected="true"]{color:var(--ink)}
+.seg button[aria-selected="true"]::before{content:"";position:absolute;left:0;right:.18em;bottom:0;height:1.5px;background:var(--ring)}
+.seg .ni-dot{top:-6px;right:-14px}
+.seg-sep{font-style:normal;font-size:10px;color:var(--ring);transform:translateY(-3px)}
+.pk-filter{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 18px 4px}
+.pk-filter::-webkit-scrollbar{display:none}
+.pk-filter .chip{flex:0 0 auto}
+.chip sup{font-family:var(--mono);font-size:9px;margin-left:3px;opacity:.75}
+.pk-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pk-head .cap{color:var(--p-ink3);letter-spacing:.16em}
+.pk-stamp{flex:0 0 auto;font-family:var(--serif);font-size:12px;letter-spacing:.2em;text-indent:.2em;padding:3px 8px;border:1.5px solid currentColor;border-radius:3px;transform:rotate(-4deg);opacity:.88}
+.pk-stamp[data-k="idea"]{color:var(--p-ink2)}
+.pk-stamp[data-k="doing"]{color:#2a5fa8}
+.pk-stamp[data-k="out"]{color:#a8742a}
+.pk-stamp[data-k="skip"]{color:var(--p-ink3);text-decoration:line-through}
+.pk-title{margin-top:10px;font-size:19px;font-weight:700;letter-spacing:.04em;color:var(--p-ink);line-height:1.5;word-break:break-word}
+.pk-newdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#c99a2e;margin-right:6px;vertical-align:middle;box-shadow:0 0 0 3px rgba(201,154,46,.18)}
+.pk-inlib{display:inline-block;white-space:nowrap;font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:.14em;color:var(--p-ink3);margin-left:8px;vertical-align:middle}
+.pk-en{font-family:var(--latin);font-style:italic;font-size:15px;color:var(--p-ink2);word-break:break-word}
+.pk-meta{margin-top:4px;font-size:12px;letter-spacing:.08em;color:var(--p-ink2)}
+.pk-note{margin-top:10px;padding:2px 0 2px 12px;border-left:2px solid var(--p-rule);font-size:14px;line-height:1.75;color:var(--p-ink);white-space:pre-wrap;word-break:break-word}
+.pk-follow{margin-top:12px;padding:8px 12px;border-left:2px solid #c99a2e;background:rgba(201,154,46,.08);font-size:13px;color:var(--p-ink)}
+.pk-follow div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:3px 0}
+.pk-follow span{min-width:0;word-break:break-word;line-height:1.6}
+.pk-follow b{font-weight:400;color:#8a5f16}
+.pk-follow .linkbtn{flex:0 0 auto;font-size:12px;color:#8a5f16}
+.pk-links{margin-top:10px;display:flex;gap:16px;font-size:13px}
+.pk-links a{color:var(--p-ink2);text-underline-offset:3px}
+.pk-acts{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;padding-top:10px;border-top:1px dashed var(--p-rule)}
+.pk-acts>div{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pk-acts .arrow{font-weight:700;color:var(--p-ink)}
+.linkbtn.pk-soft{text-decoration:none;font-size:13px;color:var(--p-ink2);letter-spacing:.08em}
+.pk-me{margin:18px 4px 0;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink3)}
+.pk-me .linkbtn{font-family:var(--serif);letter-spacing:.1em}
+.pk-irow{display:grid;grid-template-columns:72px 1fr 1fr;gap:6px 8px;padding:10px;border:1px dashed var(--p-rule);border-radius:8px}
+.pk-irow .pk-inote{grid-column:1/-1}
+.pk-ichk{font-size:13px;color:var(--p-ink2);display:flex;align-items:center;gap:6px}
+.pk-irow .linkbtn{justify-self:end;grid-column:2/-1;font-size:13px;color:#a3403a}
+.linkbtn{border:0;background:none;padding:0;color:inherit;text-decoration:underline;font-size:inherit;cursor:pointer}
 .swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center}
 .sw{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;color:var(--p-ink2)}
 .sw i{width:58px;height:58px;border-radius:50%;display:block;box-shadow:0 0 0 3px var(--paper),0 0 0 4px var(--p-rule)}
@@ -240,6 +284,9 @@ select.in{appearance:auto}
 .cover-art{position:absolute;z-index:1;top:8px;right:1px;width:56%;height:214px;opacity:.94;pointer-events:none}
 @media (max-width:500px){.notebook-cover{min-height:211px;padding:12px 19px 14px}.cover-edition{font-size:7px;letter-spacing:.13em}.cover-copy{margin-top:8px}.notebook-cover h1{font-size:31px;letter-spacing:.12em}.cover-kicker{font-size:9px;letter-spacing:.17em}.cover-description{font-size:9px;letter-spacing:0;max-width:170px}.cover-art{width:59%;height:177px;top:30px;right:-17px;opacity:.85}.cover-footer{margin-top:24px}.notebook-cover .cap{font-size:7px;letter-spacing:.08em}.cover-tools{margin-right:-9px}}
 @media (max-width:359px){.cover-edition{font-size:6px;letter-spacing:.07em}.notebook-cover{padding-left:16px;padding-right:16px}.notebook-cover h1{font-size:28px}.cover-art{right:-27px;opacity:.72}.cover-description{max-width:148px;font-size:8px}.cover-kicker{font-size:8px}}
+
+.pk-calendar{margin:14px 2px 16px}.pk-calendar-grid,.pk-weekday{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.pk-weekday{text-align:center;font-size:11px;color:var(--ink2);padding-bottom:6px}.pk-day{min-width:0;min-height:44px;background:transparent;color:var(--ink);border:1px solid transparent;border-radius:8px;font-family:var(--mono);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 2px}.pk-day small{font-size:9px;min-height:14px}.pk-day.outside{opacity:.35}.pk-day[aria-pressed="true"]{background:var(--nav);color:var(--nav-ink)}.pk-calendar-bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px}.pk-date-tools{display:flex;justify-content:center;gap:14px;margin-top:8px;font-size:12px}.pk-auth-note{font-size:12px;color:var(--p-ink2)}.pk-sync-note{font-size:11px;color:var(--ink2);text-align:center}.pk-conflict{padding:12px;border:1px solid #c99a2e;background:#fff0c9;color:#674c20;font-size:13px}.shared-only #installEntry,.shared-only .nav [data-view="today"],.shared-only .nav [data-view="month"],.shared-only .nav [data-view="best"],.shared-only .nav [data-act="open-log"]{display:none}.shared-only .nav-in{display:flex;justify-content:center}.shared-only .seg button:disabled{opacity:.45}.shared-only #ledgerAccess,.shared-only #ledgerAccessNote{display:none!important}
+
 </style>
 </head>
 <body>
@@ -393,7 +440,7 @@ select.in{appearance:auto}
     <div class="sh"><h2>备份</h2><span class="cap">Backup · Keep A Copy</span></div>
     <div class="pw"><div class="paper stack" style="gap:12px">
       <div class="muted" id="bkInfo"></div>
-      <div class="acts"><button class="btn" id="bkSave" data-act="bk-save">导出全部数据</button><button class="btn ghost" data-act="bk-load">从备份恢复</button></div>
+      <div class="acts"><button class="btn" id="bkSave" data-act="bk-save">导出私人账本</button><button class="btn ghost" data-act="bk-load">从备份恢复</button></div>
       <div id="bkPlan" hidden></div>
       <input type="file" id="bkFile" accept=".json,application/json" hidden>
     </div></div>
@@ -401,7 +448,7 @@ select.in{appearance:auto}
 
   <!-- 作品库 -->
   <section id="v-works" hidden>
-    <div class="sh"><h2>作品库</h2><span class="cap">Archive · Find Anything</span></div>
+    <div class="sh"><h2 class="seg"><button data-view="works">作品库</button><i class="seg-sep">✦</i><button data-view="picks">剧单</button></h2><span class="cap">Archive · Find Anything</span></div>
     <div class="search"><span aria-hidden="true">⌕</span><input id="wq" type="search" placeholder="中文名、英文名、文案里的词"></div>
     <div class="toolrow">
       <label><input type="checkbox" id="subToggle">也搜字幕台词</label>
@@ -419,6 +466,17 @@ select.in{appearance:auto}
     <div class="chips sky-chips" id="bfChips" style="margin:12px 2px"></div>
     <div class="pw"><div class="paper c" id="bestList"></div></div>
   </section>
+
+  <section id="v-picks" hidden>
+    <div class="sh row"><div><h2 class="seg"><button data-view="works">作品库</button><i class="seg-sep">✦</i><button data-view="picks">剧单</button></h2><span class="cap">Shared Picks · New Finds</span></div><button class="arrow" data-act="pk-new">放一部剧</button></div>
+
+    <div class="pw"><div class="paper b"><div class="cap">Shared With The Same Key</div><p class="pk-auth-note">共用原钥匙：两人都能查看、修改和删除整个账本，包括作品、日志和字幕；这里不做个人权限隔离。</p><p id="pkNeedKey" class="pk-auth-note">先在上方输入原账本钥匙。无需新账号、新钥匙或独立网址。</p><div id="pkActorPanel"><form id="pkActorForm" class="row" style="gap:10px"><label class="f" style="flex:1">协作署名<input id="pkActorName" class="in" maxlength="80" placeholder="例如：老白" required></label><button class="btn" type="submit">记下署名</button></form><p class="pk-auth-note">署名和设备标记只帮助分工，不能验证个人身份。</p></div></div></div>
+    <div id="pkCalendar" class="pk-calendar" hidden><div class="pk-calendar-bar"><button class="mini" data-act="pk-month-prev" aria-label="上个月">‹</button><b id="pkMonthLabel"></b><button class="mini" data-act="pk-month-next" aria-label="下个月">›</button></div><div class="pk-weekday" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div><div id="pkCalendarGrid" class="pk-calendar-grid" aria-label="追剧日期"></div><div class="pk-date-tools"><span id="pkDateLabel">全部日期</span><button class="linkbtn" data-act="pk-date-all">全部日期</button><button class="linkbtn" data-act="pk-date-today">今天</button></div></div>
+    <div class="pk-sync-note" id="pkSyncNote" hidden></div>
+    <div class="chips sky-chips pk-filter" id="pkStatusChips"></div>
+    <div class="stack" id="pkList" style="margin-top:14px"></div>
+    <div class="pk-me" id="pkWho"></div>
+  </section>
 </div>
 
 <nav class="nav" aria-label="页面">
@@ -426,7 +484,7 @@ select.in{appearance:auto}
     <button class="ni" role="tab" data-view="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><path d="M12 4.5l1.6 6 6 1.5-6 1.5L12 19.5l-1.6-6L4.5 12l5.9-1.5z"/></svg><span>今天</span></button>
     <button class="ni" role="tab" data-view="month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4M8 13h2M12 13h2M16 13h1M8 16.5h2M12 16.5h2"/></svg><span>本月</span></button>
     <button class="star" data-act="open-log" aria-label="记一条"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5l2.1 7.4 7.4 2.1-7.4 2.1L12 20.5l-2.1-7.4L2.5 11l7.4-2.1z"/></svg></button>
-    <button class="ni" role="tab" data-view="works"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/></svg><span>作品库</span></button>
+    <button class="ni" role="tab" data-view="lib"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/></svg><span>作品库</span></button>
     <button class="ni" role="tab" data-view="best"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3.5h12v17l-6-4-6 4z"/><path d="M12 7.5l1 2.4 2.5.2-1.9 1.6.6 2.5L12 12.9l-2.2 1.3.6-2.5-1.9-1.6 2.5-.2z"/></svg><span>满意集</span></button>
   </div>
 </nav>
@@ -450,6 +508,34 @@ select.in{appearance:auto}
 </div>
 
 <!-- work sheet -->
+<div class="ov" id="pkOv" hidden>
+  <div class="sheet-wrap"><form class="paper stack" id="pkForm" autocomplete="off" style="gap:14px">
+    <div><div class="cap">Shared Pick</div><div class="ptitle" id="kTitle">放一部剧</div></div>
+    <p id="kConflict" class="pk-conflict" hidden>对方刚改过，你的草稿没有覆盖新内容。<button type="button" class="linkbtn" data-act="pk-reload">载入最新版本</button></p>
+    <label class="f">计划追剧日期<input class="in" id="kWatchDate" type="date" min="1900-01-01" max="2100-12-31"></label>
+    <label class="f" id="kMeWrap">你是谁（这台手机会记住）<input class="in" id="kMe" maxlength="12" placeholder="例如：老白"></label>
+    <div class="row2 w1">
+      <label class="f">中文名<input class="in" id="kZh" placeholder="可以先写暂定名"></label>
+      <label class="f">英文名<input class="in" id="kEn"></label>
+    </div>
+    <label class="f">在哪看到的（链接）<input class="in" id="kLink" inputmode="url" placeholder="https://"></label>
+    <label class="f">类型标签<input class="in" id="kGenre" placeholder="欧美 AI、泰剧、短剧……"></label>
+    <label class="f">时长（可选）<input class="in" id="kDuration" maxlength="80" placeholder="例如：每集 20 分钟 / 全剧 2 小时"></label>
+    <label class="f">为什么推荐<textarea class="in" id="kNote" rows="2" placeholder="一句话就行"></textarea></label>
+    <div class="f">状态<div class="chips" id="kStatusChips"></div></div>
+    <div class="f">播出<div class="chips" id="kAirChips"></div></div>
+    <div class="row2">
+      <label class="f">做到第几集<input class="in" id="kEpsDone" type="number" inputmode="numeric" min="0"></label>
+      <label class="f">一共几集<input class="in" id="kEpsTotal" type="number" inputmode="numeric" min="0" placeholder="不知道可空着"></label>
+    </div>
+    <div class="f">官中<div class="chips" id="kOffChips"></div></div>
+    <div class="f">集数问题<div id="kIssues" class="stack" style="gap:10px;margin-top:4px"></div><button type="button" class="chip" data-act="pk-iss-add" style="align-self:flex-start;margin-top:8px">＋ 记一集问题</button></div>
+    <label class="f">谁来做<select class="in" id="kClaim"></select></label>
+    <label class="f">上传或微博链接<input class="in" id="kPub" inputmode="url" placeholder="发出去以后补"></label>
+    <div class="acts" style="justify-content:space-between"><button class="btn warn" type="button" id="kDel" data-act="pk-del">删除</button><div class="acts"><button class="btn ghost" type="button" data-act="close">取消</button><button class="btn" type="submit">保存</button></div></div>
+  </form></div>
+</div>
+
 <div class="ov" id="workOv" hidden>
   <div class="sheet-wrap"><form class="paper stack" id="workForm" autocomplete="off" style="gap:14px">
     <div><div class="cap">Archive Entry</div><div class="ptitle" id="wfTitle">作品</div></div>
@@ -545,7 +631,10 @@ select.in{appearance:auto}
 
 <div class="toast" id="toast" role="status"></div>
 
-<script>
+<script type="module">
+import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js';
+const SHARED_ONLY=false;
+
 (function(){
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -567,7 +656,7 @@ function parseFan(s){const m=String(s||'').trim().match(/^(.*?[！!？?。…])?
 const normName=s=>String(s||'').trim().replace(/^《(.+)》$/,'$1').trim();
 const md=s=>{const d=toDate(s);return (d.getMonth()+1)+'月'+d.getDate()+'日'};
 
-const S={works:new Map(),logs:[],days:new Map(),ready:0,view:'today',date:ymd(new Date()),month:ymd(new Date()).slice(0,7),
+const S={picks:new Map(),pkGroup:'全部',pkWho:'全部',pkSeenAt:null,pkEdit:null,pkFormStatus:'待看',works:new Map(),logs:[],days:new Map(),ready:0,view:'today',date:ymd(new Date()),month:ymd(new Date()).slice(0,7),
   copyView:'all',wq:'',wf:'全部',bq:'',bf:'全部',subs:null,subOn:false,type:'交付',bestKind:'对白',editId:null,score:{look:0,plot:0,spice:0},
   exp:{range:'week',style:'self',from:'',to:''}};
 let db=null,writable=false;
@@ -627,7 +716,7 @@ function armed(btn,label,fn){
   btn._h=setTimeout(()=>{btn.classList.remove('armed');btn.textContent=btn._old},3000);
 }
 function openOv(id){document.querySelectorAll('.ov').forEach(o=>o.hidden=o.id!==id)}
-function closeOv(){document.querySelectorAll('.ov').forEach(o=>o.hidden=true)}
+function closeOv(){if(!pkCloseGuard())return;document.querySelectorAll('.ov').forEach(o=>o.hidden=true)}
 
 /* ---------- derived numbers ---------- */
 function workStats(){
@@ -798,9 +887,9 @@ function render(){
   const doneWorks=[...ws.keys()].filter(id=>S.works.has(id)).length;
   const bestCount=[...S.days.values()].filter(d=>d.best&&d.best.text).length;
   $('#workNames').innerHTML=[...S.works.values()].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).map(w=>'<option value="'+esc(workChineseTitle(w))+'">').join('');
-  document.querySelectorAll('.ni').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.view===S.view)));
-  for(const v of ['today','month','works','best'])$('#v-'+v).hidden=v!==S.view;
-  ({today:renderToday,month:renderMonth,works:renderWorks,best:renderBest})[S.view](ws,{totLines,doneWorks,bestCount});
+  document.querySelectorAll('.ni,.seg button').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.view===S.view||(t.dataset.view==='lib'&&(S.view==='works'||S.view==='picks')))));
+  for(const v of ['today','month','works','best','picks'])$('#v-'+v).hidden=v!==S.view;
+  ({today:renderToday,month:renderMonth,works:renderWorks,best:renderBest,picks:renderPicks})[S.view](ws,{totLines,doneWorks,bestCount});renderPkDot();
 }
 
 function renderToday(ws,tot){
@@ -1193,7 +1282,7 @@ async function makeImage(){
 
 /* ---------- backup ---------- */
 const lastBk=()=>{try{return localStorage.getItem('ledger_backup')||''}catch(e){return ''}};
-function renderBackup(){const l=lastBk();$('#bkInfo').innerHTML='把作品、每天的记录、满意集和字幕台词存成一个文件，建议每月存一次。'+(l?'<br>上次备份：'+esc(md(l))+'。':'<br>还没备份过。')}
+function renderBackup(){const l=lastBk();$('#bkInfo').innerHTML='把作品、每天的记录、满意集和字幕台词存成一个文件，建议每月存一次。共享剧单单独保存，不包含在此私人备份中。'+(l?'<br>上次备份：'+esc(md(l))+'。':'<br>还没备份过。')}
 async function buildBackup(){
   let subs=[];try{const sn=await db.collection('subs').get();subs=sn.docs.map(d=>Object.assign({id:d.id},d.data()))}catch(e){}
   return {app:'作品账本',format:1,exportedAt:new Date().toISOString(),
@@ -1204,7 +1293,7 @@ function planRestore(o){
   if(!o||o.app!=='作品账本'||!Array.isArray(o.works)){$('#bkPlan').hidden=false;$('#bkPlan').innerHTML='<div class="muted">这个文件不是老白笔记的备份。</div>';return}
   const n=k=>Array.isArray(o[k])?o[k].filter(x=>x&&typeof x.id==='string'&&/^[A-Za-z0-9_\-.~:@+]{1,200}$/.test(x.id)).length:0;
   bkPending=o;$('#bkPlan').hidden=false;
-  $('#bkPlan').innerHTML='<hr><div>备份时间：'+esc((()=>{const d=new Date(o.exportedAt);return isNaN(d)?'不详':md(ymd(d))})())+'</div><div class="muted">里面有作品 '+n('works')+' 部、记录 '+n('logs')+' 条、日子 '+n('days')+' 天、字幕台词 '+n('subs')+' 份。恢复会补回缺的，同一条以备份为准；账本里比备份多出来的不会删。</div><div class="acts" style="margin-top:8px"><button class="btn" id="bkApply" data-act="bk-apply">确认恢复</button><button class="btn ghost" data-act="bk-cancel">算了</button></div>';
+  $('#bkPlan').innerHTML='<hr><div>备份时间：'+esc((()=>{const d=new Date(o.exportedAt);return isNaN(d)?'不详':md(ymd(d))})())+'</div><div class="muted">里面有作品 '+n('works')+' 部、记录 '+n('logs')+' 条、日子 '+n('days')+' 天、字幕台词 '+n('subs')+' 份。这里只恢复私人账本，不会导入或覆盖共享剧单。恢复会补回缺的，同一条以备份为准；账本里比备份多出来的不会删。</div><div class="acts" style="margin-top:8px"><button class="btn" id="bkApply" data-act="bk-apply">确认恢复</button><button class="btn ghost" data-act="bk-cancel">算了</button></div>';
 }
 async function applyRestore(){
   const o=bkPending;if(!o||!writable)return toast('还连不上账本，暂时不能恢复');
@@ -1261,12 +1350,162 @@ async function savePaste(){
   btn.disabled=!writable;
 }
 
+/* ---------- shared picks (剧单) ---------- */
+const PK_STATUS=['待看','想做','不做','翻译中','已翻完','已上传','已发微博'];
+const PK_NEXT={'待看':['想做','不做'],'想做':['翻译中','不做'],'翻译中':['已翻完'],'已翻完':['已上传'],'已上传':['已发微博'],'已发微博':[],'不做':['待看']};
+const PK_AIR=['未完结','已完结'],PK_OFF=['还没出官中','已出官中'],PK_KIND=['缺集','字幕有误','画质差','音画不同步','其他'],PK_ACT=['补齐','汰换','修正','待定'];
+const PK_DONE_ST=['翻译中','已翻完','已上传','已发微博'];
+function pkOpenIssues(p){return (Array.isArray(p.issues)?p.issues:[]).filter(i=>i&&!i.done)}
+function pkFollow(p){const t=[];
+  if(p.airing==='未完结')t.push('追更'+(p.epsDone?' · 做到第'+p.epsDone+'集':'')+(p.epsTotal?' / 共'+p.epsTotal+'集':''));
+  if(p.airing==='已完结'&&p.official!=='已出官中')t.push('已完结 · 还没官中');
+  if(p.official==='已出官中'&&PK_DONE_ST.includes(p.status))t.push('已出官中 · 看要不要汰换');
+  const n=pkOpenIssues(p).length;if(n)t.push(n+' 处集数问题待处理');
+  return t}
+const PK_GROUPS=[['全部',null],['要跟进',p=>pkFollow(p).length>0],['待定',['待看','想做']],['在做',['翻译中','已翻完']],['已发出',['已上传','已发微博']],['不做',['不做']]];
+const pkInGroup=(p,g)=>!g?true:(typeof g==='function'?g(p):g.includes(p.status));
+const pkGet=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
+const pkSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+
+function pkFind(zh,en){const z=normName(zh).toLowerCase(),e=String(en||'').trim().toLowerCase();for(const p of S.picks.values()){if(z&&normName(p.zh).toLowerCase()===z)return p;if(e&&String(p.en||'').trim().toLowerCase()===e)return p}return null}
+function pkUnseen(){const seen=+pkGet('ledger_picks_seen')||0,me=pkMe();let n=0;for(const p of S.picks.values())if((p.createdAt||0)>seen&&p.by&&p.byId!==PK_ACTOR.id)n++;return n}
+function renderPkDot(){const n=S.view==='picks'?0:pkUnseen();document.querySelectorAll('.ni[data-view="lib"],.seg button[data-view="picks"]').forEach(t=>{let d=t.querySelector('.ni-dot');if(n){if(!d){d=document.createElement('i');d.className='ni-dot';t.appendChild(d)}d.textContent=n>9?'9+':n}else if(d)d.remove()})}
+function pkStampKind(s){return ['翻译中','已翻完'].includes(s)?'doing':['已上传','已发微博'].includes(s)?'out':s==='不做'?'skip':'idea'}
+function renderPicks(){
+  pkRenderCalendar();if(!PK_CONNECTED){$('#pkList').innerHTML='';$('#pkWho').textContent='';$('#pkStatusChips').innerHTML='';return}
+  if(S.pkSeenAt==null){S.pkSeenAt=+pkGet('ledger_picks_seen')||0}
+  pkSet('ledger_picks_seen',String(Date.now()));
+  const me=pkMe(),all=[...S.picks.values()];
+  const groups=PK_GROUPS.concat(me?[['我认领的',p=>p.claimId===PK_ACTOR.id]]:[]);
+  if(!groups.some(g=>g[0]===S.pkGroup))S.pkGroup='全部';
+  $('#pkStatusChips').innerHTML=groups.map(([n,g])=>{const c=all.filter(p=>pkInGroup(p,g)).length;return '<button class="chip" data-act="pk-group" data-v="'+n+'" aria-pressed="'+(S.pkGroup===n)+'">'+n+(c&&n!=='全部'?'<sup>'+c+'</sup>':'')+'</button>'}).join('');
+  $('#pkWho').innerHTML=me?'记录身份 · '+esc(me)+'　<button class="linkbtn" data-act="pk-me">改署名</button>':'<button class="linkbtn" data-act="pk-me">先设置这台手机是谁在用</button>';
+  const g=(groups.find(x=>x[0]===S.pkGroup)||groups[0])[1];
+  const list=all.filter(p=>pkInGroup(p,g)&&(!PK_DATE||p.watchDate===PK_DATE)).sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
+  if(!list.length){$('#pkList').innerHTML='<div class="pw"><div class="paper b"><div class="muted">'+(all.length?'这一栏是空的。':'还没有剧。看到想做的新剧，点右上「放一部剧」，对方打开就能看到。')+'</div></div></div>';return}
+  $('#pkList').innerHTML=list.map((p,i)=>{
+    const id=esc(p.id),st=p.status||'待看',isNew=(p.createdAt||0)>S.pkSeenAt&&p.by&&p.byId!==PK_ACTOR.id,inLib=!!findWork(p.zh);
+    const when=ymd(new Date(p.createdAt||Date.now())).slice(5).replace('-','.');
+    const meta=[p.genre,p.duration,p.watchDate?'追剧 '+p.watchDate:'',p.claim?p.claim+' 在做':''].filter(Boolean).map(esc).join('　·　');
+    const fl=[];
+    if(p.airing==='未完结')fl.push(['追更','第 '+(+p.epsDone||0)+(p.epsTotal?' / '+p.epsTotal:'')+' 集','<button class="linkbtn" data-act="pk-ep-plus" data-id="'+id+'">做完第 '+((+p.epsDone||0)+1)+' 集</button>']);
+    if(p.airing==='已完结'&&p.official!=='已出官中')fl.push(['已完结','还没官中','']);
+    if(p.official==='已出官中'&&PK_DONE_ST.includes(st))fl.push(['已出官中','看要不要汰换','']);
+    pkOpenIssues(p).forEach(x=>fl.push(['第 '+(x.ep||'?')+' 集',(x.kind||'问题')+' → '+(x.action||'待定')+(x.note?'，'+x.note:''),'<button class="linkbtn" data-act="pk-iss-done" data-id="'+id+'" data-v="'+esc(x.id)+'">处理好了</button>']));
+    const follow=fl.length?'<div class="pk-follow">'+fl.map(([a,b2,c])=>'<div><span><b>✦ '+esc(a)+'</b>　'+esc(b2)+'</span>'+c+'</div>').join('')+'</div>':'';
+    const nx=PK_NEXT[st]||[];
+    const main=nx[0]?'<button class="arrow" data-act="pk-status" data-id="'+id+'" data-v="'+nx[0]+'">'+(nx[0]==='待看'?'改回待看':'标成'+nx[0])+'</button>':'';
+    const alt=nx[1]?'<button class="linkbtn pk-soft" data-act="pk-status" data-id="'+id+'" data-v="'+nx[1]+'">'+nx[1]+'</button>':'';
+    const claim=!p.claim?'<button class="linkbtn pk-soft" data-act="pk-claim" data-id="'+id+'">我来做</button>':(p.claimId===PK_ACTOR.id?'<button class="linkbtn pk-soft" data-act="pk-unclaim" data-id="'+id+'">放下</button>':'');
+    const lnk=(u,t)=>pkSafeURL(u)?'<a href="'+esc(pkSafeURL(u))+'" target="_blank" rel="noopener noreferrer">'+t+'</a>':'';
+    const links=(p.link||p.pubLink)?'<div class="pk-links">'+(p.link?lnk(p.link,'看原片'):'')+(p.pubLink?lnk(p.pubLink,'看发出去的'):'')+'</div>':'';
+    return '<div class="pw"><div class="paper '+(i%2?'c':'b')+' pk">'+
+      '<div class="pk-head"><span class="cap">'+esc(p.by||'有人')+' · '+when+(p.updatedBy&&p.updatedBy!==p.by?' · '+esc(p.updatedBy)+' 改过':'')+'</span><span class="pk-stamp" data-k="'+pkStampKind(st)+'">'+esc(st)+'</span></div>'+
+      '<div class="pk-title">'+(isNew?'<i class="pk-newdot" title="新放的"></i>':'')+'《'+esc(p.zh)+'》'+(inLib?'<span class="pk-inlib">已入库</span>':'')+'</div>'+
+      (p.en?'<div class="pk-en">'+esc(p.en)+'</div>':'')+
+      (meta?'<div class="pk-meta">'+meta+'</div>':'')+
+      (p.note?'<div class="pk-note">'+esc(p.note)+'</div>':'')+follow+links+
+      '<div class="pk-acts"><div>'+main+alt+'</div><div>'+claim+'<button class="linkbtn pk-soft" data-act="pk-edit" data-id="'+id+'">编辑</button></div></div>'+
+      '</div></div>'}).join('');
+}
+function pkFillClaim(cur){const names=pkNames();if(cur&&!names.includes(cur))names.push(cur);$('#kClaim').innerHTML='<option value="">还没人认领</option>'+names.map(n=>'<option value="'+esc(n)+'"'+(n===cur?' selected':'')+'>'+esc(n)+'</option>').join('')}
+function pkStatusChips(){$('#kStatusChips').innerHTML=PK_STATUS.map(s=>'<button type="button" class="chip" data-act="pk-form-status" data-v="'+s+'" aria-pressed="'+(S.pkFormStatus===s)+'">'+s+'</button>').join('')}
+function pkAirChips(){
+  $('#kAirChips').innerHTML=PK_AIR.map(s=>'<button type="button" class="chip" data-act="pk-form-air" data-v="'+s+'" aria-pressed="'+(S.pkAir===s)+'">'+s+'</button>').join('');
+  $('#kOffChips').innerHTML=PK_OFF.map(s=>'<button type="button" class="chip" data-act="pk-form-off" data-v="'+s+'" aria-pressed="'+(S.pkOff===s)+'">'+s+'</button>').join('');
+}
+function pkReadIssues(){return [...document.querySelectorAll('#kIssues .pk-irow')].map(r=>{const i=+r.dataset.i,o=S.pkIssues[i]||{};return Object.assign({},o,{ep:r.querySelector('.pk-ep').value.trim(),kind:r.querySelector('.pk-kind').value,action:r.querySelector('.pk-act').value,note:r.querySelector('.pk-inote').value.trim(),done:r.querySelector('.pk-idone').checked})})}
+function pkIssueRows(){
+  const opt=(arr,v)=>arr.map(s=>'<option'+(s===v?' selected':'')+'>'+s+'</option>').join('');
+  $('#kIssues').innerHTML=S.pkIssues.length?S.pkIssues.map((x,i)=>'<div class="pk-irow" data-i="'+i+'">'+
+    '<input class="in pk-ep" inputmode="numeric" placeholder="第几集" value="'+esc(x.ep||'')+'">'+
+    '<select class="in pk-kind">'+opt(PK_KIND,x.kind||'缺集')+'</select>'+
+    '<select class="in pk-act">'+opt(PK_ACT,x.action||'补齐')+'</select>'+
+    '<input class="in pk-inote" placeholder="备注，例如：第 12 分钟起字幕错位" value="'+esc(x.note||'')+'">'+
+    '<label class="pk-ichk"><input type="checkbox" class="pk-idone"'+(x.done?' checked':'')+'> 已处理</label>'+
+    '<button type="button" class="linkbtn" data-act="pk-iss-rm" data-v="'+i+'">删掉这条</button></div>').join('')
+    :'<div class="muted">哪一集缺了、字幕错了、要换片源，都记在这里。</div>';
+}
+/* Full-access shared-key mode: same private ledger key, no accounts or new credentials. */
+const PK_ACTOR={id:'',name:''};
+const PK_CLIENT=new OwnerKeyPicksClient(()=>CLOUD,()=>PK_ACTOR),PK_ROWS=new RowStore();
+let PK_EDIT=null,PK_TIMER=null,PK_SESSION=0,PK_SYNCING=false,PK_CONNECTED=false;
+const PK_BUSY=new Set();let PK_MONTH=ymd(new Date()).slice(0,7),PK_DATE=null;
+function pkMe(){return PK_ACTOR.name}
+function pkNames(){return [...new Set([PK_ACTOR.name,...PK_ROWS.live().map(r=>r.claim)].filter(Boolean))]}
+function pkPublish(){S.picks=new Map(PK_ROWS.live().map(r=>[r.id,{...r,createdAt:Date.parse(r.createdAt),updatedAt:Date.parse(r.updatedAt)}]));render()}
+function pkError(e){
+ if(e.code==='cancelled')return;
+ if(e.code==='bad_key'){pkDisconnect();return toast('钥匙已失效，请重新输入原账本钥匙')}
+ if(e.code==='actor_required'){pkAskMe();return toast(e.message)}
+ if(e.code==='40001'||/REVISION_CONFLICT|CLAIM_OWNED_BY_OTHER|DELETED|NOT_FOUND|IDEMPOTENCY_CONFLICT/.test(e.message)){if(PK_EDIT)$('#kConflict').hidden=false;toast('对方刚改过，没有覆盖。你的草稿还在，请先载入最新版本');void pkSync();return}
+ if(e.code==='23505')return toast('这部剧已经在剧单里，请刷新查看');
+ if(e.code==='PGRST202'||e.code==='42883')return toast('共享剧单后端还没有启用，私人账本照常使用');
+ toast('网络未确认保存结果，请刷新核对；新增重试不会重复创建');
+}
+async function pkSync(){
+ if(!PK_CONNECTED||PK_SYNCING)return;const session=PK_SESSION;PK_SYNCING=true;
+ try{const rows=await PK_CLIENT.rpc('ledger_picks_list');if(session!==PK_SESSION)return;PK_ROWS.apply(rows);pkPublish();$('#pkSyncNote').textContent='已同步 · '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+ catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION)PK_SYNCING=false}
+}
+function pkOnLedgerReady(){if(!PK_CONNECTED){PK_CONNECTED=true;PK_SESSION++;PK_TIMER=setInterval(()=>{if(!document.hidden)void pkSync()},30000);void pkSync()}render()}
+function pkDisconnect(){PK_SESSION++;PK_CLIENT.clear();PK_CONNECTED=false;PK_EDIT=null;PK_ROWS.clear();PK_BUSY.clear();PK_SYNCING=false;clearInterval(PK_TIMER);$('#pkOv').hidden=true;$('#pkForm').reset();$('#kIssues').innerHTML='';S.picks.clear();render()}
+function pkAskMe(){$('#pkActorPanel').hidden=false;$('#pkActorName').value=PK_ACTOR.name;$('#pkActorName').focus()}
+function pkSaveActor(e){e.preventDefault();const name=$('#pkActorName').value.trim();if(!name||name.length>80)return toast('署名请填 1 到 80 个字');PK_ACTOR.name=name;pkSet('picks_actor_name',name);$('#pkActorPanel').hidden=true;render();toast('署名已记下，仅作协作标记，不是个人账号')}
+function pkRenderCalendar(){
+ $('#pkCalendar').hidden=!PK_CONNECTED;$('#pkSyncNote').hidden=!PK_CONNECTED;$('#pkNeedKey').hidden=PK_CONNECTED;
+ if(!PK_CONNECTED)return;
+ $('#pkMonthLabel').textContent=PK_MONTH.replace('-',' 年 ')+' 月';
+ const counts=new Map();for(const p of PK_ROWS.live())if(p.watchDate)counts.set(p.watchDate,(counts.get(p.watchDate)||0)+1);
+ $('#pkCalendarGrid').innerHTML=pkMonthDays(PK_MONTH).map(d=>'<button class="pk-day'+(d.inMonth?'':' outside')+'" data-act="pk-date" data-v="'+d.date+'"'+(pkValidDate(d.date)?'':' disabled')+' aria-pressed="'+(PK_DATE===d.date)+'" aria-label="'+d.date+'，'+(counts.get(d.date)||0)+' 部剧"><span>'+d.day+'</span><small>'+(counts.get(d.date)?counts.get(d.date)+' 部':'')+'</small></button>').join('');
+ $('#pkDateLabel').textContent=PK_DATE?'正在看 '+PK_DATE+' 的剧':'全部日期';
+}
+function pkReadDraft(){return{zh:normName($('#kZh').value),en:$('#kEn').value.trim(),link:$('#kLink').value.trim(),genre:$('#kGenre').value.trim(),duration:$('#kDuration').value.trim(),note:$('#kNote').value.trim(),status:S.pkFormStatus||'待看',airing:S.pkAir||'',official:S.pkOff||'',epsDone:Number($('#kEpsDone').value||0),epsTotal:Number($('#kEpsTotal').value||0),issues:pkReadIssues().filter(x=>x.ep||x.note).map(x=>({id:x.id||crypto.randomUUID(),ep:Number(x.ep||0),kind:x.kind,action:x.action,note:x.note,done:!!x.done})),pubLink:$('#kPub').value.trim(),watchDate:$('#kWatchDate').value||null}}
+function openPick(id){
+ if(!PK_CONNECTED)return toast('先用原钥匙打开账本');if(!PK_ACTOR.name){toast('先写一个协作署名');return pkAskMe()}if(PK_EDIT?.saving)return;
+ const r=id?PK_ROWS.rows.get(id):null;if(id&&(!r||r.deleted))return toast('这部剧已删除');
+ const p=pkEditable(r);if(!id)p.watchDate=PK_DATE;
+ PK_EDIT={id:id||crypto.randomUUID(),isNew:!id,revision:r?.revision,original:structuredClone(p),saving:false};
+ S.pkEdit=id||null;S.pkFormStatus=p.status;S.pkAir=p.airing;S.pkOff=p.official;S.pkIssues=structuredClone(p.issues);
+ $('#kTitle').textContent=id?'改一下这部剧':'放一部剧';$('#kZh').value=p.zh;$('#kEn').value=p.en;$('#kLink').value=p.link;$('#kGenre').value=p.genre;$('#kDuration').value=p.duration;$('#kNote').value=p.note;$('#kPub').value=p.pubLink;$('#kWatchDate').value=p.watchDate||'';$('#kEpsDone').value=p.epsDone;$('#kEpsTotal').value=p.epsTotal;
+ $('#kMeWrap').hidden=true;$('#kConflict').hidden=true;$('#kDel').hidden=!id;pkStatusChips();pkAirChips();pkIssueRows();pkFillClaim(r?.claim||'');$('#kClaim').disabled=true;$('#kClaim').title='认领在剧单卡片上操作';pkSetBusy(false);openOv('pkOv');
+}
+function pkSetBusy(busy){document.querySelectorAll('#pkForm button,#pkForm input,#pkForm textarea,#pkForm select').forEach(n=>n.disabled=busy);$('#kClaim').disabled=true}
+function pkCloseGuard(){if(!PK_EDIT||$('#pkOv').hidden)return true;if(PK_EDIT.saving)return false;const changed=Object.keys(pkPatchBetween(PK_EDIT.original,pkReadDraft())).length;if(changed&&!confirm('放下这次未保存的修改？'))return false;PK_EDIT=null;return true}
+async function savePick(e){
+ e.preventDefault();const edit=PK_EDIT;if(!PK_CONNECTED||!edit||edit.saving)return;
+ let draft;try{draft=pkValidateDraft(pkReadDraft())}catch(e){return toast(e.message)}
+ // Stable IDs for newly added issues survive retry and change detection.
+ S.pkIssues=structuredClone(draft.issues);pkIssueRows();const patch=pkPatchBetween(edit.original,draft);
+ if(!edit.isNew&&!Object.keys(patch).length){PK_EDIT=null;closeOv();return}
+ edit.saving=true;pkSetBusy(true);const session=PK_SESSION;
+ try{const row=await PK_CLIENT.rpc(edit.isNew?'ledger_picks_create':'ledger_picks_update',edit.isNew?{p_id:edit.id,p_data:draft}:{p_id:edit.id,p_revision:edit.revision,p_patch:patch});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_EDIT=null;closeOv();pkPublish();toast(row.deleted?'这部剧已被删除，未重新创建':'存好了，两个人都能看到')}
+ catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION){edit.saving=false;pkSetBusy(false)}}
+}
+async function pkPatch(id,patch,msg){
+ const row=PK_ROWS.rows.get(id);if(!PK_CONNECTED||!row||row.deleted||PK_BUSY.has(id))return;
+ PK_BUSY.add(id);const session=PK_SESSION;
+ try{let result;if(Object.hasOwn(patch,'claim'))result=await PK_CLIENT.rpc('ledger_picks_claim',{p_id:id,p_revision:row.revision,p_claim:!!patch.claim});
+ else{if(patch.issues)patch.issues=patch.issues.map(x=>({id:x.id,ep:Number(x.ep),kind:x.kind,action:x.action,note:x.note,done:!!x.done}));try{pkValidateDraft({...pkEditable(row),...patch})}catch(e){toast(e.message);return}result=await PK_CLIENT.rpc('ledger_picks_update',{p_id:id,p_revision:row.revision,p_patch:patch})}
+ if(session!==PK_SESSION)return;PK_ROWS.apply([result]);pkPublish();if(msg)toast(msg)
+ }catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION)PK_BUSY.delete(id)}
+}
+async function pkDelete(){const edit=PK_EDIT;if(!edit||edit.isNew||edit.saving)return;edit.saving=true;pkSetBusy(true);const session=PK_SESSION;
+ try{const row=await PK_CLIENT.rpc('ledger_picks_delete',{p_id:edit.id,p_revision:edit.revision});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_EDIT=null;closeOv();pkPublish();toast('从剧单里删掉了')}
+ catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION){edit.saving=false;pkSetBusy(false)}}
+}
+function pkInitialize(){
+ let id=pkGet('picks_actor_id');if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)){id=crypto.randomUUID();pkSet('picks_actor_id',id)}PK_ACTOR.id=id;PK_ACTOR.name=(pkGet('picks_actor_name')||pkGet('ledger_me')).slice(0,80);
+ $('#pkActorForm').addEventListener('submit',pkSaveActor);$('#pkActorName').value=PK_ACTOR.name;$('#pkActorPanel').hidden=!!PK_ACTOR.name;
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!PK_CONNECTED&&writable&&CLOUD.key)pkOnLedgerReady();else void pkSync()}});window.addEventListener('pagehide',pkDisconnect);window.addEventListener('pageshow',()=>{if(!PK_CONNECTED&&writable&&CLOUD.key)pkOnLedgerReady()});
+}
+
 /* ---------- events ---------- */
 function ledgerViewFromHash(){
   const h=location.hash.slice(1),v=new URLSearchParams(h).get('view')||h;
-  return ['today','month','works','best'].includes(v)?v:'';
+  return ['today','month','works','best','picks'].includes(v)?v:'';
 }
-const go=v=>{S.view=v;try{
+const go=v=>{if(SHARED_ONLY&&!['picks','lib'].includes(v))return toast('私人账本不在共享范围');if(SHARED_ONLY&&v==='lib')v='picks';if(v==='lib')v=pkUnseen()?'picks':(pkGet('ledger_lib')||'works');if(v==='works'||v==='picks')pkSet('ledger_lib',v);if(S.view==='picks'&&v!=='picks')S.pkSeenAt=null;S.view=v;try{
   const u=new URL(location.href);u.searchParams.delete('k');u.hash=v;
   history.replaceState(null,'',u.pathname+u.search+u.hash);
 }catch(x){}render();window.scrollTo(0,0)};
@@ -1274,6 +1513,8 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act],[data-view]');if(!b)return;
   if(b.dataset.view)return go(b.dataset.view);
   const a=b.dataset.act,v=b.dataset.v;
+  if(SHARED_ONLY&&!a.startsWith('pk-')&&!['close','skin','open-skin'].includes(a))return toast('这里只开放共享剧单');
+  if(PK_EDIT?.saving&&(a.startsWith('pk-')||a==='close'))return;
   const shiftDay=n=>{const d=toDate(S.date);d.setDate(d.getDate()+n);S.date=ymd(d);$('#fBest').dataset.for='';render()};
   const shiftMon=n=>{const d=toDate(S.month+'-01');d.setMonth(d.getMonth()+n);S.month=ymd(d).slice(0,7);render()};
   switch(a){
@@ -1325,12 +1566,35 @@ document.addEventListener('click',e=>{
     case 'del-log':armed(b,'确认',async()=>{try{await db.doc('logs/'+b.dataset.id).delete();toast('已删除')}catch(x){toast('没删掉，请再试一次')}});break;
     case 'new-work':openWork(null);break;
     case 'edit-work':openWork(b.dataset.id);break;
+    case 'pk-month-prev':if(PK_MONTH>'1900-01'){PK_MONTH=pkShiftMonth(PK_MONTH,-1);render()}break;
+    case 'pk-month-next':if(PK_MONTH<'2100-12'){PK_MONTH=pkShiftMonth(PK_MONTH,1);render()}break;
+    case 'pk-date':if(pkValidDate(v)){PK_DATE=v;PK_MONTH=v.slice(0,7);render()}break;
+    case 'pk-date-all':PK_DATE=null;render();break;
+    case 'pk-date-today':PK_DATE=ymd(new Date());PK_MONTH=PK_DATE.slice(0,7);render();break;
+    case 'pk-reload':if(PK_EDIT&&confirm('载入最新版本？未保存草稿将放下。')){const id=PK_EDIT.id;PK_EDIT=null;$('#pkOv').hidden=true;openPick(id)}break;
+    case 'pk-new':openPick(null);break;
+    case 'pk-edit':openPick(b.dataset.id);break;
+    case 'pk-me':pkAskMe();break;
+    case 'pk-group':S.pkGroup=v;render();break;
+    case 'pk-who':S.pkWho=v;render();break;
+    case 'pk-form-status':S.pkFormStatus=v;pkStatusChips();break;
+    case 'pk-status':pkPatch(b.dataset.id,{status:v},'已标成'+v+(v==='已发微博'||v==='已上传'?'，可以点「编辑」补上链接':''));break;
+    case 'pk-form-air':S.pkAir=S.pkAir===v?'':v;pkAirChips();break;
+    case 'pk-form-off':S.pkOff=S.pkOff===v?'':v;pkAirChips();break;
+    case 'pk-iss-add':S.pkIssues=pkReadIssues();S.pkIssues.push({id:crypto.randomUUID(),ep:'',kind:'缺集',action:'补齐',note:'',done:false});pkIssueRows();{const rs=document.querySelectorAll('#kIssues .pk-ep');if(rs.length)rs[rs.length-1].focus()}break;
+    case 'pk-iss-rm':S.pkIssues=pkReadIssues();S.pkIssues.splice(+v,1);pkIssueRows();break;
+    case 'pk-iss-done':{const p=S.picks.get(b.dataset.id);if(!p)break;const iss=(p.issues||[]).map(x=>x.id===v?Object.assign({},x,{done:true,doneBy:pkMe(),doneAt:Date.now()}):x);pkPatch(p.id,{issues:iss},'这一集处理好了');break}
+    case 'pk-ep-plus':{const p=S.picks.get(b.dataset.id);if(!p)break;const n=(+p.epsDone||0)+1;pkPatch(p.id,{epsDone:n},p.epsTotal&&n>=p.epsTotal?'做到最后一集了，完结的话点「编辑」改成已完结':'做到第'+n+'集了');break}
+    case 'pk-claim':pkPatch(b.dataset.id,{claim:pkMe()},'这部归你了');break;
+    case 'pk-unclaim':pkPatch(b.dataset.id,{claim:''},'放下了');break;
+    case 'pk-del':armed(b,'再点一次删除',pkDelete);break;
     case 'del-work':armed(b,'再点一次删除',async()=>{const id=S.editId;if(!id)return;try{await db.doc('works/'+id).delete();await db.doc('subs/'+id).delete();closeOv();toast('作品已删除，记录还在')}catch(x){toast('没删掉，请再试一次')}});break;
   }
 });
 document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===e.currentTarget||e.target.classList.contains('sheet-wrap'))closeOv()}));
 $('#logForm').addEventListener('submit',saveLog);
 $('#workForm').addEventListener('submit',saveWork);
+$('#pkForm').addEventListener('submit',savePick);
 let wqT;$('#wq').addEventListener('input',e=>{clearTimeout(wqT);wqT=setTimeout(()=>{S.wq=e.target.value;renderWorks()},200)});
 $('#subToggle').addEventListener('change',e=>{S.subOn=e.target.checked;renderWorks()});
 $('#bq').addEventListener('input',e=>{S.bq=e.target.value;renderBest()});
@@ -1340,10 +1604,10 @@ $('#bkFile').addEventListener('change',e=>{const f=e.target.files&&e.target.file
 $('#expSign').addEventListener('change',e=>{setSign(e.target.value.trim());$('#expImgWrap').hidden=true});
 ['#expFrom','#expTo'].forEach(s=>$(s).addEventListener('change',()=>{S.exp.from=$('#expFrom').value;S.exp.to=$('#expTo').value;renderExport()}));
 $('#wPaste').addEventListener('input',e=>{const p=parseFan(e.target.value);if(!p)return;if(!$('#wZh').value.trim())$('#wZh').value=p.zh;$('#wHook').value=p.hook;$('#wGenre').value=p.genre;$('#wState').value=p.state;$('#wCp').value=p.cp});
-window.addEventListener('hashchange',()=>{const v=ledgerViewFromHash();if(v){S.view=v;render()}});
-{const v=ledgerViewFromHash();if(v)S.view=v}
+window.addEventListener('hashchange',()=>{const v=ledgerViewFromHash();if(v&&(!SHARED_ONLY||v==='picks')){S.view=v;render()}});
+{const v=ledgerViewFromHash();if(v&&!SHARED_ONLY)S.view=v}
 
-drawSky();render();
+pkInitialize();drawSky();render();
 
 /* ---------- cloud (GitHub Pages + Supabase) ---------- */
 const CLOUD={url:'https://tvoynrohczmovuyorplm.supabase.co',anon:'sb_publishable_Gmn9YRMI7NmoUWRT5AG5wA_wGzM40DN',key:''};
@@ -1364,9 +1628,10 @@ function confirmLedgerAccess(){
   $('#ledgerAccess').hidden=true;$('#ledgerAccessKey').value='';
   $('#ledgerAccessNote').hidden=remembered;
   $('#ledgerAccessNote').textContent=remembered?'':'已经连接，但这个浏览器不允许记住钥匙。本次可正常使用；关闭或刷新后可能需要再输入。建议使用普通浏览器标签页，并允许保存网站数据。';
-  stripLedgerKeyFromUrl();
+  stripLedgerKeyFromUrl();pkOnLedgerReady();
 }
 function rejectLedgerAccess(){
+  pkDisconnect();
   const invalid=CLOUD.key;CLOUD.key='';
   try{if(localStorage.getItem('ledger_key')===invalid)localStorage.removeItem('ledger_key')}catch(e){}
   showLedgerAccess('钥匙不正确，请重新输入。原来的钥匙没有更换。');
@@ -1379,20 +1644,21 @@ function rejectLedgerAccess(){
 $('#ledgerAccessForm').addEventListener('submit',async e=>{
   e.preventDefault();const key=ledgerKeyFromEntry($('#ledgerAccessKey').value);
   if(!key)return showLedgerAccess('请先输入钥匙，或粘贴原来的专属链接。');
-  CLOUD.key=key;$('#ledgerAccessSubmit').disabled=true;$('#ledgerAccessMessage').textContent='正在验证并读取云端记录…';
+  pkDisconnect();CLOUD.key=key;$('#ledgerAccessSubmit').disabled=true;$('#ledgerAccessMessage').textContent='正在验证并读取云端记录…';
   setStatus('正在读取云端账本…');
   try{await db.retry()}finally{$('#ledgerAccessSubmit').disabled=false}
 });
 window.addEventListener('hashchange',()=>{
   const supplied=new URLSearchParams(location.hash.slice(1)).get('k');
-  if(supplied){CLOUD.key=supplied;stripLedgerKeyFromUrl();if(db)db.retry()}
+  if(supplied){pkDisconnect();CLOUD.key=supplied;stripLedgerKeyFromUrl();if(db)db.retry()}
 });
 function supaDb(){
   const call=async(fn,args)=>{
+    const requestKey=CLOUD.key;
     const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
     try{
-      const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',signal:controller.signal,headers:{apikey:CLOUD.anon,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_key:CLOUD.key},args||{}))});
-      const t=await r.text();if(!r.ok){const e=new Error(t);e.code=/bad key/.test(t)?'bad_key':(r.status===413?'quota_exceeded':'http_'+r.status);throw e}
+      const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',signal:controller.signal,headers:{apikey:CLOUD.anon,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_key:requestKey},args||{}))});
+      const t=await r.text();if(requestKey!==CLOUD.key){const changed=new Error('key changed');changed.code='stale_key';throw changed}if(!r.ok){const e=new Error(t);e.code=/bad key/.test(t)?'bad_key':(r.status===413?'quota_exceeded':'http_'+r.status);throw e}
       return t?JSON.parse(t):null;
     }finally{clearTimeout(timeout)}
   };
@@ -1448,7 +1714,7 @@ function supaDb(){
   async function loop(){
     if(!CLOUD.key)return;
     if(running)return;running=true;
-    try{const t=await pull();if(!loaded){loaded=true;COLS.forEach(fire)}else t.forEach(fire);
+    try{const t=await pull();if(!PK_CONNECTED)confirmLedgerAccess();if(!loaded){loaded=true;COLS.forEach(fire)}else t.forEach(fire);
       if(broken){broken=false;writable=true;confirmLedgerAccess();setStatus('');render()}
       await drainInbox();
     }catch(e){broken=true;COLS.forEach(c=>subs[c].forEach(s=>s.err&&s.err(e)))}

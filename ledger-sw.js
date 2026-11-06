@@ -1,9 +1,9 @@
 /* A network-first static shell. No record cache, background sync, or write queue. */
 'use strict';
 const CACHE_PREFIX = 'laobai-notes-shell-';
-const CACHE_NAME = CACHE_PREFIX + '2026-11-06-v1';
+const CACHE_NAME = CACHE_PREFIX + '2026-11-06-shared-key-calendar-v3';
 const BASE = new URL('./', self.location.href);
-const SHELL = ['ledger.html', 'ledger-app.css', 'ledger-app.js', 'ledger.webmanifest',
+const SHELL = ['ledger.html', 'ledger-app.css', 'ledger-app.js', 'ledger.webmanifest', 'core.js',
   'icons/laobai.svg', 'icons/laobai-180.png', 'icons/laobai-192.png',
   'icons/laobai-512.png', 'icons/laobai-maskable-512.png'].map(path => new URL(path, BASE).href);
 const PAGE = new URL('ledger.html', BASE).href;
@@ -39,3 +39,4 @@ self.addEventListener('fetch', event => {
   });
   event.respondWith(response);
 });
+
