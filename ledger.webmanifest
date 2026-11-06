@@ -1,0 +1,18 @@
+{
+  "id": "./ledger.html",
+  "name": "老白笔记",
+  "short_name": "老白笔记",
+  "description": "作品、灵感，和认真生活的痕迹。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "./ledger.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#cfe0ec",
+  "theme_color": "#173c60",
+  "icons": [
+    { "src": "icons/laobai-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/laobai-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/laobai-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

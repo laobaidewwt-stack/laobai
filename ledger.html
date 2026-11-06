@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="application-name" content="老白笔记">
+<link rel="manifest" href="./ledger.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/laobai-180.png">
+<link rel="icon" type="image/svg+xml" href="./icons/laobai.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/laobai-192.png">
+<link rel="stylesheet" href="./ledger-app.css">
+<script defer src="./ledger-app.js"></script>
 <meta name="apple-mobile-web-app-title" content="老白笔记">
 <meta name="format-detection" content="telephone=no">
 <title>老白笔记</title>
@@ -282,6 +291,12 @@ select.in{appearance:auto}
       <path d="M85 225h204" stroke="#b9b18f" stroke-width=".6" opacity=".3"/>
     </svg>
   </header>
+  <button type="button" class="install-entry" id="installEntry" aria-haspopup="dialog" aria-controls="installDialog">
+    <img src="./icons/laobai-192.png" alt="" width="38" height="38">
+    <span><strong>放到手机主屏幕</strong><small>点开就记，不用翻链接。</small></span>
+    <span class="install-arrow" aria-hidden="true">↗</span>
+  </button>
+  <div class="app-offline" id="appOffline" role="status" hidden>现在没有网络。页面可以打开，云端记录需要联网后读取和保存。</div>
   <div class="rule"></div>
   <div class="status" id="status" hidden></div>
   <div class="status" id="inboxStatus" role="status" hidden></div>
@@ -496,6 +511,35 @@ select.in{appearance:auto}
     <div class="acts" style="justify-content:space-between"><button class="btn ghost" data-act="close">关闭</button><div class="acts"><button class="btn ghost" id="expSave" data-act="exp-save">存成文件</button><button class="btn ghost" data-act="exp-copy">复制文字</button><button class="btn" id="expImgBtn" data-act="exp-img">存成图片</button></div></div>
   </div></div>
 </div>
+
+
+<dialog class="install-dialog" id="installDialog" aria-labelledby="installTitle" aria-describedby="installIntro" hidden>
+  <div class="install-inner">
+    <div class="install-heading">
+      <img src="./icons/laobai-192.png" alt="老白笔记图标" width="64" height="64">
+      <button type="button" class="install-close" id="installClose" aria-label="关闭安装说明">×</button>
+    </div>
+    <h2 id="installTitle">把笔记，放在手边。</h2>
+    <p class="install-intro" id="installIntro">添加到主屏幕后，像 App 一样单独打开。<br>不用去应用商店，仍然是同一本云端账本。</p>
+    <div class="install-tabs" role="group" aria-label="选择手机类型">
+      <button type="button" class="install-tab" data-install-platform="ios" aria-pressed="false">iPhone / iPad</button>
+      <button type="button" class="install-tab" data-install-platform="android" aria-pressed="true">Android</button>
+    </div>
+    <ol class="install-steps" id="installIOS" hidden>
+      <li><span>用 <b>Safari</b> 打开这个页面。如果在微信或聊天 App 里，先选择「在浏览器中打开」。</span></li>
+      <li><span>点「分享」<svg class="install-share" viewBox="0 0 20 24" aria-hidden="true"><path d="M10 15V2m-4 4 4-4 4 4M5 9H2v13h16V9h-3"/></svg>，再选 <b>「添加到主屏幕」</b>。部分版本先点浏览器菜单，再点「分享」。</span></li>
+      <li><span>名称保留「老白笔记」。如有 <b>「作为网页 App 打开」</b>，保持开启，再点「添加」。</span></li>
+    </ol>
+    <ol class="install-steps" id="installAndroid">
+      <li><span>用 <b>Chrome</b> 打开这个页面，不要停留在微信或聊天 App 的内置浏览器里。</span></li>
+      <li><span>点浏览器右上角 <b>⋮</b>，选择 <b>「安装应用」</b> 或 <b>「添加到主屏幕」</b>。</span></li>
+      <li><span>确认添加后，回到手机主屏幕，点 <b>「老白笔记」</b> 图标打开。</span></li>
+    </ol>
+    <button type="button" class="btn install-prompt" id="installNow" hidden>安装老白笔记</button>
+    <p class="install-status" id="installStatus" role="status"></p>
+    <p class="install-note">首次从主屏幕打开，可能需要再输入一次原来的钥匙。验证成功后会记在这个应用里；不会另建账本。记录的读取和保存需要网络。</p>
+  </div>
+</dialog>
 
 <div class="toast" id="toast" role="status"></div>
 
