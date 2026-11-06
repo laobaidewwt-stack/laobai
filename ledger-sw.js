@@ -1,9 +1,9 @@
 /* A network-first static shell. No record cache, background sync, or write queue. */
 'use strict';
 const CACHE_PREFIX = 'laobai-notes-shell-';
-const CACHE_NAME = CACHE_PREFIX + '2026-11-06-shared-key-calendar-v5';
+const CACHE_NAME = CACHE_PREFIX + '2026-11-06-drama-push-v1';
 const BASE = new URL('./', self.location.href);
-const SHELL = ['ledger.html', 'ledger-app.css', 'ledger-app.js', 'ledger.webmanifest', 'core.js',
+const SHELL = ['ledger.html', 'ledger-app.css', 'ledger-app.js', 'ledger.webmanifest', 'core.js', 'notifications.js', 'activity.js', 'activity.css',
   'icons/laobai.svg', 'icons/laobai-180.png', 'icons/laobai-192.png',
   'icons/laobai-512.png', 'icons/laobai-maskable-512.png'].map(path => new URL(path, BASE).href);
 const PAGE = new URL('ledger.html', BASE).href;
@@ -40,3 +40,34 @@ self.addEventListener('fetch', event => {
   event.respondWith(response);
 });
 
+
+// No private ledger key or record snapshot is stored in the service worker.
+self.addEventListener('message',event=>{if(event.data?.type==='LAOBAI_PUSH_VERSION')event.ports[0]?.postMessage({pushVersion:1})});
+let pushTail=Promise.resolve();
+self.addEventListener('push',event=>{
+ // Every delivered push displays a notification, as required by WebKit.
+ // Serialize so a late older event cannot overwrite a currently displayed newer one.
+ pushTail=pushTail.catch(()=>{}).then(async()=>{
+  let data={};try{data=event.data?.json()||{}}catch{}
+  let title=typeof data.title==='string'?data.title.slice(0,160):'剧单有更新';
+  let status=typeof data.body==='string'?data.body.slice(0,500):'打开查看最新记录';
+  const pickId=/^[a-f0-9-]{36}$/i.test(data.pickId||'')?data.pickId:'updates';
+  const tag='laobai-picks';
+  let eventId=/^[0-9]{1,19}$/.test(data.eventId||'')?String(data.eventId):'0';
+  try{for(const old of await self.registration.getNotifications({tag})){
+   const previous=old.data?.eventId;
+   if(/^[0-9]{1,19}$/.test(previous||'')&&BigInt(previous)>=BigInt(eventId)){title=old.title;status=old.body;eventId=String(previous)}
+  }}catch{}
+  await self.registration.showNotification(title,{body:status,tag,renotify:true,icon:new URL('icons/laobai-192.png',BASE).href,badge:new URL('icons/laobai-192.png',BASE).href,data:{url:PAGE+'#picks',eventId}});
+  for(const client of await self.clients.matchAll({type:'window',includeUncontrolled:true})){if(new URL(client.url).origin===BASE.origin)client.postMessage({type:'LAOBAI_PICK_ACTIVITY'})}
+ });
+ event.waitUntil(pushTail);
+});
+self.addEventListener('notificationclick',event=>{
+ event.notification.close();
+ event.waitUntil((async()=>{
+  const target=PAGE+'#picks';const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+  for(const client of windows){const u=new URL(client.url);if(u.origin===BASE.origin&&u.pathname===new URL(PAGE).pathname){await client.focus();client.postMessage({type:'LAOBAI_OPEN_PICK_UPDATES'});return}}
+  if(self.clients.openWindow)await self.clients.openWindow(target);
+ })());
+});

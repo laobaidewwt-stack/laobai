@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-U/CIJCeKPctljpumMQ/knxkPj7XHQHE3QVzj3ZsSXBU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4rBIaelC57E4mz7A6QICTo2XWAg5Fh+PYGMGZAJHmiU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -473,9 +473,17 @@ select.in{appearance:auto}
     <div class="pw"><div class="paper b"><div class="cap">Shared With The Same Key</div><p class="pk-auth-note">共用原钥匙：两人都能查看、修改和删除整个账本，包括作品、日志和字幕；这里不做个人权限隔离。</p><p id="pkNeedKey" class="pk-auth-note">先在上方输入原账本钥匙。无需新账号、新钥匙或独立网址。</p><div id="pkActorPanel"><form id="pkActorForm" class="row" style="gap:10px"><label class="f" style="flex:1">协作署名<input id="pkActorName" class="in" maxlength="80" placeholder="例如：老白" required></label><button class="btn" type="submit">记下署名</button></form><p class="pk-auth-note">署名和设备标记只帮助分工，不能验证个人身份。</p></div></div></div>
     <div id="pkCalendar" class="pk-calendar" hidden><div class="pk-calendar-bar"><button class="mini" data-act="pk-month-prev" aria-label="上个月">‹</button><b id="pkMonthLabel"></b><button class="mini" data-act="pk-month-next" aria-label="下个月">›</button></div><div class="pk-weekday" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div><div id="pkCalendarGrid" class="pk-calendar-grid" aria-label="追剧日期"></div><div class="pk-date-tools"><span id="pkDateLabel">全部日期</span><button class="linkbtn" data-act="pk-date-all">全部日期</button><button class="linkbtn" data-act="pk-date-today">今天</button></div></div>
     <div class="pk-sync-note" id="pkSyncNote" hidden></div>
+    <dialog id="pkNoticePanel" class="pk-notice paper" aria-labelledby="pkNoticeTitle"><div class="pk-notice-heading"><h2 id="pkNoticeTitle">剧单通知</h2><button id="pkPushClose" type="button" class="linkbtn" aria-label="关闭通知设置">关闭</button></div>
+      <div class="pk-notice-heading"><strong>剧单动态</strong><button id="pkChangesRefresh" class="linkbtn" type="button">刷新</button></div>
+      <p id="pkPushStatus" class="pk-notice-note" role="status" aria-live="polite"></p>
+      <div class="pk-notice-actions"><button id="pkPushEnable" class="mini" type="button" disabled>打开锁屏通知</button><button id="pkPushDisable" class="mini" type="button" hidden>关掉通知</button><button id="pkPushTest" class="mini" type="button" hidden>发送测试通知</button></div>
+      <p class="pk-notice-note">锁屏通知显示对方的署名和剧单动静。每分钟最多一条，其余合并；本设备自己的操作不提醒。订阅保存在原后台，通过 Apple 推送服务投递；关闭网页仍可接收。</p>
+      <details><summary>最近更新记录</summary><p id="pkChangesNote" class="pk-notice-note">记录启用后的变化；署名仅作协作标记。</p><p id="pkChangesEmpty" class="pk-notice-note">还没有更新记录。</p><ol id="pkChangesList" class="pk-changes"></ol><button id="pkChangesMore" class="linkbtn" type="button" hidden>更早记录</button></details>
+    </dialog>
+
     <div class="chips sky-chips pk-filter" id="pkStatusChips"></div>
     <div class="stack" id="pkList" style="margin-top:14px"></div>
-    <div class="pk-me" id="pkWho"></div>
+    <div class="pk-me-row"><div class="pk-me" id="pkWho"></div><button id="pkPushEntry" type="button" class="linkbtn" hidden>通知</button></div>
   </section>
 </div>
 
@@ -632,6 +640,8 @@ select.in{appearance:auto}
 <div class="toast" id="toast" role="status"></div>
 
 <script type="module">
+import {createNoticeUI} from './notifications.js?v=20261106-push1';
+import {createActivityUI} from './activity.js?v=20261106-push1';
 import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261106-fetchfix';
 const SHARED_ONLY=false;
 
@@ -1430,6 +1440,7 @@ function pkIssueRows(){
 const PK_ACTOR={id:'',name:''};
 const PK_CLIENT=new OwnerKeyPicksClient(()=>CLOUD,()=>PK_ACTOR),PK_ROWS=new RowStore();
 let PK_EDIT=null,PK_TIMER=null,PK_SESSION=0,PK_SYNCING=false,PK_CONNECTED=false;
+const PK_NOTICE=createNoticeUI(()=>CLOUD,()=>PK_ACTOR);const PK_ACTIVITY=createActivityUI(()=>CLOUD,()=>PK_ACTOR,{onError:e=>{if(e.message==='STORAGE_UNAVAILABLE')toast('浏览器未允许保存已读进度，刷新后可能再次看到提醒')}});
 const PK_BUSY=new Set();let PK_MONTH=ymd(new Date()).slice(0,7),PK_DATE=null;
 function pkMe(){return PK_ACTOR.name}
 function pkNames(){return [...new Set([PK_ACTOR.name,...PK_ROWS.live().map(r=>r.claim)].filter(Boolean))]}
@@ -1445,11 +1456,11 @@ function pkError(e){
 }
 async function pkSync(){
  if(!PK_CONNECTED||PK_SYNCING)return;const session=PK_SESSION;PK_SYNCING=true;
- try{const rows=await PK_CLIENT.rpc('ledger_picks_list');if(session!==PK_SESSION)return;PK_ROWS.apply(rows);pkPublish();$('#pkSyncNote').textContent='已同步 · '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+ try{const rows=await PK_CLIENT.rpc('ledger_picks_list');if(session!==PK_SESSION)return;PK_ROWS.apply(rows);pkPublish();PK_NOTICE.sync();PK_ACTIVITY.sync();$('#pkSyncNote').textContent='已同步 · '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
  catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION)PK_SYNCING=false}
 }
-function pkOnLedgerReady(){if(!PK_CONNECTED){PK_CONNECTED=true;PK_SESSION++;PK_TIMER=setInterval(()=>{if(!document.hidden)void pkSync()},30000);void pkSync()}render()}
-function pkDisconnect(){PK_SESSION++;PK_CLIENT.clear();PK_CONNECTED=false;PK_EDIT=null;PK_ROWS.clear();PK_BUSY.clear();PK_SYNCING=false;clearInterval(PK_TIMER);$('#pkOv').hidden=true;$('#pkForm').reset();$('#kIssues').innerHTML='';S.picks.clear();render()}
+function pkOnLedgerReady(){if(!PK_CONNECTED){PK_CONNECTED=true;PK_NOTICE.connect();PK_ACTIVITY.connect();PK_SESSION++;PK_TIMER=setInterval(()=>{if(!document.hidden)void pkSync()},30000);void pkSync()}render()}
+function pkDisconnect(){PK_NOTICE.clear();PK_ACTIVITY.clear();PK_SESSION++;PK_CLIENT.clear();PK_CONNECTED=false;PK_EDIT=null;PK_ROWS.clear();PK_BUSY.clear();PK_SYNCING=false;clearInterval(PK_TIMER);$('#pkOv').hidden=true;$('#pkForm').reset();$('#kIssues').innerHTML='';S.picks.clear();render()}
 function pkAskMe(){$('#pkActorPanel').hidden=false;$('#pkActorName').value=PK_ACTOR.name;$('#pkActorName').focus()}
 function pkSaveActor(e){e.preventDefault();const name=$('#pkActorName').value.trim();if(!name||name.length>80)return toast('署名请填 1 到 80 个字');PK_ACTOR.name=name;pkSet('picks_actor_name',name);$('#pkActorPanel').hidden=true;render();toast('署名已记下，仅作协作标记，不是个人账号')}
 function pkRenderCalendar(){
@@ -1479,7 +1490,7 @@ async function savePick(e){
  S.pkIssues=structuredClone(draft.issues);pkIssueRows();const patch=pkPatchBetween(edit.original,draft);
  if(!edit.isNew&&!Object.keys(patch).length){PK_EDIT=null;closeOv();return}
  edit.saving=true;pkSetBusy(true);const session=PK_SESSION;
- try{const row=await PK_CLIENT.rpc(edit.isNew?'ledger_picks_create':'ledger_picks_update',edit.isNew?{p_id:edit.id,p_data:draft}:{p_id:edit.id,p_revision:edit.revision,p_patch:patch});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_EDIT=null;closeOv();pkPublish();toast(row.deleted?'这部剧已被删除，未重新创建':'存好了，两个人都能看到')}
+ try{const row=await PK_CLIENT.rpc(edit.isNew?'ledger_picks_create':'ledger_picks_update',edit.isNew?{p_id:edit.id,p_data:draft}:{p_id:edit.id,p_revision:edit.revision,p_patch:patch});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_NOTICE.sync();PK_ACTIVITY.sync();PK_EDIT=null;closeOv();pkPublish();toast(row.deleted?'这部剧已被删除，未重新创建':'存好了，两个人都能看到')}
  catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION){edit.saving=false;pkSetBusy(false)}}
 }
 async function pkPatch(id,patch,msg){
@@ -1487,14 +1498,16 @@ async function pkPatch(id,patch,msg){
  PK_BUSY.add(id);const session=PK_SESSION;
  try{let result;if(Object.hasOwn(patch,'claim'))result=await PK_CLIENT.rpc('ledger_picks_claim',{p_id:id,p_revision:row.revision,p_claim:!!patch.claim});
  else{if(patch.issues)patch.issues=patch.issues.map(x=>({id:x.id,ep:Number(x.ep),kind:x.kind,action:x.action,note:x.note,done:!!x.done}));try{pkValidateDraft({...pkEditable(row),...patch})}catch(e){toast(e.message);return}result=await PK_CLIENT.rpc('ledger_picks_update',{p_id:id,p_revision:row.revision,p_patch:patch})}
- if(session!==PK_SESSION)return;PK_ROWS.apply([result]);pkPublish();if(msg)toast(msg)
+ if(session!==PK_SESSION)return;PK_ROWS.apply([result]);PK_NOTICE.sync();PK_ACTIVITY.sync();pkPublish();if(msg)toast(msg)
  }catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION)PK_BUSY.delete(id)}
 }
 async function pkDelete(){const edit=PK_EDIT;if(!edit||edit.isNew||edit.saving)return;edit.saving=true;pkSetBusy(true);const session=PK_SESSION;
- try{const row=await PK_CLIENT.rpc('ledger_picks_delete',{p_id:edit.id,p_revision:edit.revision});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_EDIT=null;closeOv();pkPublish();toast('从剧单里删掉了')}
+ try{const row=await PK_CLIENT.rpc('ledger_picks_delete',{p_id:edit.id,p_revision:edit.revision});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_NOTICE.sync();PK_ACTIVITY.sync();PK_EDIT=null;closeOv();pkPublish();toast('从剧单里删掉了')}
  catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION){edit.saving=false;pkSetBusy(false)}}
 }
 function pkInitialize(){
+ PK_NOTICE.init();
+ if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data?.type==='LAOBAI_OPEN_PICK_UPDATES'){if(!$('#pkOv').hidden||[...document.querySelectorAll('.ov')].some(o=>!o.hidden)){toast('剧单有更新。保存当前内容后，可到剧单查看记录');return}location.hash='picks';PK_NOTICE.sync();PK_ACTIVITY.sync()}});PK_ACTIVITY.init();
  let id=pkGet('picks_actor_id');if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)){id=crypto.randomUUID();pkSet('picks_actor_id',id)}PK_ACTOR.id=id;PK_ACTOR.name=(pkGet('picks_actor_name')||pkGet('ledger_me')).slice(0,80);
  $('#pkActorForm').addEventListener('submit',pkSaveActor);$('#pkActorName').value=PK_ACTOR.name;$('#pkActorPanel').hidden=!!PK_ACTOR.name;
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(!PK_CONNECTED&&writable&&CLOUD.key)pkOnLedgerReady();else void pkSync()}});window.addEventListener('pagehide',pkDisconnect);window.addEventListener('pageshow',()=>{if(!PK_CONNECTED&&writable&&CLOUD.key)pkOnLedgerReady()});

@@ -1,0 +1,22 @@
+/* Shared Picks · While You Were Away. Uses the existing paper, ink and torn edge. */
+.pk-feed-overlay{position:fixed;inset:0;margin:0;width:100%;height:100%;max-width:none;max-height:none;border:0;padding:max(20px,env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:transparent;color:var(--p-ink);overflow:auto;z-index:40;box-sizing:border-box}
+.pk-feed-overlay[open]{display:flex;align-items:flex-start;justify-content:center}
+.pk-feed-overlay[hidden]{display:none}
+.pk-feed-overlay::backdrop{background:rgba(6,12,30,.45)}
+.pk-feed-overlay[data-fallback][open]{background:rgba(6,12,30,.45)}
+.pk-feed-card.paper{width:100%;max-width:520px;flex:none;padding:30px 28px 28px;clip-path:var(--torn-a);background:var(--paper);animation:pk-feed-enter .28s ease-out both;box-sizing:border-box}
+.pk-feed-label{font-family:var(--mono,monospace);font-size:10px;text-transform:uppercase;letter-spacing:.19em;color:var(--p-ink3);margin:0 0 12px;line-height:1.8}
+.pk-feed-title{font-size:28px;font-weight:700;letter-spacing:.06em;line-height:1.45;margin:0 0 14px}
+.pk-feed-list{list-style:none;margin:0;padding:0;max-height:calc(100dvh - 250px);overflow-y:auto;overscroll-behavior:contain}
+.pk-feed-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;column-gap:16px;padding:14px 0;border-top:1px dashed var(--p-rule);line-height:1.7;font-size:15px}
+.pk-feed-text{min-width:0;overflow-wrap:anywhere}
+.pk-feed-text strong{font-weight:700}
+.pk-feed-list time{font-size:11px;font-weight:400;color:var(--p-ink3);white-space:nowrap}
+.pk-feed-older{font-size:12px;color:var(--p-ink2);margin:10px 0 0}
+.pk-feed-actions{display:flex;justify-content:space-between;gap:14px;margin-top:20px}
+.pk-feed-actions .btn{min-height:48px;padding:10px 20px;font-size:15px;letter-spacing:.08em;white-space:nowrap}
+.pk-feed-actions .btn:focus-visible{outline:3px solid #a77c28;outline-offset:3px}
+@keyframes pk-feed-enter{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.pk-feed-card.paper{animation:none}}
+@media(max-width:380px){.pk-feed-card.paper{padding:26px 20px 24px}.pk-feed-title{font-size:25px}.pk-feed-label{font-size:9px;letter-spacing:.12em}.pk-feed-actions{gap:10px}.pk-feed-actions .btn{font-size:14px;padding:10px 15px}.pk-feed-list li{column-gap:10px;font-size:14px}}
+@media(max-height:420px){.pk-feed-list{max-height:150px}}
