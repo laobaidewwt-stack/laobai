@@ -43,7 +43,7 @@ export class RowStore {
 export class ApiError extends Error { constructor(code,message,status){super(message);this.code=code;this.status=status;} }
 // Reuses the existing full-access ledger key. Actor labels do not authenticate people.
 export class OwnerKeyPicksClient {
-  constructor(getCloud,getActor,fetcher=globalThis.fetch){this.getCloud=getCloud;this.getActor=getActor;this.fetcher=fetcher;this.epoch=0;this.active=new Set();}
+  constructor(getCloud,getActor,fetcher=globalThis.fetch.bind(globalThis)){this.getCloud=getCloud;this.getActor=getActor;this.fetcher=fetcher;this.epoch=0;this.active=new Set();}
   clear(){this.epoch++;for(const c of this.active)c.abort();this.active.clear();}
   async rpc(name,args={}){
     if(!/^ledger_picks_(list|create|update|claim|delete)$/.test(name))throw new Error('不允许访问此剧单接口');
