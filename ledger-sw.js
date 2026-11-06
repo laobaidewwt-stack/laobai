@@ -1,9 +1,9 @@
 /* A network-first static shell. No record cache, background sync, or write queue. */
 'use strict';
 const CACHE_PREFIX = 'laobai-notes-shell-';
-const CACHE_NAME = CACHE_PREFIX + '2026-11-07-chart-v6';
+const CACHE_NAME = CACHE_PREFIX + '2026-11-07-chart-v7';
 const BASE = new URL('./', self.location.href);
-const SHELL = ['ledger.html', 'bg/bg-day.webp', 'bg/bg-night.webp', 'bg/bg-dusk.webp', 'bg/bg-dream.webp', 'ledger-app.css', 'ledger-app.js', 'ledger.webmanifest', 'core.js', 'reactions.js', 'reactions.css', 'notifications.js', 'activity.js', 'activity.css',
+const SHELL = ['ledger.html', 'fonts/fonts.css', 'bg/bg-day.webp', 'bg/bg-night.webp', 'bg/bg-dusk.webp', 'bg/bg-dream.webp', 'ledger-app.css', 'ledger-app.js', 'ledger.webmanifest', 'core.js', 'reactions.js', 'reactions.css', 'notifications.js', 'activity.js', 'activity.css',
   'icons/laobai.svg', 'icons/laobai-180.png', 'icons/laobai-192.png',
   'icons/laobai-512.png', 'icons/laobai-maskable-512.png'].map(path => new URL(path, BASE).href);
 const PAGE = new URL('ledger.html', BASE).href;
@@ -22,6 +22,17 @@ self.addEventListener('fetch', event => {
   if (url.origin !== BASE.origin) return;
   // Never cache URLs with a key or arbitrary query; navigation fallback uses a clean shell.
   const clean = new URL(url.pathname, BASE.origin).href;
+  const fontPath = new URL('fonts/', BASE).pathname;
+  if (url.pathname.startsWith(fontPath) && /\.woff2$/.test(url.pathname) && !url.search) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME), cached = await cache.match(clean);
+      if (cached) return cached;
+      const result = await fetch(request);
+      if (result.ok && result.type === 'basic') { try { await cache.put(clean, result.clone()); } catch (_) {} }
+      return result;
+    })());
+    return;
+  }
   if (!SHELL.includes(clean)) return;
   const key = clean;
   const response = fetch(request).then(async result => {
