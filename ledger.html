@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-EsoAey/GV+hL5HLd1+cM6nUwVOQcl5H5NZBwDedGd20='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-2p2ABb4rUuRXxz/P58ii6ghhjo8NVfPrQz3Y32HQ3jA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -962,12 +962,21 @@ function daySummary(date){
 /* Header is a read-only view over the existing ledger and activity state. */
 function chineseNumber(n){const d='零一二三四五六七八九';return n<10?d[n]:n<20?'十'+(n%10?d[n%10]:''):d[Math.floor(n/10)]+'十'+(n%10?d[n%10]:'')}
 function chartText(id,text){const n=$('#'+id);text=String(text);if(n.textContent!==text)n.textContent=text}
+function chartDaySubtitleLines(date){
+  const seen=new Set();let total=0;
+  for(const l of logsOn(date)){
+    if(l.type!=='交付')continue;
+    if(l.id){if(seen.has(l.id))continue;seen.add(l.id)}
+    total+=l.lines===0&&Number.isSafeInteger(l.completedWorks)&&l.completedWorks>0&&Number.isSafeInteger(l.sourceSubtitleLines)&&l.sourceSubtitleLines>0?l.sourceSubtitleLines:(+l.lines||0);
+  }
+  return total;
+}
 function renderChartHead(){
   const day=toDate(S.date),month=S.month.split('-').map(Number),daily=S.view==='today',monthly=S.view==='month';
   chartText('hWhen',daily?chineseNumber(day.getMonth()+1)+'月'+chineseNumber(day.getDate())+'日 · 星期'+WK[day.getDay()]:monthly?String(month[0]).replace(/\d/g,n=>'〇一二三四五六七八九'[+n])+'年 · '+chineseNumber(month[1])+'月':({works:'作品库',picks:'剧单',best:'满意集'}[S.view]||'作品库'));
   const arrows=document.querySelectorAll('.chart-head .when button');arrows.forEach((b,i)=>{b.hidden=!daily&&!monthly;b.dataset.act=(monthly?'mon-':'day-')+(i?'next':'prev');b.setAttribute('aria-label',(i?'后':'前')+(monthly?'一月':'一天'))});
   const loaded=S.ready>=3;
-  chartText('hdLines',loaded?logsOn(S.date).filter(l=>l.type==='交付').reduce((sum,l)=>sum+(+l.lines||0),0):'…');
+  chartText('hdLines',loaded?chartDaySubtitleLines(S.date):'…');
   chartText('hdMonth',loaded?monthData(S.month).done.length:'…');
   const activity=PK_ACTIVITY.state?.()||{loaded:false,unread:0};
   chartText('hdPicks',loaded&&activity.loaded?activity.unread:'…');
