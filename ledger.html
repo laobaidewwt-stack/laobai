@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-2p2ABb4rUuRXxz/P58ii6ghhjo8NVfPrQz3Y32HQ3jA='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CJG5Hp60a0OQt/CdeOLywN0FgyHB7dmzHp0l69CB+ik='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -460,7 +460,7 @@ html:root[data-skin="dream"] .chart-head{--hd-ink:#e7e1ff;--hd-ink2:#c6bddf;--hd
     </div></div>
 
     <div class="dials">
-      <div class="dial"><div class="ringo"><div class="disc"><div><span class="v" id="mDayLines">0</span><span class="u">条字幕</span></div></div></div><h3>这一天</h3><div class="s" id="mDaySub"></div></div>
+      <div class="dial"><div class="ringo"><div class="disc"><div><span class="v" id="mDayLines">0</span><span class="u">条完成字幕</span></div></div></div><h3>这一天</h3><div class="s" id="mDaySub"></div></div>
       <div class="dial"><div class="ringo"><div class="disc"><div><span class="v" id="mAllWorks">0</span><span class="u">部作品</span></div></div></div><h3>累计</h3><div class="s" id="mAllSub"></div></div>
     </div>
 
@@ -797,12 +797,26 @@ function openOv(id){document.querySelectorAll('.ov').forEach(o=>o.hidden=o.id!==
 function closeOv(){if(!pkCloseGuard())return;document.querySelectorAll('.ov').forEach(o=>o.hidden=true)}
 
 /* ---------- derived numbers ---------- */
+function uniqueDeliveryLogs(logs){
+  const seen=new Set();return logs.filter(l=>{
+    if(l.type!=='交付')return false;
+    if(l.id){if(seen.has(l.id))return false;seen.add(l.id)}
+    return true;
+  });
+}
+function officialSubtitleLines(l){return l.lines===0&&Number.isSafeInteger(l.completedWorks)&&l.completedWorks>0&&Number.isSafeInteger(l.sourceSubtitleLines)&&l.sourceSubtitleLines>0?l.sourceSubtitleLines:0}
+function subtitleTotals(logs){
+  let lines=0,officialLines=0;
+  for(const l of uniqueDeliveryLogs(logs)){lines+=+l.lines||0;officialLines+=officialSubtitleLines(l)}
+  return {lines,officialLines,completedLines:lines+officialLines};
+}
+function subtitleBreakdown(s){return '新译 '+s.lines+' 条 · 官中 '+s.officialLines+' 条'}
 function workStats(){
   const m=new Map();
-  for(const l of S.logs){
-    if(l.type!=='交付'||!l.workId)continue;
-    const s=m.get(l.workId)||{lines:0,eps:0,first:null,last:null};
-    s.lines+=+l.lines||0;s.eps+=+l.eps||0;
+  for(const l of uniqueDeliveryLogs(S.logs)){
+    if(!l.workId)continue;
+    const s=m.get(l.workId)||{lines:0,officialLines:0,completedLines:0,eps:0,first:null,last:null};
+    s.lines+=+l.lines||0;s.officialLines+=officialSubtitleLines(l);s.completedLines=s.lines+s.officialLines;s.eps+=+l.eps||0;
     if(!s.first||l.date<s.first)s.first=l.date;
     if(!s.last||l.date>s.last)s.last=l.date;
     m.set(l.workId,s);
@@ -962,15 +976,7 @@ function daySummary(date){
 /* Header is a read-only view over the existing ledger and activity state. */
 function chineseNumber(n){const d='零一二三四五六七八九';return n<10?d[n]:n<20?'十'+(n%10?d[n%10]:''):d[Math.floor(n/10)]+'十'+(n%10?d[n%10]:'')}
 function chartText(id,text){const n=$('#'+id);text=String(text);if(n.textContent!==text)n.textContent=text}
-function chartDaySubtitleLines(date){
-  const seen=new Set();let total=0;
-  for(const l of logsOn(date)){
-    if(l.type!=='交付')continue;
-    if(l.id){if(seen.has(l.id))continue;seen.add(l.id)}
-    total+=l.lines===0&&Number.isSafeInteger(l.completedWorks)&&l.completedWorks>0&&Number.isSafeInteger(l.sourceSubtitleLines)&&l.sourceSubtitleLines>0?l.sourceSubtitleLines:(+l.lines||0);
-  }
-  return total;
-}
+function chartDaySubtitleLines(date){return subtitleTotals(logsOn(date)).completedLines}
 function renderChartHead(){
   const day=toDate(S.date),month=S.month.split('-').map(Number),daily=S.view==='today',monthly=S.view==='month';
   chartText('hWhen',daily?chineseNumber(day.getMonth()+1)+'月'+chineseNumber(day.getDate())+'日 · 星期'+WK[day.getDay()]:monthly?String(month[0]).replace(/\d/g,n=>'〇一二三四五六七八九'[+n])+'年 · '+chineseNumber(month[1])+'月':({works:'作品库',picks:'剧单',best:'满意集'}[S.view]||'作品库'));
@@ -986,13 +992,13 @@ function renderChartHead(){
 function render(){
   renderCopyFilters();
   const ws=workStats();
-  let totLines=0;for(const s of ws.values())totLines+=s.lines;
+  const totalSubtitles=subtitleTotals(S.logs);
   const doneWorks=[...ws.keys()].filter(id=>S.works.has(id)).length;
   const bestCount=[...S.days.values()].filter(d=>d.best&&d.best.text).length;
   $('#workNames').innerHTML=[...S.works.values()].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).map(w=>'<option value="'+esc(workChineseTitle(w))+'">').join('');
   document.querySelectorAll('.ni,.seg button').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.view===S.view||(t.dataset.view==='lib'&&(S.view==='works'||S.view==='picks')))));
   for(const v of ['today','month','works','best','picks'])$('#v-'+v).hidden=v!==S.view;
-  ({today:renderToday,month:renderMonth,works:renderWorks,best:renderBest,picks:renderPicks})[S.view](ws,{totLines,doneWorks,bestCount});renderPkDot();renderChartHead();
+  ({today:renderToday,month:renderMonth,works:renderWorks,best:renderBest,picks:renderPicks})[S.view](ws,{totalSubtitles,doneWorks,bestCount});renderPkDot();renderChartHead();
 }
 
 function renderToday(ws,tot){
@@ -1002,12 +1008,12 @@ function renderToday(ws,tot){
   $('#noteCap').textContent='Today · '+S.date.replace(/-/g,'.')+' · '+(S.ready<3?'connecting':noteItems.length?noteItems.length+' 部':'blank page');
   $('#noteTitle').textContent=md(S.date)+'｜'+(isToday?'今日完成':'当日完成');
   $('#noteText').textContent=S.ready<3?'云端记录尚未加载 请查看上方连接提示':sum||(L.length?'这一天没有可显示的剧名，详细记录保留在下方。':'这一天还没有剧目记录。点下面的星星记一条。');
-  const dayLines=L.filter(l=>l.type==='交付').reduce((a,l)=>a+(+l.lines||0),0);
-  const dayWorks=new Set(L.filter(l=>l.type==='交付').map(l=>l.workId)).size;
-  $('#mDayLines').textContent=S.ready<3?'…':dayLines;
-  $('#mDaySub').textContent=S.ready<3?'等待云端记录':L.length?('完成 '+dayWorks+' 部 · '+L.length+' 条记录'):'还没有记录';
-  $('#mAllWorks').textContent=S.ready||!db?tot.doneWorks:'…';
-  $('#mAllSub').textContent=tot.totLines+' 条字幕 · '+tot.bestCount+' 条满意';
+  const daySubtitles=subtitleTotals(L);
+  const dayWorks=new Set(uniqueDeliveryLogs(L).map(l=>l.workId||l.work).filter(Boolean)).size;
+  $('#mDayLines').textContent=S.ready<3?'…':daySubtitles.completedLines;
+  $('#mDaySub').textContent=S.ready<3?'等待云端记录':L.length?('完成 '+dayWorks+' 部 · '+subtitleBreakdown(daySubtitles)+' · '+L.length+' 条记录'):'还没有记录';
+  $('#mAllWorks').textContent=S.ready<3?'…':tot.doneWorks;
+  $('#mAllSub').textContent=S.ready<3?'等待云端记录':tot.totalSubtitles.completedLines+' 条完成字幕 · '+subtitleBreakdown(tot.totalSubtitles)+' · '+tot.bestCount+' 条满意';
   $('#cueCount').textContent=L.length?L.length+(L.length>1?' cues':' cue'):'';
   $('#cues').innerHTML=L.length?L.map((l,i)=>'<div class="cue"><div class="ix">'+pad(i+1)+'</div><div class="t"><span class="tag t-'+esc(l.type)+'">'+esc(l.type)+'</span>'+esc(withoutResourceLinks(cueText(l)))+(copySourceUrl(l.link)?'<div class="muted"><a href="'+esc(copySourceUrl(l.link))+'" target="_blank" rel="noopener noreferrer" style="color:inherit">查看来源 ↗</a></div>':'')+'</div><button class="x" data-act="del-log" data-id="'+esc(l.id)+'" aria-label="删除这条">删</button></div>').join(''):'<div class="muted">点下面的星星记一条，这里会按顺序排好。</div>';
   const cids=new Set(L.map(l=>l.workId).filter(Boolean));
@@ -1049,15 +1055,15 @@ function rangeData(from,to){
   const L=S.logs.filter(l=>inR(l.date));
   const done=[...ws.entries()].filter(([id,s])=>inR(s.first)&&S.works.has(id)).map(([id,s])=>({w:S.works.get(id),s}));
   const byKind={};KINDS.forEach(k=>byKind[k]=0);done.forEach(x=>{const k=x.w.kind||'完整剧';byKind[k]=(byKind[k]||0)+1});
-  const del=L.filter(l=>l.type==='交付'),rev=L.filter(l=>l.type==='返修'),pub=L.filter(l=>l.type==='发布');
+  const del=uniqueDeliveryLogs(L),subtitles=subtitleTotals(del),rev=L.filter(l=>l.type==='返修'),pub=L.filter(l=>l.type==='发布');
   const days=new Set(L.map(l=>l.date));for(const [k,d] of S.days)if(inR(k)&&((d.best&&d.best.text)||d.pending||d.pick))days.add(k);
-  return {done,byKind,eps:del.reduce((a,l)=>a+(+l.eps||0),0),lines:del.reduce((a,l)=>a+(+l.lines||0),0),
+  return {done,byKind,eps:del.reduce((a,l)=>a+(+l.eps||0),0),lines:subtitles.lines,officialLines:subtitles.officialLines,completedLines:subtitles.completedLines,
     revN:rev.length,revLines:rev.reduce((a,l)=>a+(+l.lines||0),0),pubN:new Set(pub.map(l=>l.workId||l.work)).size,days:days.size,
     best:[...S.days.entries()].filter(([k,d])=>inR(k)&&d.best&&d.best.text).length,dayKeys:[...days].sort()};
 }
 function monthSummary(ym,m){
   const mo=+ym.slice(5,7),kinds=KINDS.filter(k=>m.byKind[k]).map(k=>k+m.byKind[k]).join('·');
-  let s=mo+'月｜完成 '+m.done.length+' 部'+(kinds?'（'+kinds+'）':'')+'，交付字幕 '+m.lines+' 条';
+  let s=mo+'月｜完成 '+m.done.length+' 部'+(kinds?'（'+kinds+'）':'')+'，完成字幕 '+m.completedLines+' 条（'+subtitleBreakdown(m)+'）';
   if(m.eps)s+='，共 '+m.eps+' 集';
   s+='；返修 '+m.revN+' 次'+(m.revLines?' '+m.revLines+' 条':'')+'；发布 '+m.pubN+' 部；有记录 '+m.days+' 天。';
   return s;
@@ -1068,14 +1074,14 @@ function renderMonth(){renderBackup();
   $('#monNoteTitle').textContent=mo+'月｜攒下了什么';
   $('#monNote').textContent=monthSummary(ym,m);
   const tile=(k,v,u,s)=>'<div class="tile"><div class="v">'+v+'<small>'+u+'</small></div><div class="k">'+k+'</div>'+(s?'<div class="s">'+s+'</div>':'')+'</div>';
-  $('#monStats').innerHTML=tile('完成作品',m.done.length,'部',KINDS.map(k=>k+' '+m.byKind[k]).join(' · '))+tile('交付字幕',m.lines,'条',m.eps?'共 '+m.eps+' 集':'')+tile('返修',m.revN,'次',(m.revLines?m.revLines+' 条，':'')+'不计入交付')+tile('发布',m.pubN,'部','')+tile('有记录',m.days,'天','')+tile('满意',m.best,'条','');
+  $('#monStats').innerHTML=tile('完成作品',m.done.length,'部',KINDS.map(k=>k+' '+m.byKind[k]).join(' · '))+tile('完成字幕',m.completedLines,'条',subtitleBreakdown(m)+(m.eps?' · 共 '+m.eps+' 集':''))+tile('返修',m.revN,'次',(m.revLines?m.revLines+' 条，':'')+'不计入交付')+tile('发布',m.pubN,'部','')+tile('有记录',m.days,'天','')+tile('满意',m.best,'条','');
   const first=new Date(y,mo-1,1),n=new Date(y,mo,0).getDate(),lead=(first.getDay()+6)%7,today=ymd(new Date());
   let h='一二三四五六日'.split('').map(c=>'<div class="wd">'+c+'</div>').join('');
   for(let i=0;i<lead;i++)h+='<button class="pad" tabindex="-1" aria-hidden="true"></button>';
   for(let d=1;d<=n;d++){
-    const k=ym+'-'+pad(d),L=S.logs.filter(l=>l.date===k),lines=L.filter(l=>l.type==='交付').reduce((a,l)=>a+(+l.lines||0),0),dd=S.days.get(k);
+    const k=ym+'-'+pad(d),L=S.logs.filter(l=>l.date===k),lines=subtitleTotals(L).completedLines,dd=S.days.get(k);
     const lv=lines>=800?'l3':lines>=300?'l2':(L.length||(dd&&(dd.pending||(dd.best&&dd.best.text))))?'l1':'';
-    h+='<button class="'+lv+(k===today?' today':'')+'" data-act="goday" data-v="'+k+'" aria-label="'+mo+'月'+d+'日 '+lines+'条">'+d+(dd&&dd.best&&dd.best.text?'<span class="dot">✦</span>':'')+'</button>';
+    h+='<button class="'+lv+(k===today?' today':'')+'" data-act="goday" data-v="'+k+'" aria-label="'+mo+'月'+d+'日 完成字幕'+lines+'条">'+d+(dd&&dd.best&&dd.best.text?'<span class="dot">✦</span>':'')+'</button>';
   }
   $('#cal').innerHTML=h;
   $('#monDoneCount').textContent=m.done.length?m.done.length+(m.done.length>1?' works':' work'):'';
@@ -1087,7 +1093,7 @@ function renderMonth(){renderBackup();
 function workRow(w,s,compact){
   s=s||{lines:0,eps:0,first:null};
   const facts=[];
-  if(s.lines)facts.push(s.lines+' 条字幕');if(s.eps)facts.push(s.eps+' 集');
+  if(s.completedLines)facts.push('累计 '+s.completedLines+' 条完成字幕（'+subtitleBreakdown(s)+'）');if(s.eps)facts.push(s.eps+' 集');
   if(s.first)facts.push('交付于 '+md(s.first));if(w.pubDate)facts.push('发布于 '+md(w.pubDate));
   let h='<div class="work"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0"><h4>《'+esc(workChineseTitle(w))+'》</h4>'+(w.en?'<div class="en">'+esc(w.en)+'</div>':'')+'</div><button class="arrow" data-act="edit-work" data-id="'+esc(w.id)+'">编辑</button></div>';
   h+='<div style="margin-top:4px"><span class="pill s-'+esc(w.status||'翻译中')+'">'+esc(w.status||'翻译中')+'</span><span class="pill">'+esc(w.kind||'完整剧')+'</span><span class="muted">'+esc(facts.join(' · '))+'</span></div>';
@@ -1241,13 +1247,13 @@ function genExport(){
   }else{
     out.push('工作日志｜'+dot(from)+' 至 '+dot(to));
     const kinds=KINDS.filter(k=>m.byKind[k]).map(k=>k+m.byKind[k]).join('·');
-    out.push('完成 '+m.done.length+' 部'+(kinds?'（'+kinds+'）':'')+'，交付字幕 '+m.lines+' 条'+(m.eps?'，共 '+m.eps+' 集':'')+'；返修 '+m.revN+' 次'+(m.revLines?' '+m.revLines+' 条':'')+'；发布 '+m.pubN+' 部；有记录 '+m.days+' 天；存下满意的一项 '+m.best+' 条。');
+    out.push('完成 '+m.done.length+' 部'+(kinds?'（'+kinds+'）':'')+'，完成字幕 '+m.completedLines+' 条（'+subtitleBreakdown(m)+'）'+(m.eps?'，共 '+m.eps+' 集':'')+'；返修 '+m.revN+' 次'+(m.revLines?' '+m.revLines+' 条':'')+'；发布 '+m.pubN+' 部；有记录 '+m.days+' 天；存下满意的一项 '+m.best+' 条。');
     if(avgLine)out.push('本期评分（平均，满分 5）：'+avgLine);
     if(top)out.push('本期最高分：《'+top.zh+'》　'+scoreLine(top));
     out.push('','【每天】');
     if(!m.dayKeys.length)out.push('这期还没有记录。');
     m.dayKeys.forEach(k=>{const d=toDate(k);out.push(md(k)+' 星期'+WK[d.getDay()]);out.push(daySummary(k)||'（无）');out.push('')});
-    if(list.length){out.push('【本期作品】');list.forEach((x,i)=>{const w=x.w,s=x.s||{};out.push((i+1)+'. 《'+w.zh+'》'+(w.en?' / '+w.en:'')+' · '+(w.kind||'完整剧')+' · '+(w.status||'')+(s.lines?' · '+s.lines+' 条':''));if(w.hook||w.cp||w.genre)out.push('   发布文案：'+fanLine(w));if(hasScore(w))out.push('   评分：'+scoreLine(w))})}
+    if(list.length){out.push('【本期作品】');list.forEach((x,i)=>{const w=x.w,s=x.s||{};out.push((i+1)+'. 《'+w.zh+'》'+(w.en?' / '+w.en:'')+' · '+(w.kind||'完整剧')+' · '+(w.status||'')+(s.completedLines?' · 累计 '+s.completedLines+' 条完成字幕（'+subtitleBreakdown(s)+'）':''));if(w.hook||w.cp||w.genre)out.push('   发布文案：'+fanLine(w));if(hasScore(w))out.push('   评分：'+scoreLine(w))})}
   }
   return {text:withoutResourceLinks(out.join('\n').replace(/\n{3,}/g,'\n\n').trim()),from,to};
 }
@@ -1347,14 +1353,15 @@ function paintContent(P){
     const m=rangeData(from,to),list=rangeWorks(from,to),avg=avgScores(list.map(x=>x.w));
     P.text('工作日志',{size:60,weight:900,lh:1.35});P.text(dot(from)+' 至 '+dot(to),{size:24,color:IMG.ink2});
     P.space(30);P.rule(IMG.gold,null,true);P.space(30);
-    P.cols([[String(m.done.length),'完成 部'],[String(m.lines),'字幕 条'],[String(m.revN),'返修 次'],[String(m.pubN),'发布 部']]);
+    P.cols([[String(m.done.length),'完成 部'],[String(m.completedLines),'完成字幕 条'],[String(m.revN),'返修 次'],[String(m.pubN),'发布 部']]);
+    P.text(subtitleBreakdown(m),{size:24,color:IMG.ink2,align:'center'});
     const al=DIMS.filter(([k])=>avg[k]).map(([k,n])=>n+' '+avg[k].toFixed(1)).join('　');
     if(al){P.text('本期评分平均　'+al,{size:24,color:IMG.ink2,align:'center'});P.space(10)}
     P.space(16);P.rule();
     if(!m.dayKeys.length){P.space(34);P.text('这期还没有记录。',{size:26,color:IMG.ink2})}
     m.dayKeys.forEach(k=>{P.space(30);P.text(md(k)+'　星期'+WK[toDate(k).getDay()],{size:25,weight:700,color:IMG.gold});P.space(4);P.text(daySummary(k)||'（无）',{size:25,lh:1.75})});
     if(list.length){P.space(34);P.rule();P.space(28);P.text('本期作品',{size:25,weight:700});P.space(6);
-      list.forEach((x,i)=>{const w=x.w,s=x.s||{};P.text((i+1)+'. 《'+w.zh+'》　'+(w.kind||'完整剧')+' · '+(w.status||'')+(s.lines?' · '+s.lines+' 条':''),{size:24,lh:1.75})})}
+      list.forEach((x,i)=>{const w=x.w,s=x.s||{};P.text((i+1)+'. 《'+w.zh+'》　'+(w.kind||'完整剧')+' · '+(w.status||'')+(s.completedLines?' · 累计 '+s.completedLines+' 条完成字幕（'+subtitleBreakdown(s)+'）':''),{size:24,lh:1.75})})}
     P.space(24);
   }
 }
