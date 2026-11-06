@@ -284,6 +284,18 @@ select.in{appearance:auto}
   </header>
   <div class="rule"></div>
   <div class="status" id="status" hidden></div>
+  <section id="ledgerAccess" class="pw" aria-labelledby="ledgerAccessTitle" hidden style="margin-top:18px">
+    <div class="paper gold stack" style="gap:12px">
+      <h2 id="ledgerAccessTitle" style="font-size:22px;margin:0">第一次打开，输入钥匙</h2>
+      <p class="muted" style="margin:0">验证成功后会记在这台设备的当前浏览器。换手机或浏览器，需要各输入一次；清除网站数据或使用隐身模式后可能需要重输。</p>
+      <form id="ledgerAccessForm" class="stack" style="gap:12px">
+        <label class="f">账本钥匙<input class="in" id="ledgerAccessKey" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="1024" placeholder="输入钥匙，也可以粘贴原来的专属链接" style="font-size:16px" required></label>
+        <div id="ledgerAccessMessage" class="muted" role="status" aria-live="polite"></div>
+        <button class="btn" id="ledgerAccessSubmit" type="submit">打开并记住</button>
+      </form>
+    </div>
+  </section>
+  <div class="status" id="ledgerAccessNote" role="status" hidden></div>
 
   <!-- 今天 -->
   <section id="v-today">
@@ -1135,22 +1147,53 @@ window.addEventListener('hashchange',()=>{const v=ledgerViewFromHash();if(v){S.v
 drawSky();render();
 
 /* ---------- cloud (GitHub Pages + Supabase) ---------- */
-const CLOUD={url:'https://tvoynrohczmovuyorplm.supabase.co',anon:'sb_publishable_Gmn9YRMI7NmoUWRT5AG5wA_wGzM40DN'};
-// The owner explicitly chose open link access. No browser key is needed.
-// Clean legacy private entry URLs without reading or preserving their credentials.
-function cleanLegacyLedgerEntry(){
-  try{const u=new URL(location.href),h=new URLSearchParams(u.hash.slice(1));
-    if(u.searchParams.has('k')||h.has('k')){u.searchParams.delete('k');u.hash=ledgerViewFromHash();history.replaceState(null,'',u.pathname+u.search+u.hash)}
-  }catch(e){}
+const CLOUD={url:'https://tvoynrohczmovuyorplm.supabase.co',anon:'sb_publishable_Gmn9YRMI7NmoUWRT5AG5wA_wGzM40DN',key:''};
+function ledgerKeyFromEntry(value){
+  const raw=String(value||'').trim();
+  if(/^https?:\/\//i.test(raw)){try{const u=new URL(raw);return new URLSearchParams(u.hash.slice(1)).get('k')||u.searchParams.get('k')||''}catch(e){return ''}}
+  return raw;
 }
-cleanLegacyLedgerEntry();
-window.addEventListener('hashchange',cleanLegacyLedgerEntry);
+function stripLedgerKeyFromUrl(){
+  try{const u=new URL(location.href);u.searchParams.delete('k');u.hash=ledgerViewFromHash();history.replaceState(null,'',u.pathname+u.search+u.hash)}catch(e){}
+}
+function showLedgerAccess(message){
+  $('#ledgerAccess').hidden=false;$('#ledgerAccessMessage').textContent=message||'';$('#ledgerAccessSubmit').disabled=false;
+}
+function confirmLedgerAccess(){
+  if(!CLOUD.key)return;
+  let remembered=false;try{localStorage.setItem('ledger_key',CLOUD.key);remembered=localStorage.getItem('ledger_key')===CLOUD.key}catch(e){}
+  $('#ledgerAccess').hidden=true;$('#ledgerAccessKey').value='';
+  $('#ledgerAccessNote').hidden=remembered;
+  $('#ledgerAccessNote').textContent=remembered?'':'已经连接，但这个浏览器不允许记住钥匙。本次可正常使用；关闭或刷新后可能需要再输入。建议使用普通浏览器标签页，并允许保存网站数据。';
+  stripLedgerKeyFromUrl();
+}
+function rejectLedgerAccess(){
+  const invalid=CLOUD.key;CLOUD.key='';
+  try{if(localStorage.getItem('ledger_key')===invalid)localStorage.removeItem('ledger_key')}catch(e){}
+  showLedgerAccess('钥匙不正确，请重新输入。原来的钥匙没有更换。');
+}
+{
+  const supplied=new URLSearchParams(location.hash.slice(1)).get('k')||new URLSearchParams(location.search).get('k')||'';
+  let saved='';try{saved=localStorage.getItem('ledger_key')||''}catch(e){}
+  CLOUD.key=supplied||saved;stripLedgerKeyFromUrl();
+}
+$('#ledgerAccessForm').addEventListener('submit',async e=>{
+  e.preventDefault();const key=ledgerKeyFromEntry($('#ledgerAccessKey').value);
+  if(!key)return showLedgerAccess('请先输入钥匙，或粘贴原来的专属链接。');
+  CLOUD.key=key;$('#ledgerAccessSubmit').disabled=true;$('#ledgerAccessMessage').textContent='正在验证并读取云端记录…';
+  setStatus('正在读取云端账本…');
+  try{await db.retry()}finally{$('#ledgerAccessSubmit').disabled=false}
+});
+window.addEventListener('hashchange',()=>{
+  const supplied=new URLSearchParams(location.hash.slice(1)).get('k');
+  if(supplied){CLOUD.key=supplied;stripLedgerKeyFromUrl();if(db)db.retry()}
+});
 function supaDb(){
   const call=async(fn,args)=>{
     const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
     try{
-      const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',signal:controller.signal,headers:{apikey:CLOUD.anon,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_key:null},args||{}))});
-      const t=await r.text();if(!r.ok){const e=new Error(t);e.code=r.status===413?'quota_exceeded':'http_'+r.status;throw e}
+      const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',signal:controller.signal,headers:{apikey:CLOUD.anon,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_key:CLOUD.key},args||{}))});
+      const t=await r.text();if(!r.ok){const e=new Error(t);e.code=/bad key/.test(t)?'bad_key':(r.status===413?'quota_exceeded':'http_'+r.status);throw e}
       return t?JSON.parse(t):null;
     }finally{clearTimeout(timeout)}
   };
@@ -1166,9 +1209,10 @@ function supaDb(){
       const s=JSON.stringify(r.data);if(seen[r.coll].get(r.id)!==s){cache[r.coll].set(r.id,r.data);seen[r.coll].set(r.id,s);touched.add(r.coll)}}
     return touched}
   async function loop(){
+    if(!CLOUD.key)return;
     if(running)return;running=true;
     try{const t=await pull();if(!loaded){loaded=true;COLS.forEach(fire)}else t.forEach(fire);
-      if(broken){broken=false;writable=true;setStatus('');render()}
+      if(broken){broken=false;writable=true;confirmLedgerAccess();setStatus('');render()}
       const rows=await call('ledger_inbox_pending')||[];let count=0;for(const r of rows){await importCopy({zh:r.zh,en:r.en,line:r.line,copy:r.copy,date:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(r.created_at))});await call('ledger_inbox_ack',{p_id:r.id});count++;}
       if(count)toast('收到 '+count+' 篇新文案，放进「今日文案」了');
     }catch(e){broken=true;COLS.forEach(c=>subs[c].forEach(s=>s.err&&s.err(e)))}
@@ -1183,6 +1227,7 @@ function supaDb(){
     async delete(){await call('ledger_del',{p_coll:c,p_id:id});local(c,id,null)}});
   setTimeout(loop,0);
   return {
+    retry(){clearTimeout(timer);return loop()},
     doc:p=>{const [c,id]=split(p);return ref(c,id)},
     collection:c=>({
       doc:id=>ref(c,id||newId()),
@@ -1202,11 +1247,12 @@ async function offerFile(name,data,mime){
 (async()=>{
   // Every device uses the same cloud ledger, never an embedded preview database.
   db=supaDb();
-  writable=false;setStatus('正在读取云端账本…');
-  const timer=setTimeout(()=>{if(S.ready<3)setStatus('暂时连不上账本，显示的可能不是最新内容。')},10000);
-  const fail=e=>{clearTimeout(timer);writable=false;if(e&&e.code==='revoked'){writable=false;setStatus('这个页面的访问权限变了，暂时只能看')}else setStatus(S.ready<3?'云端数据尚未加载成功 正在自动重试 这不代表今天没有记录':'云端连接暂时中断 正在自动重试 当前显示上次读取的记录');render()};
+  writable=false;setStatus(CLOUD.key?'正在读取云端账本…':'请输入一次钥匙，打开这台设备上的账本。');
+  if(!CLOUD.key)showLedgerAccess();
+  const timer=setTimeout(()=>{if(CLOUD.key&&S.ready<3)setStatus('暂时连不上账本，显示的可能不是最新内容。')},10000);
+  const fail=e=>{clearTimeout(timer);writable=false;if(e&&e.code==='bad_key'){rejectLedgerAccess();setStatus('请输入正确钥匙。记录仍保存在云端。')}else if(e&&e.code==='revoked'){writable=false;setStatus('这个页面的访问权限变了，暂时只能看')}else setStatus(S.ready<3?'云端数据尚未加载成功 正在自动重试 这不代表今天没有记录':'云端连接暂时中断 正在自动重试 当前显示上次读取的记录');render()};
   const seen={works:false,logs:false,days:false};
-  const mark=(k,snap)=>{if(!seen[k]&&!snap.metadata.fromCache){seen[k]=true;S.ready++;if(S.ready>=3){clearTimeout(timer);writable=true;setStatus('')}}};
+  const mark=(k,snap)=>{if(!seen[k]&&!snap.metadata.fromCache){seen[k]=true;S.ready++;if(S.ready>=3){clearTimeout(timer);writable=true;confirmLedgerAccess();setStatus('')}}};
   db.collection('works').onSnapshot(snap=>{S.works=new Map(snap.docs.map(d=>[d.id,Object.assign({id:d.id},d.data())]));mark('works',snap);render()},fail);
   db.collection('logs').onSnapshot(snap=>{S.logs=snap.docs.map(d=>Object.assign({id:d.id},d.data()));mark('logs',snap);render()},fail);
   db.collection('days').onSnapshot(snap=>{S.days=new Map(snap.docs.map(d=>[d.id,d.data()]));mark('days',snap);render()},fail);
