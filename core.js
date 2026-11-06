@@ -46,16 +46,16 @@ export class OwnerKeyPicksClient {
   constructor(getCloud,getActor,fetcher=globalThis.fetch.bind(globalThis)){this.getCloud=getCloud;this.getActor=getActor;this.fetcher=fetcher;this.epoch=0;this.active=new Set();}
   clear(){this.epoch++;for(const c of this.active)c.abort();this.active.clear();}
   async rpc(name,args={}){
-    if(!/^ledger_picks_(list|create|update|claim|delete)$/.test(name))throw new Error('不允许访问此剧单接口');
+    if(!/^ledger_picks_(list|create|update|claim|delete|react|reply|reply_delete)$/.test(name))throw new Error('不允许访问此剧单接口');
     const cloud=this.getCloud(),key=cloud.key,epoch=this.epoch;if(!key)throw new ApiError('bad_key','请先输入原账本钥匙');
-    const actor=this.getActor();if(name!=='ledger_picks_list'&&(!actor.id||!actor.name))throw new ApiError('actor_required','先写一个协作署名');
+    const actor={...this.getActor()};if(name!=='ledger_picks_list'&&(!actor.id||!actor.name))throw new ApiError('actor_required','先写一个协作署名');
     const controller=new AbortController();this.active.add(controller);const timeout=setTimeout(()=>controller.abort(),20000);
     try{
       const body={...args,p_key:key,...(name==='ledger_picks_list'?{}:{p_actor_id:actor.id,p_actor_name:actor.name})};
       const r=await this.fetcher(cloud.url+'/rest/v1/rpc/'+name,{method:'POST',credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',signal:controller.signal,headers:{'Content-Type':'application/json',apikey:cloud.anon},body:JSON.stringify(body)});
       let result;try{result=await r.json()}catch{throw new ApiError('response','服务器响应无法读取')}
       if(!r.ok)throw new ApiError(/bad key/i.test(result.message||'')?'bad_key':result.code||String(r.status),result.message||'请求失败',r.status);
-      if(epoch!==this.epoch||key!==this.getCloud().key)throw new ApiError('cancelled','钥匙已变化，本次响应不再使用');
+      if(epoch!==this.epoch||key!==this.getCloud().key||actor.id!==this.getActor().id||actor.name!==this.getActor().name)throw new ApiError('cancelled','钥匙已变化，本次响应不再使用');
       return result;
     }finally{clearTimeout(timeout);this.active.delete(controller)}
   }

@@ -25,7 +25,7 @@ function safeEvent(item){
 }
 /** Pure state machine, injected RPC/view/storage make full boundary tests deterministic. */
 export function createActivityFeed({request,getActor,storage,view,onError=()=>{}}) {
- let epoch=0,connected=false,seen=null,fetched=null,pending=[],shown=null,running=null,again=false,storageWarned=false;
+ let epoch=0,connected=false,seen=null,fetched=null,pending=[],shown=null,running=null,again=false,storageWarned=false,foregroundReady=false,suspendedMode=null,needsRefresh=true,openRequested=false;
  const writeSeen=id=>{
   // A sibling tab may have acknowledged a newer snapshot before its storage event arrives.
   const persisted=readSeen(storage);
@@ -39,26 +39,35 @@ export function createActivityFeed({request,getActor,storage,view,onError=()=>{}
   if(seen!==null&&fetched!==null&&compare(seen,fetched)>0)fetched=seen;
  }
  function maybeShow(){
-  if(!connected||view.blocked())return;
+  if(!connected||view.blocked()||needsRefresh)return;
   reconcileStorage();
-  if(shown||fetched===null)return;
+  if((shown&&shown.mode!=='inbox')||fetched===null)return;
   pending=pending.filter(e=>compare(e.id,seen)>0&&e.actorId!==getActor().id);
-  if(!pending.length){writeSeen(fetched);return}
+  if(!pending.length){if(shown){shown=null;view.hide()}openRequested=false;writeSeen(fetched);foregroundReady=true;return}
   const items=[...pending].sort((a,b)=>-compare(a.id,b.id));
-  shown={through:fetched,items,count:items.length};
-  view.show({items:items.slice(0,12),count:items.length,older:Math.max(0,items.length-12)},acknowledge);
+  let mode=openRequested?'modal':shown?.mode==='inbox'?'inbox':suspendedMode||(foregroundReady?'banner':'modal');
+  // The page UI offers a persistent entry instead of opening a comeback dialog.
+  if(mode==='modal'&&view.deferModal&&!openRequested)mode='inbox';
+  openRequested=false;suspendedMode=null;
+  // A banner shows one complete event. Never acknowledge unseen queued banners.
+  const visible=mode==='banner'?[items[items.length-1]]:items;
+  shown={mode,through:mode==='banner'?visible[0].id:fetched,items:visible,count:visible.length};
+  const snapshot=shown;foregroundReady=true;
+  view.show({mode,items:visible.slice(0,12),count:visible.length,older:Math.max(0,visible.length-12)},go=>{if(shown===snapshot)acknowledge(go)});
  }
  function acknowledge(go=false){
-  if(!shown)return;
+  if(!shown||shown.mode==='inbox')return;
+  if(view.blocked()){needsRefresh=true;suspendedMode=suspendedMode||shown.mode;shown=null;view.hide();return}
   const through=shown.through;shown=null;writeSeen(through);pending=pending.filter(e=>compare(e.id,through)>0);view.hide();
   if(go)view.go();
   // A newer batch must not be swallowed by the previous popup's acknowledgment.
-  queueMicrotask(()=>{maybeShow();void sync()});
+  needsRefresh=true;queueMicrotask(()=>{void sync()});
  }
  async function collect(e){
-  if(seen===null){const data=await request('events_head');if(e!==epoch)return;const head=eventId(data.latestId);writeSeen(head);fetched=head;return}
+  if(seen===null){const data=await request('events_head');if(e!==epoch)return;const head=eventId(data.latestId);writeSeen(head);fetched=head;foregroundReady=!view.blocked();needsRefresh=view.blocked();return}
   reconcileStorage();
-  let cursor=fetched??seen,through=null,batch=[];
+  // Re-read the unacknowledged interval: deleted replies redact existing event IDs.
+  let cursor=seen,through=null,batch=[];
   for(;;){
    const data=await request('events_since',{after:cursor,...(through!==null?{through}:{})});if(e!==epoch)return;
    const latest=eventId(data.latestId);
@@ -74,43 +83,59 @@ export function createActivityFeed({request,getActor,storage,view,onError=()=>{}
   if(e!==epoch)return;
   // Commit the complete snapshot only. A failed later page leaves no holes on retry.
   fetched=through;
-  const byId=new Map(pending.map(item=>[item.id,item]));
+  const byId=new Map();
   for(const item of batch)if(compare(item.id,seen)>0&&item.actorId!==getActor().id)byId.set(item.id,item);
-  pending=[...byId.values()];maybeShow();
+  pending=[...byId.values()];needsRefresh=view.blocked();maybeShow();
+  if(!view.blocked()&&!pending.length&&!shown)suspendedMode=null;
  }
  function sync(){
   if(!connected)return Promise.resolve();
   if(running){again=true;return running}
   const e=epoch;
-  const task=(async()=>{do{again=false;try{await collect(e)}catch(error){if(e===epoch)onError(error)}if(e!==epoch)break}while(again&&connected)})();
+  const task=(async()=>{do{again=false;try{await collect(e)}catch(error){if(e===epoch){openRequested=false;onError(error)}}if(e!==epoch)break}while(again&&connected)})();
   running=task;
   void task.finally(()=>{if(running===task)running=null});return task;
  }
  return {
-  connect(){if(connected)return running||Promise.resolve();connected=true;epoch++;seen=readSeen(storage);fetched=seen;return sync()},
+  connect(){if(connected)return running||Promise.resolve();connected=true;epoch++;foregroundReady=false;suspendedMode=null;needsRefresh=true;openRequested=false;seen=readSeen(storage)??'0';fetched=seen;return sync()},
   sync,
-  reconsider(){if(shown&&view.blocked()){shown=null;view.hide()}maybeShow()},
+  away(){foregroundReady=false;suspendedMode='modal';needsRefresh=true;openRequested=false;},
+  reconsider(){if(view.blocked()){openRequested=false;needsRefresh=true;if(shown){suspendedMode=suspendedMode||shown.mode;shown=null;view.hide()}return}if(needsRefresh)return sync();maybeShow()},
+  openInbox(){if(!connected||view.blocked()||shown?.mode!=='inbox')return Promise.resolve();openRequested=true;needsRefresh=true;return sync()},
   acknowledge,
-  clear(){epoch++;connected=false;seen=null;fetched=null;pending=[];shown=null;running=null;again=false;view.hide()},
+  clear(){epoch++;connected=false;seen=null;fetched=null;pending=[];shown=null;running=null;again=false;needsRefresh=true;openRequested=false;view.hide()},
   // Numeric cursors only: useful for deterministic tests without exporting private events.
   state(){return{connected,seen,fetched,pending:pending.length,shown:shown?.count||0}}
  };
 }
 export function createActivityUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalThis),document:doc=globalThis.document,window:win=globalThis,onError=()=>{}}={}) {
- let initialized=false,overlay,card,list,title,older,storage,restoreFocus=null,oldOverflow=null,observer;
+ let initialized=false,overlay,card,list,title,older,storage,restoreFocus=null,oldOverflow=null,observer,inbox,banner,bannerText,bannerAck=null,bannerTimer=null;
  try{storage=win.localStorage}catch{}
  const make=(tag,className,text)=>{const el=doc.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el};
  function otherModal(){return [...doc.querySelectorAll('.ov,dialog[open],[role="dialog"][aria-modal="true"],[role="alertdialog"]')].some(el=>el!==overlay&&!el.hidden&&el.getAttribute('aria-hidden')!=='true'&&el.getClientRects().length>0)}
  const blocked=()=>doc.hidden||otherModal();
  const hide=()=>{
+  if(bannerTimer!==null){win.clearTimeout(bannerTimer);bannerTimer=null}
+  if(banner)banner.hidden=true;if(inbox)inbox.hidden=true;bannerAck=null;
   if(!overlay?.hasAttribute('open'))return;
   if(typeof overlay.close==='function')overlay.close();else overlay.removeAttribute('open');
   overlay.hidden=true;
   if(oldOverflow!==null){doc.body.style.overflow=oldOverflow;oldOverflow=null}
   if(!otherModal()&&restoreFocus?.isConnected)restoreFocus.focus({preventScroll:true});restoreFocus=null;
  };
- const view={blocked,hide,go(){win.location.hash='picks'},show(data,ack){
+ const view={blocked,hide,deferModal:true,go(){win.location.hash='picks'},show(data,ack){
   if(!initialized||blocked())return;
+  if(data.mode==='inbox'){
+   const label=`新动静 ${data.count}`;if(inbox.textContent!==label)inbox.textContent=label;
+   if(inbox.hidden)inbox.hidden=false;return;
+  }
+  if(inbox&&!inbox.hidden)inbox.hidden=true;
+  if(data.mode==='banner'){
+   const item=data.items[0];bannerText.replaceChildren(make('strong','',item.actorName||'对方'),doc.createTextNode('　'+item.text));
+   bannerAck=ack;banner.hidden=false;
+   // Visibility and blocking are checked again by the feed at acknowledgment time.
+   bannerTimer=win.setTimeout(()=>{bannerTimer=null;ack()},7000);return;
+  }
   title.textContent=`有 ${data.count} 条新动静`;list.replaceChildren();
   for(const item of data.items){const li=make('li'),text=make('div','pk-feed-text'),name=make('strong','',item.actorName||'对方'),detail=make('span','',item.text),time=make('time','',relativeTime(item.createdAt));time.dateTime=item.createdAt;time.title=new Date(item.createdAt).toLocaleString('zh-CN');text.append(name,doc.createTextNode('　'),detail);li.append(text,time);list.append(li)}
   older.hidden=!data.older;older.textContent=data.older?`还有更早的 ${data.older} 条`:'';
@@ -127,12 +152,17 @@ export function createActivityUI(getCloud,getActor,{fetcher=globalThis.fetch.bin
  const feed=createActivityFeed({request,getActor,storage,view,onError});
  function init(){
   if(initialized)return;initialized=true;
+  inbox=make('button','pk-feed-inbox');inbox.id='pkFeedInbox';inbox.type='button';inbox.hidden=true;inbox.setAttribute('aria-haspopup','dialog');inbox.setAttribute('aria-controls','pkFeedDialog');inbox.addEventListener('click',()=>{void feed.openInbox()});
+  const pageHeader=doc.querySelector('.app > header,body > header');if(pageHeader)pageHeader.after(inbox);else doc.body.prepend(inbox);
+  banner=make('aside','pk-feed-banner');banner.id='pkFeedBanner';banner.hidden=true;banner.setAttribute('aria-label','剧单新动静');
+  bannerText=make('div','pk-feed-banner-text');bannerText.setAttribute('role','status');bannerText.setAttribute('aria-live','polite');bannerText.setAttribute('aria-atomic','true');
+  const bannerClose=make('button','pk-feed-banner-close','×');bannerClose.type='button';bannerClose.setAttribute('aria-label','关闭新动静');bannerClose.addEventListener('click',()=>bannerAck?.());banner.append(bannerText,bannerClose);doc.body.append(banner);
   overlay=make('dialog','pk-feed-overlay');overlay.id='pkFeedDialog';overlay.hidden=true;overlay.setAttribute('aria-labelledby','pkFeedTitle');overlay.setAttribute('aria-modal','true');overlay.setAttribute('role','dialog');if(typeof overlay.showModal!=='function')overlay.setAttribute('data-fallback','');
   card=make('section','pk-feed-card paper');const label=make('p','pk-feed-label','Shared Picks · While You Were Away');title=make('h2','pk-feed-title');title.id='pkFeedTitle';list=make('ol','pk-feed-list');older=make('p','pk-feed-older');older.hidden=true;
   const actions=make('div','pk-feed-actions'),dismiss=make('button','btn ghost','知道了'),visit=make('button','btn','去剧单看看');dismiss.type=visit.type='button';dismiss.addEventListener('click',()=>feed.acknowledge());visit.addEventListener('click',()=>feed.acknowledge(true));actions.append(dismiss,visit);card.append(label,title,list,older,actions);overlay.append(card);doc.body.append(overlay);
   overlay.addEventListener('click',e=>{if(e.target===overlay)feed.acknowledge()});overlay.addEventListener('cancel',e=>{e.preventDefault();feed.acknowledge()});
   overlay.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();feed.acknowledge()}else if(e.key==='Tab'){const first=dismiss,last=visit;if(e.shiftKey&&doc.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&doc.activeElement===last){e.preventDefault();first.focus()}}});
-  doc.addEventListener('visibilitychange',()=>{feed.reconsider();if(!doc.hidden)void feed.sync()});
+  doc.addEventListener('visibilitychange',()=>{if(doc.hidden)feed.away();feed.reconsider();if(!doc.hidden)void feed.sync()});
   win.addEventListener('storage',e=>{if(e.key===SEEN_KEY||e.key===null)feed.reconsider()});
   win.navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.type==='LAOBAI_PICK_ACTIVITY')void feed.sync()});
   let scheduled=false;observer=new win.MutationObserver(()=>{if(scheduled)return;scheduled=true;win.queueMicrotask(()=>{scheduled=false;feed.reconsider()})});
@@ -140,3 +170,4 @@ export function createActivityUI(getCloud,getActor,{fetcher=globalThis.fetch.bin
  }
  return{init,connect(){init();return feed.connect()},sync:feed.sync,clear:feed.clear};
 }
+

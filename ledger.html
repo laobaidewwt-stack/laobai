@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4rBIaelC57E4mz7A6QICTo2XWAg5Fh+PYGMGZAJHmiU='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-a7gNzBM2xmNbjZOrTQwVSJ5G6rN4LS8+MvALxh7loD8='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -640,9 +640,10 @@ select.in{appearance:auto}
 <div class="toast" id="toast" role="status"></div>
 
 <script type="module">
+import {ReactionController,summaryHTML as pkResponseSummary,panelHTML as pkResponsePanel,unanswered as pkUnanswered,captureResponseFocus,restoreResponseFocus,charCount} from './reactions.js?v=20261106-reactions1';
 import {createNoticeUI} from './notifications.js?v=20261106-push1';
-import {createActivityUI} from './activity.js?v=20261106-push1';
-import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261106-fetchfix';
+import {createActivityUI} from './activity.js?v=20261106-reactions1';
+import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261106-reactions1';
 const SHARED_ONLY=false;
 
 (function(){
@@ -1382,11 +1383,13 @@ function pkUnseen(){const seen=+pkGet('ledger_picks_seen')||0,me=pkMe();let n=0;
 function renderPkDot(){const n=S.view==='picks'?0:pkUnseen();document.querySelectorAll('.ni[data-view="lib"],.seg button[data-view="picks"]').forEach(t=>{let d=t.querySelector('.ni-dot');if(n){if(!d){d=document.createElement('i');d.className='ni-dot';t.appendChild(d)}d.textContent=n>9?'9+':n}else if(d)d.remove()})}
 function pkStampKind(s){return ['翻译中','已翻完'].includes(s)?'doing':['已上传','已发微博'].includes(s)?'out':s==='不做'?'skip':'idea'}
 function renderPicks(){
+  if(PK_COMPOSING){PK_RESPONSE_REDRAW=true;return}
+  const responseFocus=captureResponseFocus(document);
   pkRenderCalendar();if(!PK_CONNECTED){$('#pkList').innerHTML='';$('#pkWho').textContent='';$('#pkStatusChips').innerHTML='';return}
   if(S.pkSeenAt==null){S.pkSeenAt=+pkGet('ledger_picks_seen')||0}
   pkSet('ledger_picks_seen',String(Date.now()));
   const me=pkMe(),all=[...S.picks.values()];
-  const groups=PK_GROUPS.concat(me?[['我认领的',p=>p.claimId===PK_ACTOR.id]]:[]);
+  const groups=PK_GROUPS.concat(me?[['我认领的',p=>p.claimId===PK_ACTOR.id],['我还没回应',p=>pkUnanswered(p,PK_ACTOR)]]:[]);
   if(!groups.some(g=>g[0]===S.pkGroup))S.pkGroup='全部';
   $('#pkStatusChips').innerHTML=groups.map(([n,g])=>{const c=all.filter(p=>pkInGroup(p,g)).length;return '<button class="chip" data-act="pk-group" data-v="'+n+'" aria-pressed="'+(S.pkGroup===n)+'">'+n+(c&&n!=='全部'?'<sup>'+c+'</sup>':'')+'</button>'}).join('');
   $('#pkWho').innerHTML=me?'记录身份 · '+esc(me)+'　<button class="linkbtn" data-act="pk-me">改署名</button>':'<button class="linkbtn" data-act="pk-me">先设置这台手机是谁在用</button>';
@@ -1414,9 +1417,10 @@ function renderPicks(){
       '<div class="pk-title">'+(isNew?'<i class="pk-newdot" title="新放的"></i>':'')+'《'+esc(p.zh)+'》'+(inLib?'<span class="pk-inlib">已入库</span>':'')+'</div>'+
       (p.en?'<div class="pk-en">'+esc(p.en)+'</div>':'')+
       (meta?'<div class="pk-meta">'+meta+'</div>':'')+
-      (p.note?'<div class="pk-note">'+esc(p.note)+'</div>':'')+follow+links+
-      '<div class="pk-acts"><div>'+main+alt+'</div><div>'+claim+'<button class="linkbtn pk-soft" data-act="pk-edit" data-id="'+id+'">编辑</button></div></div>'+
-      '</div></div>'}).join('');
+      (p.note?'<div class="pk-note">'+esc(p.note)+'</div>':'')+pkResponseSummary(p,PK_ACTOR,PK_RESPONSES.state(p.id))+follow+links+
+      '<div class="pk-acts"><div>'+main+alt+'</div><div>'+claim+'<button type="button" class="linkbtn pk-response-entry" data-act="pk-response-open" data-id="'+id+'" aria-controls="pk-response-'+id+'" aria-expanded="'+PK_RESPONSES.state(p.id).open+'">✦ 回应</button><button class="linkbtn pk-soft" data-act="pk-edit" data-id="'+id+'">编辑</button></div></div>'+
+      pkResponsePanel(p,PK_ACTOR,PK_RESPONSES.state(p.id),PK_RESPONSES)+'</div></div>'}).join('');
+  restoreResponseFocus(document,responseFocus);
 }
 function pkFillClaim(cur){const names=pkNames();if(cur&&!names.includes(cur))names.push(cur);$('#kClaim').innerHTML='<option value="">还没人认领</option>'+names.map(n=>'<option value="'+esc(n)+'"'+(n===cur?' selected':'')+'>'+esc(n)+'</option>').join('')}
 function pkStatusChips(){$('#kStatusChips').innerHTML=PK_STATUS.map(s=>'<button type="button" class="chip" data-act="pk-form-status" data-v="'+s+'" aria-pressed="'+(S.pkFormStatus===s)+'">'+s+'</button>').join('')}
@@ -1441,10 +1445,12 @@ const PK_ACTOR={id:'',name:''};
 const PK_CLIENT=new OwnerKeyPicksClient(()=>CLOUD,()=>PK_ACTOR),PK_ROWS=new RowStore();
 let PK_EDIT=null,PK_TIMER=null,PK_SESSION=0,PK_SYNCING=false,PK_CONNECTED=false;
 const PK_NOTICE=createNoticeUI(()=>CLOUD,()=>PK_ACTOR);const PK_ACTIVITY=createActivityUI(()=>CLOUD,()=>PK_ACTOR,{onError:e=>{if(e.message==='STORAGE_UNAVAILABLE')toast('浏览器未允许保存已读进度，刷新后可能再次看到提醒')}});
+const PK_RESPONSES=new ReactionController({store:PK_ROWS,request:(name,args)=>PK_CLIENT.rpc(name,args),getActor:()=>PK_ACTOR,onChange:()=>pkPublish(),onCommit:()=>{PK_NOTICE.sync();PK_ACTIVITY.sync()},onError:(error,uncertain)=>{if(error.code==='bad_key'||error.code==='actor_required')pkError(error);else{toast(uncertain?'没存上，请再试一次。已保留草稿，先核对上次结果':'没存上，请再试一次');void pkSync()}}});
+let PK_COMPOSING=false,PK_RESPONSE_REDRAW=false,PK_COMPOSITION_TOKEN=0;
 const PK_BUSY=new Set();let PK_MONTH=ymd(new Date()).slice(0,7),PK_DATE=null;
 function pkMe(){return PK_ACTOR.name}
 function pkNames(){return [...new Set([PK_ACTOR.name,...PK_ROWS.live().map(r=>r.claim)].filter(Boolean))]}
-function pkPublish(){S.picks=new Map(PK_ROWS.live().map(r=>[r.id,{...r,createdAt:Date.parse(r.createdAt),updatedAt:Date.parse(r.updatedAt)}]));render()}
+function pkPublish(){S.picks=new Map(PK_RESPONSES.live().map(r=>[r.id,{...r,createdAt:Date.parse(r.createdAt),updatedAt:Date.parse(r.updatedAt)}]));render()}
 function pkError(e){
  if(e.code==='cancelled')return;
  if(e.code==='bad_key'){pkDisconnect();return toast('钥匙已失效，请重新输入原账本钥匙')}
@@ -1460,9 +1466,9 @@ async function pkSync(){
  catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION)PK_SYNCING=false}
 }
 function pkOnLedgerReady(){if(!PK_CONNECTED){PK_CONNECTED=true;PK_NOTICE.connect();PK_ACTIVITY.connect();PK_SESSION++;PK_TIMER=setInterval(()=>{if(!document.hidden)void pkSync()},30000);void pkSync()}render()}
-function pkDisconnect(){PK_NOTICE.clear();PK_ACTIVITY.clear();PK_SESSION++;PK_CLIENT.clear();PK_CONNECTED=false;PK_EDIT=null;PK_ROWS.clear();PK_BUSY.clear();PK_SYNCING=false;clearInterval(PK_TIMER);$('#pkOv').hidden=true;$('#pkForm').reset();$('#kIssues').innerHTML='';S.picks.clear();render()}
+function pkDisconnect(){PK_COMPOSING=false;PK_RESPONSE_REDRAW=false;PK_COMPOSITION_TOKEN++;PK_RESPONSES.clear();PK_NOTICE.clear();PK_ACTIVITY.clear();PK_SESSION++;PK_CLIENT.clear();PK_CONNECTED=false;PK_EDIT=null;PK_ROWS.clear();PK_BUSY.clear();PK_SYNCING=false;clearInterval(PK_TIMER);$('#pkOv').hidden=true;$('#pkForm').reset();$('#kIssues').innerHTML='';S.picks.clear();render()}
 function pkAskMe(){$('#pkActorPanel').hidden=false;$('#pkActorName').value=PK_ACTOR.name;$('#pkActorName').focus()}
-function pkSaveActor(e){e.preventDefault();const name=$('#pkActorName').value.trim();if(!name||name.length>80)return toast('署名请填 1 到 80 个字');PK_ACTOR.name=name;pkSet('picks_actor_name',name);$('#pkActorPanel').hidden=true;render();toast('署名已记下，仅作协作标记，不是个人账号')}
+function pkSaveActor(e){e.preventDefault();const name=$('#pkActorName').value.trim();if(!name||name.length>80)return toast('署名请填 1 到 80 个字');PK_CLIENT.clear();PK_RESPONSES.clear();PK_ACTOR.name=name;pkSet('picks_actor_name',name);$('#pkActorPanel').hidden=true;render();toast('署名已记下，仅作协作标记，不是个人账号')}
 function pkRenderCalendar(){
  $('#pkCalendar').hidden=!PK_CONNECTED;$('#pkSyncNote').hidden=!PK_CONNECTED;$('#pkNeedKey').hidden=PK_CONNECTED;
  if(!PK_CONNECTED)return;
@@ -1588,6 +1594,12 @@ document.addEventListener('click',e=>{
     case 'pk-new':openPick(null);break;
     case 'pk-edit':openPick(b.dataset.id);break;
     case 'pk-me':pkAskMe();break;
+    case 'pk-response-open':{if(!PK_ACTOR.name){pkAskMe();break}const state=PK_RESPONSES.state(b.dataset.id);state.open=!state.open;renderPicks();break}
+    case 'pk-deletions-all':{const state=PK_RESPONSES.state(b.dataset.id);state.auditExpanded=!state.auditExpanded;renderPicks();break}
+    case 'pk-replies-all':{const state=PK_RESPONSES.state(b.dataset.id);state.expanded=!state.expanded;renderPicks();break}
+    case 'pk-react':try{PK_RESPONSES.toggle(b.dataset.id,v)}catch(error){toast(error.message)}break;
+    case 'pk-response-retry':PK_RESPONSES.retry(b.dataset.id);break;
+    case 'pk-reply-delete':armed(b,'确认删除',()=>{try{PK_RESPONSES.remove(b.dataset.id,b.dataset.reply)}catch(error){toast(error.message)}});break;
     case 'pk-group':S.pkGroup=v;render();break;
     case 'pk-who':S.pkWho=v;render();break;
     case 'pk-form-status':S.pkFormStatus=v;pkStatusChips();break;
@@ -1608,6 +1620,11 @@ document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.
 $('#logForm').addEventListener('submit',saveLog);
 $('#workForm').addEventListener('submit',saveWork);
 $('#pkForm').addEventListener('submit',savePick);
+$('#pkList').addEventListener('compositionstart',e=>{if(!e.target.classList.contains('pk-reply-input'))return;PK_COMPOSITION_TOKEN++;PK_COMPOSING=true});
+$('#pkList').addEventListener('compositionend',e=>{const input=e.target;if(!input.classList.contains('pk-reply-input'))return;const token=PK_COMPOSITION_TOKEN;setTimeout(()=>{if(token!==PK_COMPOSITION_TOKEN)return;PK_COMPOSING=false;if(input.isConnected)PK_RESPONSES.state(input.dataset.pick).draft=input.value;if(PK_RESPONSE_REDRAW){PK_RESPONSE_REDRAW=false;renderPicks()}},0)});
+$('#pkList').addEventListener('input',e=>{const input=e.target;if(!input.classList.contains('pk-reply-input'))return;PK_RESPONSES.state(input.dataset.pick).draft=input.value;const count=document.getElementById('pk-count-'+input.dataset.pick);if(count)count.textContent=charCount(input.value.trim())+'/60'});
+$('#pkList').addEventListener('submit',e=>{const form=e.target.closest('.pk-response-form');if(!form)return;e.preventDefault();try{PK_RESPONSES.reply(form.dataset.pick)}catch(error){toast(error.message)}});
+
 let wqT;$('#wq').addEventListener('input',e=>{clearTimeout(wqT);wqT=setTimeout(()=>{S.wq=e.target.value;renderWorks()},200)});
 $('#subToggle').addEventListener('change',e=>{S.subOn=e.target.checked;renderWorks()});
 $('#bq').addEventListener('input',e=>{S.bq=e.target.value;renderBest()});
