@@ -470,7 +470,7 @@ select.in{appearance:auto}
     <label class="f">最新字幕链接<input class="in" id="wSub" placeholder="https://"></label>
     <label class="f">发布标题<input class="in" id="wTitle"></label>
     <div id="wVersionArchive" aria-label="文案版本只读查看"></div>
-    <label class="f">旧版工作文案（独立发布版和历史稿只读，不在此编辑）<textarea class="in" id="wCopy" rows="5"></textarea></label>
+    <label class="f">文案<textarea class="in" id="wCopy" rows="5"></textarea></label>
     <label class="f">发布链接<input class="in" id="wPub" placeholder="https://"></label>
     <label class="f">备注<textarea class="in" id="wNotes" rows="2"></textarea></label>
     <label class="f">字幕全文（可不填，贴进来以后能搜台词）<textarea class="in" id="wSubs" rows="4" placeholder="把 SRT 或纯文本贴在这里"></textarea></label>
@@ -692,7 +692,7 @@ function dayNoteItems(date){
   return items;
 }
 function dayNoteText(date){
-  return dayNoteItems(date).map(item=>(item.chineseMissing?'中文名待补':'《'+item.title+'》')+(item.en&&(item.chineseMissing||item.en.toLowerCase()!==item.title.toLowerCase())?' / '+item.en:'')+(item.detail?' · '+item.detail:'')).join('\n');
+  return dayNoteItems(date).map((item,i)=>(i+1)+'. '+(item.chineseMissing?'中文名待补':'《'+item.title+'》')+(item.en&&(item.chineseMissing||item.en.toLowerCase()!==item.title.toLowerCase())?' / '+item.en:'')+(item.detail?' · '+item.detail:'')).join('\n');
 }
 
 /* Read-only copy versions. These helpers never merge or save version bodies. */
@@ -757,27 +757,14 @@ function copyVersions(work){
   return versions;
 }
 function renderCopyVersions(work){
-  const versions=visibleCopyVersions(work),source=copySourceInfo(work);
-  const warnings=[savedCopyText(work&&work.copyStatus),savedCopyText(source.versionNote),savedCopyText(source.scope)].filter(Boolean);
-  const intro=warnings.length?'<div class="muted" style="margin-top:10px">'+warnings.map(value=>esc(withoutResourceLinks(value))).join('<br>')+'</div>':'';
-  const missing=(!savedCopyText(work&&work.draftCopy)&&!(/聊天完整文案/.test(savedCopyText(work&&work.copyStatus))&&savedCopyText(work&&work.copy)))||versions.some(version=>version.key==='draftCopy'&&!version.fullHistorical);
-  if(S.copyView==='weibo'&&!versions.length)return '<div class="muted">尚无可查看的微博中文文案。</div>';
-  return intro+versions.map(version=>'<section class="copy-version" style="margin-top:12px" aria-label="'+esc(version.label)+'">'+
-    '<details><summary style="cursor:pointer;line-height:1.7"><b>'+esc(version.label)+'</b> · 展开全文</summary>'+
-    '<div class="muted" style="margin-top:6px">'+esc(version.note)+'</div>'+
-    (version.title?'<div class="muted">该稿题名：'+esc(version.title)+'</div>':'')+
-    '<div class="copybox" style="max-height:none">'+esc(versionDisplayText(version,work)||'此记录没有可核实的中文微博文案，不把英文或字幕当作文案显示。')+'</div></details>'+
-    '<div class="acts" style="margin-top:6px"><button type="button" class="chip" data-act="copy-version" data-id="'+esc(work.id)+'" data-field="'+esc(version.key)+'">复制'+(version.key==='draftCopy'?'这份历史稿':version.key==='publishedCopy'||(/微博发布版/.test(savedCopyText(work.copyStatus))&&version.key==='copy')?'微博文字':'这份文案')+'</button>'+
-    (version.source?'<a class="chip" href="'+esc(version.source)+'" target="_blank" rel="noopener noreferrer">查看来源 ↗</a>':'')+'</div></section>').join('')+
-    (missing&&S.copyView!=='weibo'?'<div class="muted" style="margin-top:10px">完整中文文案尚未补齐；现有微博短帖或单集稿不能代替整剧全文。</div>':'');
+  const text=savedCopyText(work&&work.copy);
+  return text?'<div class="copybox">'+esc(withoutResourceLinks(text))+'</div>':'<div class="muted">文案待补</div>';
 }
 
 function workChineseTitle(work){return savedCopyText(work&&work.zh)||'中文名待补'}
 function visibleCopyVersions(work){
-  const versions=copyVersions(work);
-  if(S.copyView==='weibo')return versions.filter(version=>version.key==='publishedCopy'||(version.key==='copy'&&/微博发布版/.test(savedCopyText(work.copyStatus))));
-  if(S.copyView==='draft')return versions.filter(version=>version.key==='draftCopy'||(version.key==='copy'&&!/微博发布版/.test(savedCopyText(work.copyStatus))));
-  return versions;
+  const text=savedCopyText(work&&work.copy);
+  return text?[{key:'copy',text}]:[];
 }
 function versionDisplayText(version,work){
   const text=withoutResourceLinks(version.text);
@@ -787,8 +774,9 @@ function versionDisplayText(version,work){
   return en?text.split('\n').filter(line=>line.trim().toLowerCase()!==en).join('\n'):text;
 }
 function renderCopyFilters(){
-  const html=[['all','全部版本'],['weibo','微博中文文案'],['draft','聊天历史稿']].map(([value,label])=>'<button type="button" class="chip" data-act="copy-view" data-v="'+value+'" aria-pressed="'+(S.copyView===value)+'">'+label+'</button>').join('');
-  $('#copyFiltersToday').innerHTML=html;$('#copyFiltersWorks').innerHTML=html;
+  S.copyView='all';
+  $('#copyFiltersToday').hidden=true;$('#copyFiltersWorks').hidden=true;
+  $('#copyFiltersToday').innerHTML='';$('#copyFiltersWorks').innerHTML='';
 }
 
 function daySummary(date){
@@ -835,10 +823,11 @@ function renderToday(ws,tot){
   const cids=new Set(L.map(l=>l.workId).filter(Boolean));
   for(const w of S.works.values())if(w.updatedAt&&ymd(new Date(w.updatedAt))===S.date)cids.add(w.id);
   const cws=[...cids].map(id=>S.works.get(id)).filter(w=>w&&(visibleCopyVersions(w).length||(S.copyView!=='weibo'&&(w.hook||w.cp||w.genre)))).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-  $('#copyToday').innerHTML=cws.length?cws.map((w,i)=>{const one=S.copyView!=='weibo'&&(w.hook||w.cp||w.genre),id=esc(w.id);
+  $('#copyToday').innerHTML=cws.length?cws.map((w,i)=>{const one=w.hook||w.cp||w.genre,id=esc(w.id);
     return (i?'<hr>':'')+'<div><div class="best" style="font-size:17px">《'+esc(workChineseTitle(w))+'》</div>'+(w.en?'<div class="muted">'+esc(w.en)+'</div>':'')+
-      renderCopyVersions(w)+(one?'<div class="muted" style="margin-top:12px">资料汇总句（以归档原文为准）</div><div class="fan">'+esc(withoutResourceLinks(fanLine(w)))+'</div><div class="acts"><button class="chip" data-act="copy-fan" data-id="'+id+'">复制资料汇总句</button></div>':'')+'</div>'}).join('')
-    :'<div class="muted">这一天还没有可查看的文案。历史聊天稿和已核微博文字会分开显示，不会相互覆盖。</div>';
+      (one?'<div class="fan">'+esc(withoutResourceLinks(fanLine(w)))+'</div>':'')+(w.copy?'<div class="copybox" style="max-height:200px">'+esc(withoutResourceLinks(w.copy))+'</div>':'')+
+      '<div class="acts" style="margin-top:10px">'+(one?'<button class="btn" data-act="copy-fan" data-id="'+id+'">复制一句话</button>':'')+(w.copy?'<button class="btn ghost" data-act="copy-copy" data-id="'+id+'">复制整篇</button>':'')+'</div></div>'}).join('')
+    :'<div class="muted">写好的整篇文案，点右上「粘贴新文案」贴进来，会自动存好。换一部手机打开，这里就能一键复制。</div>';
   const day=S.days.get(S.date)||{};
   const fillKey=S.date+':'+(day.updatedAt||0);
   if($('#fBest').dataset.for!==fillKey&&!document.activeElement.matches('#fBest,#fBestWork,#fPending')){
@@ -919,12 +908,12 @@ function workRow(w,s,compact){
     const publicLink=copySourceUrl(w.pubLink);
     if(publicLink)links.push('<a href="'+esc(publicLink)+'" target="_blank" rel="noopener noreferrer">发布链接 ↗</a>');
     if(links.length)h+='<div class="wlinks">'+links.join('')+'</div>';
-    if(S.copyView!=='weibo'&&(w.hook||w.cp||w.genre))h+='<div class="muted" style="margin-top:8px">资料汇总句（以归档原文为准）</div><div class="fan">'+esc(withoutResourceLinks(fanLine(w)))+'</div>';
+    if(S.copyView!=='weibo'&&(w.hook||w.cp||w.genre))h+='<div class="fan">'+esc(withoutResourceLinks(fanLine(w)))+'</div>';
     if(hasScore(w))h+='<div class="stars">'+DIMS.map(([k,n])=>'<span>'+n+' <b>'+stars((w.score||{})[k])+'</b></span>').join('')+'</div>';
     if(w.rec)h+='<div class="muted" style="margin-top:4px">'+esc(withoutResourceLinks(w.rec))+'</div>';
-    if(S.copyView!=='weibo'&&w.title)h+='<div class="copybox"><b>保存标题（以各版本为准）</b>　'+esc(withoutResourceLinks(w.title))+'</div>';
+    if(S.copyView!=='weibo'&&w.title)h+='<div class="copybox"><b>标题</b>　'+esc(withoutResourceLinks(w.title))+'</div>';
     h+=renderCopyVersions(w);
-    if(S.copyView!=='weibo'&&(w.title||w.hook||w.cp||w.genre))h+='<div class="acts" style="margin-top:6px">'+((w.hook||w.cp||w.genre)?'<button class="chip" data-act="copy-fan" data-id="'+esc(w.id)+'">复制资料汇总句</button>':'')+(w.title?'<button class="chip" data-act="copy-title" data-id="'+esc(w.id)+'">复制保存标题</button>':'')+'</div>';
+    if(w.title||w.copy||w.hook||w.cp)h+='<div class="acts" style="margin-top:6px">'+((w.hook||w.cp||w.genre)?'<button class="chip" data-act="copy-fan" data-id="'+esc(w.id)+'">复制发布文案</button>':'')+(w.title?'<button class="chip" data-act="copy-title" data-id="'+esc(w.id)+'">复制标题</button>':'')+(w.copy?'<button class="chip" data-act="copy-copy" data-id="'+esc(w.id)+'">复制文案</button>':'')+'</div>';
     if(w.notes)h+='<div class="muted" style="margin-top:6px">'+esc(withoutResourceLinks(w.notes))+'</div>';
   }
   return h+'</div>';
@@ -1005,7 +994,7 @@ function openWork(id){
   $('#wZh').value=w?w.zh:'';$('#wEn').value=w?w.en||'':'';$('#wKind').value=w?w.kind||'完整剧':'完整剧';$('#wStatus').value=w?w.status||'翻译中':'翻译中';
   $('#wSub').value=w?w.subLink||'':'';$('#wTitle').value=w?w.title||'':'';$('#wCopy').value=w?w.copy||'':'';$('#wPub').value=w?w.pubLink||'':'';$('#wNotes').value=w?w.notes||'':'';
   $('#wHook').value=w?w.hook||'':'';$('#wGenre').value=w?w.genre||'':'';$('#wState').value=w?w.state||'':'';$('#wCp').value=w?w.cp||'':'';$('#wRec').value=w?w.rec||'':'';$('#wPaste').value='';
-  $('#wVersionArchive').innerHTML=w?renderCopyVersions(w):'';
+  $('#wVersionArchive').innerHTML='';
   S.score=Object.assign({look:0,plot:0,spice:0},w&&w.score||{});renderScoreInputs();
   $('#wSubs').value='';$('#wSubs').dataset.orig='';$('#wDel').hidden=!w;
   openOv('workOv');
@@ -1305,6 +1294,7 @@ document.addEventListener('click',e=>{
     case 'copy-title':{const w=S.works.get(b.dataset.id);if(w)copyText(w.title);break}
     case 'copy-view':{if(['all','weibo','draft'].includes(v)){S.copyView=v;render()}break}
     case 'copy-version':{const w=S.works.get(b.dataset.id),version=copyVersions(w).find(item=>item.key===b.dataset.field);if(version){const text=versionDisplayText(version,w);text?copyText(text):toast('没有可复制的中文微博文案')}else toast('这份文案已变化，请刷新后重试');break}
+    case 'copy-copy':{const w=S.works.get(b.dataset.id),text=savedCopyText(w&&w.copy);text?copyText(text):toast('文案待补');break}
     case 'copy-fan':{const w=S.works.get(b.dataset.id);if(w)copyText(fanLine(w));break}
     case 'score':{const k=b.dataset.d,n=+v;S.score[k]=S.score[k]===n?0:n;renderScoreInputs();break}
     case 'save-pick':{const w=findWork($('#fPick').value);if(!$('#fPick').value.trim()){saveDay({pick:null},'已清空今日最佳');break}if(!w){toast('作品库里没有这部，先记一条交付或新建作品');break}saveDay({pick:{workId:w.id,name:w.zh}},'定为今日最佳了');break}
