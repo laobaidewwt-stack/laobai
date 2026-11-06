@@ -24,8 +24,11 @@ function safeEvent(item){
  return {...item,id,actorName:item.actorName.slice(0,80),text:item.text.slice(0,1500)};
 }
 /** Pure state machine, injected RPC/view/storage make full boundary tests deterministic. */
-export function createActivityFeed({request,getActor,storage,view,onError=()=>{}}) {
- let epoch=0,connected=false,seen=null,fetched=null,pending=[],shown=null,running=null,again=false,storageWarned=false,foregroundReady=false,suspendedMode=null,needsRefresh=true,openRequested=false;
+export function createActivityFeed({request,getActor,storage,view,onError=()=>{},onUnreadChange=()=>{}}) {
+ let epoch=0,connected=false,seen=null,fetched=null,pending=[],shown=null,running=null,again=false,storageWarned=false,foregroundReady=false,suspendedMode=null,needsRefresh=true,openRequested=false,loaded=false,snapshotVersion=0,lastUnreadState=null;
+ // The header shares this complete snapshot, never a second polling/count source.
+ const unreadState=()=>({connected,loaded,unread:pending.length});
+ function publishUnread(){const state=unreadState(),key=JSON.stringify(state);if(key===lastUnreadState)return;lastUnreadState=key;onUnreadChange(state)}
  const writeSeen=id=>{
   // A sibling tab may have acknowledged a newer snapshot before its storage event arrives.
   const persisted=readSeen(storage);
@@ -37,12 +40,14 @@ export function createActivityFeed({request,getActor,storage,view,onError=()=>{}
   const persisted=readSeen(storage);
   if(persisted!==null&&seen!==null&&compare(persisted,seen)>0){seen=persisted;pending=pending.filter(e=>compare(e.id,seen)>0);if(shown&&compare(shown.through,seen)<=0){shown=null;view.hide()}}
   if(seen!==null&&fetched!==null&&compare(seen,fetched)>0)fetched=seen;
+  publishUnread();
  }
  function maybeShow(){
   if(!connected||view.blocked()||needsRefresh)return;
   reconcileStorage();
-  if((shown&&shown.mode!=='inbox')||fetched===null)return;
-  pending=pending.filter(e=>compare(e.id,seen)>0&&e.actorId!==getActor().id);
+  if((shown&&shown.mode!=='inbox'&&!openRequested)||fetched===null)return;
+  if(openRequested&&shown){shown=null;view.hide()}
+  pending=pending.filter(e=>compare(e.id,seen)>0&&e.actorId!==getActor().id);publishUnread();
   if(!pending.length){if(shown){shown=null;view.hide()}openRequested=false;writeSeen(fetched);foregroundReady=true;return}
   const items=[...pending].sort((a,b)=>-compare(a.id,b.id));
   let mode=openRequested?'modal':shown?.mode==='inbox'?'inbox':suspendedMode||(foregroundReady?'banner':'modal');
@@ -58,13 +63,13 @@ export function createActivityFeed({request,getActor,storage,view,onError=()=>{}
  function acknowledge(go=false){
   if(!shown||shown.mode==='inbox')return;
   if(view.blocked()){needsRefresh=true;suspendedMode=suspendedMode||shown.mode;shown=null;view.hide();return}
-  const through=shown.through;shown=null;writeSeen(through);pending=pending.filter(e=>compare(e.id,through)>0);view.hide();
+  const through=shown.through;shown=null;writeSeen(through);pending=pending.filter(e=>compare(e.id,seen)>0);publishUnread();view.hide();
   if(go)view.go();
   // A newer batch must not be swallowed by the previous popup's acknowledgment.
   needsRefresh=true;queueMicrotask(()=>{void sync()});
  }
  async function collect(e){
-  if(seen===null){const data=await request('events_head');if(e!==epoch)return;const head=eventId(data.latestId);writeSeen(head);fetched=head;foregroundReady=!view.blocked();needsRefresh=view.blocked();return}
+  if(seen===null){const data=await request('events_head');if(e!==epoch)return;const head=eventId(data.latestId);writeSeen(head);fetched=head;foregroundReady=!view.blocked();needsRefresh=view.blocked();loaded=true;snapshotVersion++;publishUnread();return}
   reconcileStorage();
   // Re-read the unacknowledged interval: deleted replies redact existing event IDs.
   let cursor=seen,through=null,batch=[];
@@ -85,7 +90,7 @@ export function createActivityFeed({request,getActor,storage,view,onError=()=>{}
   fetched=through;
   const byId=new Map();
   for(const item of batch)if(compare(item.id,seen)>0&&item.actorId!==getActor().id)byId.set(item.id,item);
-  pending=[...byId.values()];needsRefresh=view.blocked();maybeShow();
+  pending=[...byId.values()];loaded=true;snapshotVersion++;publishUnread();needsRefresh=view.blocked();maybeShow();
   if(!view.blocked()&&!pending.length&&!shown)suspendedMode=null;
  }
  function sync(){
@@ -97,18 +102,24 @@ export function createActivityFeed({request,getActor,storage,view,onError=()=>{}
   void task.finally(()=>{if(running===task)running=null});return task;
  }
  return {
-  connect(){if(connected)return running||Promise.resolve();connected=true;epoch++;foregroundReady=false;suspendedMode=null;needsRefresh=true;openRequested=false;seen=readSeen(storage)??'0';fetched=seen;return sync()},
+  connect(){if(connected)return running||Promise.resolve();connected=true;epoch++;foregroundReady=false;suspendedMode=null;needsRefresh=true;openRequested=false;seen=readSeen(storage)??'0';fetched=seen;loaded=false;publishUnread();return sync()},
   sync,
   away(){foregroundReady=false;suspendedMode='modal';needsRefresh=true;openRequested=false;},
-  reconsider(){if(view.blocked()){openRequested=false;needsRefresh=true;if(shown){suspendedMode=suspendedMode||shown.mode;shown=null;view.hide()}return}if(needsRefresh)return sync();maybeShow()},
+  reconsider(){reconcileStorage();if(view.blocked()){openRequested=false;needsRefresh=true;if(shown){suspendedMode=suspendedMode||shown.mode;shown=null;view.hide()}return}if(needsRefresh)return sync();maybeShow()},
+  // Explicit header entry also works while a single foreground banner is visible.
+  async open(){
+   if(!connected||view.blocked())return{...unreadState(),refreshed:false};
+   const before=snapshotVersion,e=epoch;openRequested=true;needsRefresh=true;await sync();
+   return{...unreadState(),refreshed:e===epoch&&snapshotVersion>before};
+  },
   openInbox(){if(!connected||view.blocked()||shown?.mode!=='inbox')return Promise.resolve();openRequested=true;needsRefresh=true;return sync()},
   acknowledge,
-  clear(){epoch++;connected=false;seen=null;fetched=null;pending=[];shown=null;running=null;again=false;needsRefresh=true;openRequested=false;view.hide()},
+  clear(){epoch++;connected=false;seen=null;fetched=null;pending=[];shown=null;running=null;again=false;needsRefresh=true;openRequested=false;loaded=false;view.hide();publishUnread()},
   // Numeric cursors only: useful for deterministic tests without exporting private events.
-  state(){return{connected,seen,fetched,pending:pending.length,shown:shown?.count||0}}
+  state(){return{...unreadState(),seen,fetched,pending:pending.length,shown:shown?.count||0}}
  };
 }
-export function createActivityUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalThis),document:doc=globalThis.document,window:win=globalThis,onError=()=>{}}={}) {
+export function createActivityUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalThis),document:doc=globalThis.document,window:win=globalThis,onError=()=>{},onUnreadChange=()=>{}}={}) {
  let initialized=false,overlay,card,list,title,older,storage,restoreFocus=null,oldOverflow=null,observer,inbox,banner,bannerText,bannerAck=null,bannerTimer=null;
  try{storage=win.localStorage}catch{}
  const make=(tag,className,text)=>{const el=doc.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el};
@@ -149,7 +160,7 @@ export function createActivityUI(getCloud,getActor,{fetcher=globalThis.fetch.bin
   const controller=new AbortController(),timer=win.setTimeout(()=>controller.abort(),15000);
   try{const response=await fetcher(cloud.url+'/rest/v1/rpc/ledger_picks_notice',{method:'POST',credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:controller.signal,headers:{'Content-Type':'application/json',apikey:cloud.anon},body:JSON.stringify({p_key:key,p_op:op,p_payload:payload})});const data=await response.json();if(getCloud().key!==key)throw new Error('CANCELLED');if(!response.ok)throw new Error(data.message||'EVENTS_UNAVAILABLE');return data}finally{win.clearTimeout(timer)}
  }
- const feed=createActivityFeed({request,getActor,storage,view,onError});
+ const feed=createActivityFeed({request,getActor,storage,view,onError,onUnreadChange});
  function init(){
   if(initialized)return;initialized=true;
   inbox=make('button','pk-feed-inbox');inbox.id='pkFeedInbox';inbox.type='button';inbox.hidden=true;inbox.setAttribute('aria-haspopup','dialog');inbox.setAttribute('aria-controls','pkFeedDialog');inbox.addEventListener('click',()=>{void feed.openInbox()});
@@ -168,6 +179,6 @@ export function createActivityUI(getCloud,getActor,{fetcher=globalThis.fetch.bin
   let scheduled=false;observer=new win.MutationObserver(()=>{if(scheduled)return;scheduled=true;win.queueMicrotask(()=>{scheduled=false;feed.reconsider()})});
   observer.observe(doc.body,{subtree:true,attributes:true,attributeFilter:['hidden','open','aria-hidden','class'],childList:true});
  }
- return{init,connect(){init();return feed.connect()},sync:feed.sync,clear:feed.clear};
+ return{init,connect(){init();return feed.connect()},sync:feed.sync,clear:feed.clear,open:feed.open,state(){const {connected,loaded,unread}=feed.state();return{connected,loaded,unread}}};
 }
 
