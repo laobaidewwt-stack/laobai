@@ -562,14 +562,14 @@ function renderToday(ws,tot){
   $('#hCap').textContent='Work Ledger · '+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+WKE[d.getDay()];
   $('#dayTitle').innerHTML='<b>'+esc(md(S.date))+'</b><small>星期'+WK[d.getDay()]+(isToday?' · 今天':' · <button class="linkbtn" data-act="go-today">回到今天</button>')+'</small>';
   const L=logsOn(S.date);
-  $('#noteCap').textContent='Today · '+S.date.replace(/-/g,'.')+' · '+(L.length?L.length+(L.length>1?' cues':' cue'):'blank page');
+  $('#noteCap').textContent='Today · '+S.date.replace(/-/g,'.')+' · '+(S.ready<3?'connecting':L.length?L.length+(L.length>1?' cues':' cue'):'blank page');
   $('#noteTitle').textContent=md(S.date)+'｜'+(isToday?'今日完成':'当日完成');
   const sum=daySummary(S.date);
-  $('#noteText').innerHTML=sum?esc(sum):'<span style="opacity:.7">这一天还没有记录。修好一处重复字幕、定下一个标题，也算。点下面的星星记一条。</span>';
+  $('#noteText').innerHTML=S.ready<3?'<span style="opacity:.7">云端记录尚未加载 请查看上方连接提示</span>':sum?esc(sum):'<span style="opacity:.7">这一天还没有记录。修好一处重复字幕、定下一个标题，也算。点下面的星星记一条。</span>';
   const dayLines=L.filter(l=>l.type==='交付').reduce((a,l)=>a+(+l.lines||0),0);
   const dayWorks=new Set(L.filter(l=>l.type==='交付').map(l=>l.workId)).size;
-  $('#mDayLines').textContent=dayLines;
-  $('#mDaySub').textContent=L.length?('完成 '+dayWorks+' 部 · '+L.length+' 条记录'):'还没有记录';
+  $('#mDayLines').textContent=S.ready<3?'…':dayLines;
+  $('#mDaySub').textContent=S.ready<3?'等待云端记录':L.length?('完成 '+dayWorks+' 部 · '+L.length+' 条记录'):'还没有记录';
   $('#mAllWorks').textContent=S.ready||!db?tot.doneWorks:'…';
   $('#mAllSub').textContent=tot.totLines+' 条字幕 · '+tot.bestCount+' 条满意';
   $('#cueCount').textContent=L.length?L.length+(L.length>1?' cues':' cue'):'';
@@ -991,7 +991,18 @@ async function savePaste(){
 }
 
 /* ---------- events ---------- */
-const go=v=>{S.view=v;try{history.replaceState(null,'','#'+v)}catch(x){}render();window.scrollTo(0,0)};
+function ledgerViewFromHash(){
+  const h=location.hash.slice(1),v=new URLSearchParams(h).get('view')||h;
+  return ['today','month','works','best'].includes(v)?v:'';
+}
+const go=v=>{S.view=v;try{
+  let persisted=false;try{persisted=!!CLOUD.key&&localStorage.getItem('ledger_key')===CLOUD.key}catch(e){}
+  const u=new URL(location.href);
+  // A blocked storage area must not lose access when switching tabs or refreshing.
+  u.hash=CLOUD.key&&!persisted?new URLSearchParams({k:CLOUD.key,view:v}).toString():v;
+  if(CLOUD.key)u.searchParams.delete('k');
+  history.replaceState(null,'',u.pathname+u.search+u.hash);
+}catch(x){}render();window.scrollTo(0,0)};
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act],[data-view]');if(!b)return;
   if(b.dataset.view)return go(b.dataset.view);
@@ -1060,19 +1071,38 @@ $('#bkFile').addEventListener('change',e=>{const f=e.target.files&&e.target.file
 $('#expSign').addEventListener('change',e=>{setSign(e.target.value.trim());$('#expImgWrap').hidden=true});
 ['#expFrom','#expTo'].forEach(s=>$(s).addEventListener('change',()=>{S.exp.from=$('#expFrom').value;S.exp.to=$('#expTo').value;renderExport()}));
 $('#wPaste').addEventListener('input',e=>{const p=parseFan(e.target.value);if(!p)return;if(!$('#wZh').value.trim())$('#wZh').value=p.zh;$('#wHook').value=p.hook;$('#wGenre').value=p.genre;$('#wState').value=p.state;$('#wCp').value=p.cp});
-window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(['today','month','works','best'].includes(h)){S.view=h;render()}});
-{const h=location.hash.slice(1);if(['today','month','works','best'].includes(h))S.view=h}
+window.addEventListener('hashchange',()=>{const v=ledgerViewFromHash();if(v){S.view=v;render()}});
+{const v=ledgerViewFromHash();if(v)S.view=v}
 
 drawSky();render();
 
 /* ---------- cloud (GitHub Pages + Supabase) ---------- */
 const CLOUD={url:'https://tvoynrohczmovuyorplm.supabase.co',anon:'sb_publishable_Gmn9YRMI7NmoUWRT5AG5wA_wGzM40DN',key:''};
-(()=>{try{const q=new URLSearchParams(location.hash.slice(1)).get('k')||new URLSearchParams(location.search).get('k');if(q){localStorage.setItem('ledger_key',q);history.replaceState(null,'',location.pathname)}CLOUD.key=localStorage.getItem('ledger_key')||''}catch(e){}})();
+function readLedgerAccess(){
+  const supplied=new URLSearchParams(location.hash.slice(1)).get('k')||new URLSearchParams(location.search).get('k')||'';
+  let saved='';try{saved=localStorage.getItem('ledger_key')||''}catch(e){}
+  CLOUD.key=supplied||saved;
+  if(supplied){
+    let persisted=false;try{localStorage.setItem('ledger_key',supplied);persisted=localStorage.getItem('ledger_key')===supplied}catch(e){}
+    // Keep access in memory even when this browser cannot persist it.
+    // Strip it from the URL only after persistent storage is verified.
+    if(persisted){try{const clean=new URL(location.href);clean.searchParams.delete('k');clean.hash=ledgerViewFromHash();history.replaceState(null,'',clean.pathname+clean.search+clean.hash)}catch(e){}}
+  }
+}
+readLedgerAccess();
+window.addEventListener('hashchange',()=>{
+  const next=new URLSearchParams(location.hash.slice(1)).get('k');
+  if(next){const u=new URL(location.href);u.searchParams.set('entry',Date.now().toString());location.replace(u.href)}
+});
 function supaDb(){
   const call=async(fn,args)=>{
-    const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:CLOUD.anon,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_key:CLOUD.key},args||{}))});
-    const t=await r.text();if(!r.ok){const e=new Error(t);e.code=/bad key/.test(t)?'bad_key':(r.status===413?'quota_exceeded':'http_'+r.status);throw e}
-    return t?JSON.parse(t):null};
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+    try{
+      const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',signal:controller.signal,headers:{apikey:CLOUD.anon,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_key:CLOUD.key},args||{}))});
+      const t=await r.text();if(!r.ok){const e=new Error(t);e.code=/bad key/.test(t)?'bad_key':(r.status===413?'quota_exceeded':'http_'+r.status);throw e}
+      return t?JSON.parse(t):null;
+    }finally{clearTimeout(timeout)}
+  };
   const COLS=['works','logs','days'],cache={works:new Map(),logs:new Map(),days:new Map()},seen={works:new Map(),logs:new Map(),days:new Map()},subs={works:[],logs:[],days:[]};
   let since=null,timer=null,loaded=false,broken=false,running=false;
   const snap=c=>({docs:[...cache[c].entries()].map(([id,d])=>({id,data:()=>JSON.parse(JSON.stringify(d))})),metadata:{fromCache:false,hasPendingWrites:false}});
@@ -1087,7 +1117,7 @@ function supaDb(){
   async function loop(){
     if(running)return;running=true;
     try{const t=await pull();if(!loaded){loaded=true;COLS.forEach(fire)}else t.forEach(fire);
-      if(broken){broken=false;setStatus('')}
+      if(broken){broken=false;writable=true;setStatus('');render()}
       const rows=await call('ledger_inbox_pending')||[];let count=0;for(const r of rows){await importCopy({zh:r.zh,en:r.en,line:r.line,copy:r.copy,date:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(r.created_at))});await call('ledger_inbox_ack',{p_id:r.id});count++;}
       if(count)toast('收到 '+count+' 篇新文案，放进「今日文案」了');
     }catch(e){broken=true;COLS.forEach(c=>subs[c].forEach(s=>s.err&&s.err(e)))}
@@ -1119,15 +1149,14 @@ async function offerFile(name,data,mime){
 
 /* ---------- connect ---------- */
 (async()=>{
-  const c=window.claude;
-  db=c&&c.use?await c.use('db').catch(()=>null):null;
-  if(!db&&CLOUD.key)db=supaDb();
+  // Every device uses the same cloud ledger, never an embedded preview database.
+  db=CLOUD.key?supaDb():null;
   if(!db){setStatus(CLOUD.key?'账本没连上，刷新再试。':'第一次在这台手机上打开，请用带钥匙的专属链接打开一次，以后就不用了。');render();return}
-  writable=true;
+  writable=false;setStatus('正在读取云端账本…');
   const timer=setTimeout(()=>{if(S.ready<3)setStatus('暂时连不上账本，显示的可能不是最新内容。')},10000);
-  const fail=e=>{clearTimeout(timer);if(e&&e.code==='bad_key'){writable=false;setStatus('钥匙不对，请用专属链接重新打开一次。')}else if(e&&e.code==='revoked'){writable=false;setStatus('这个页面的访问权限变了，暂时只能看')}else setStatus('账本连接中断了，刷新页面再试');render()};
+  const fail=e=>{clearTimeout(timer);writable=false;if(e&&e.code==='bad_key'){writable=false;setStatus('钥匙不对，请用专属链接重新打开一次。')}else if(e&&e.code==='revoked'){writable=false;setStatus('这个页面的访问权限变了，暂时只能看')}else setStatus(S.ready<3?'云端数据尚未加载成功 正在自动重试 这不代表今天没有记录':'云端连接暂时中断 正在自动重试 当前显示上次读取的记录');render()};
   const seen={works:false,logs:false,days:false};
-  const mark=(k,snap)=>{if(!seen[k]&&!snap.metadata.fromCache){seen[k]=true;S.ready++;if(S.ready>=3){clearTimeout(timer);setStatus('')}}};
+  const mark=(k,snap)=>{if(!seen[k]&&!snap.metadata.fromCache){seen[k]=true;S.ready++;if(S.ready>=3){clearTimeout(timer);writable=true;setStatus('')}}};
   db.collection('works').onSnapshot(snap=>{S.works=new Map(snap.docs.map(d=>[d.id,Object.assign({id:d.id},d.data())]));mark('works',snap);render()},fail);
   db.collection('logs').onSnapshot(snap=>{S.logs=snap.docs.map(d=>Object.assign({id:d.id},d.data()));mark('logs',snap);render()},fail);
   db.collection('days').onSnapshot(snap=>{S.days=new Map(snap.docs.map(d=>[d.id,d.data()]));mark('days',snap);render()},fail);
@@ -1137,4 +1166,5 @@ async function offerFile(name,data,mime){
 
 </body>
 </html>
+
 
