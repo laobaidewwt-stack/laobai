@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-F9tpD+SwNHd6EoxlhMzZThepAxozbw80XCVcjUbwuVI='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-fb3s/u0wKIo3xFyaUhY8joB76m5QWRf9DSiOyPTKMU4='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -884,7 +884,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
 import {ReactionController,summaryHTML as pkResponseSummary,panelHTML as pkResponsePanel,unanswered as pkUnanswered,captureResponseFocus,restoreResponseFocus,charCount} from './reactions.js?v=20261106-reactions1';
 import {createNoticeUI} from './notifications.js?v=20261106-push1';
 import {createActivityUI} from './activity.js?v=20261107-chart2';
-import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261106-reactions1';
+import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261107-picks-validation1';
 const SHARED_ONLY=false;
 
 (function(){
@@ -1749,6 +1749,29 @@ function pkError(e){
  if(e.code==='cancelled')return;
  if(e.code==='bad_key'){pkDisconnect();return toast('钥匙已失效，请重新输入原账本钥匙')}
  if(e.code==='actor_required'){pkAskMe();return toast(e.message)}
+ const invalid={
+  INVALID_URL:'原片链接或发布链接格式不正确，请检查完整网址、空白和账号密码',
+  INVALID_ISSUE_EP:'问题记录里的集数需要是 0 到 10000 的整数',
+  INVALID_EPISODE_COUNT:'已完成集数和总集数需要是 0 到 10000 的整数',
+  INVALID_EPISODE_PROGRESS:'已完成集数不能超过总集数',
+  TITLE_REQUIRED:'请填写剧名',
+  INVALID_DATE:'请选择 1900 至 2100 年内的有效日期',
+  INVALID_ENUM:'请重新选择状态、播出情况和官中情况',
+  INVALID_STRING:'有文字字段格式不正确或过长，请检查剧名、链接、时长和备注',
+  INVALID_ISSUES:'问题记录最多填写 100 条',
+  INVALID_ISSUE_STRING:'问题记录的文字格式不正确或超过 2000 字',
+  INVALID_ISSUE:'问题记录不完整，请检查后再保存',
+  INVALID_ISSUE_DONE:'问题记录的处理状态无效，请重新选择',
+  INVALID_ISSUE_ID:'问题记录标识无效，请重新添加该条问题',
+  DUPLICATE_ISSUE_ID:'问题记录重复，请检查后再保存',
+  UNKNOWN_ISSUE_FIELD:'问题记录包含不支持的字段',
+  INVALID_DATA:'提交的剧单内容格式不正确',
+  INVALID_PATCH:'提交的修改格式不正确',
+  UNKNOWN_FIELD:'提交内容包含不支持的字段',
+  INVALID_ACTOR:'协作署名无效，请填写 1 到 80 个字'
+ };
+ const invalidCode=String(e.message||'').split(':',1)[0];
+ if(Object.hasOwn(invalid,invalidCode))return toast(invalid[invalidCode]+'。本次未保存，已保留填写内容');
  if(e.code==='40001'||/REVISION_CONFLICT|CLAIM_OWNED_BY_OTHER|DELETED|NOT_FOUND|IDEMPOTENCY_CONFLICT/.test(e.message)){if(PK_EDIT)$('#kConflict').hidden=false;toast('对方刚改过，没有覆盖。你的草稿还在，请先载入最新版本');void pkSync();return}
  if(e.code==='23505')return toast('这部剧已经在剧单里，请刷新查看');
  if(e.code==='PGRST202'||e.code==='42883')return toast('共享剧单后端还没有启用，私人账本照常使用');

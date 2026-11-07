@@ -27,11 +27,18 @@ export function patchBetween(before,after) { return Object.fromEntries(FIELD_KEY
 export function validateDraft(d) {
   if(typeof d.duration!=='string'||d.duration.length>80)throw new Error('时长请用 80 字以内的文字，例如每集 20 分钟');
   if (!d.zh.trim()) throw new Error('请写上剧名');
-  for(const k of ['link','pubLink']) if(d[k]&&!safeURL(d[k]))throw new Error('链接只能使用 http:// 或 https://，不能包含账号密码');
+  // Validate the submitted string, not only new URL()'s repaired/encoded result.
+  for(const [k,label] of [['link','原片链接'],['pubLink','发布链接']]) {
+    const value=d[k];
+    if(typeof value!=='string'||value.length>2000)throw new Error(`${label}请填写 2000 字以内的完整网址`);
+    if(value&&(!/^https?:\/\/[^\s\/?#@\\]+([/?#][^\s]*)?$/.test(value)||/[\u0000-\u001f\u007f-\u009f]/.test(value)||!safeURL(value)))throw new Error(`${label}格式不正确：请使用完整的 http:// 或 https:// 网址，不含空白或账号密码`);
+  }
   if(d.watchDate&&!validDate(d.watchDate))throw new Error('请选择有效日期');
   if(!STATUSES.includes(d.status))throw new Error('状态无效');
   for(const k of ['epsDone','epsTotal'])if(!Number.isInteger(d[k])||d[k]<0||d[k]>10000)throw new Error('集数需要是 0 到 10000 的整数');
   if(d.epsTotal&&d.epsDone>d.epsTotal)throw new Error('已完成集数不能超过总集数');
+  if(!Array.isArray(d.issues)||d.issues.length>100)throw new Error('问题记录最多填写 100 条');
+  d.issues.forEach((issue,i)=>{if(!issue||!Number.isInteger(issue.ep)||issue.ep<0||issue.ep>10000)throw new Error(`第 ${i+1} 条问题的集数需要是 0 到 10000 的整数`)});
   return d;
 }
 export class RowStore {
