@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-b+1RWOmXQuTavZ2lmfqDpf0LQtDoAlJWSXN3GSe1LjY='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-NY7kfo6NSM9bJ1/yzr4TUg8UXAsQ8cCv0s0kUnSD9xk='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -689,23 +689,30 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
     </div></div>
   </section>
 
+  <section id="librarySearch" hidden aria-label="搜索作品库和剧单">
+    <div class="search"><span aria-hidden="true">⌕</span><input id="wq" type="search" aria-label="搜索作品库和剧单" placeholder="一起搜作品库和剧单：剧名、文案、备注" enterkeyhint="search"><button class="linkbtn" type="button" data-act="clear-library-search" id="clearLibrarySearch" hidden>清空</button></div>
+    <div class="toolrow"><label><input type="checkbox" id="subToggle">也搜字幕台词</label><span class="muted">作品库 · 剧单</span></div>
+    <button id="librarySearchBack" class="linkbtn" type="button" data-act="pk-search-back" hidden>返回搜索结果</button>
+    <div id="librarySearchResults" aria-live="polite" hidden></div>
+    <div class="pw" id="hitsWrap" hidden style="margin-top:16px"><div class="paper c" id="hits"></div></div>
+  </section>
+
   <!-- 作品库 -->
   <section id="v-works" hidden>
     <div class="sh"><h2 class="seg"><button data-view="works">作品库</button><i class="seg-sep">✦</i><button data-view="picks">剧单</button></h2><span class="cap">Archive · Find Anything</span></div>
-    <div class="search"><span aria-hidden="true">⌕</span><input id="wq" type="search" placeholder="中文名、英文名、文案里的词"></div>
+
     <div class="toolrow">
-      <label><input type="checkbox" id="subToggle">也搜字幕台词</label>
       <button class="skybtn" data-act="new-work">＋ 新作品</button>
     </div>
     <div class="chips sky-chips" id="wfChips"></div>
-    <div class="pw" id="hitsWrap" hidden style="margin-top:16px"><div class="paper c" id="hits"></div></div>
+
     <div class="pw" style="margin-top:16px"><div class="paper"><div class="acts" id="copyFiltersWorks" aria-label="文案版本筛选"></div><div id="worksList"></div></div></div>
   </section>
 
   <!-- 满意集 -->
   <section id="v-best" hidden>
     <div class="sh"><h2>满意集</h2><span class="cap">My Taste · Reference Shelf</span></div>
-    <div class="search"><span aria-hidden="true">⌕</span><input id="bq" type="search" placeholder="想找哪句"></div>
+    <div class="search"><span aria-hidden="true">⌕</span><input id="bq" aria-label="搜索满意集" type="search" placeholder="想找哪句"></div>
     <div class="chips sky-chips" id="bfChips" style="margin:12px 2px"></div>
     <div class="pw"><div class="paper c" id="bestList"></div></div>
   </section>
@@ -1812,7 +1819,7 @@ function render(){
   document.querySelectorAll('.ni,.seg button').forEach(t=>t.setAttribute('aria-selected',String(t.dataset.view===S.view||(t.dataset.view==='lib'&&(S.view==='works'||S.view==='picks')))));
   if(S.view!=='today')dnStop();
   for(const v of ['today','month','works','best','picks'])$('#v-'+v).hidden=v!==S.view;
-  ({today:renderToday,month:renderMonth,works:renderWorks,best:renderBest,picks:renderPicks})[S.view](ws,{totalSubtitles,doneWorks,bestCount});renderPkDot();renderChartHead();
+  ({today:renderToday,month:renderMonth,works:renderWorks,best:renderBest,picks:renderPicks})[S.view](ws,{totalSubtitles,doneWorks,bestCount});renderPkDot();renderChartHead();if(S.view==='picks'&&S.wq.trim())renderWorks();renderLibrarySearch();
 }
 
 const DN_STAR='<svg class="dn-star" viewBox="-8 -8 16 16" aria-hidden="true"><path class="r2" d="M0-3.6L.7-.7 3.6 0 .7.7 0 3.6-.7.7-3.6 0-.7-.7Z" transform="rotate(45)"/><path d="M0-8L1-1 8 0 1 1 0 8-1 1-8 0-1-1Z"/></svg>';
@@ -1932,7 +1939,7 @@ function workRow(w,s,compact){
   const facts=[];
   if(s.completedLines)facts.push('累计 '+s.completedLines+' 条完成字幕（'+subtitleBreakdown(s)+'）');if(s.eps)facts.push(s.eps+' 集');
   if(s.first)facts.push('交付于 '+md(s.first));if(w.pubDate)facts.push('发布于 '+md(w.pubDate));
-  let h='<div class="work"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0"><h4>《'+esc(workChineseTitle(w))+'》</h4>'+(w.en?'<div class="en">'+esc(w.en)+'</div>':'')+'</div><button class="arrow" data-act="edit-work" data-id="'+esc(w.id)+'">编辑</button></div>';
+  let h='<div class="work" data-search-id="'+esc(w.id)+'"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="min-width:0"><h4>《'+esc(workChineseTitle(w))+'》</h4>'+(w.en?'<div class="en">'+esc(w.en)+'</div>':'')+'</div><button class="arrow" data-act="edit-work" data-id="'+esc(w.id)+'">编辑</button></div>';
   h+='<div style="margin-top:4px"><span class="pill s-'+esc(w.status||'翻译中')+'">'+esc(w.status||'翻译中')+'</span><span class="pill">'+esc(w.kind||'完整剧')+'</span><span class="muted">'+esc(facts.join(' · '))+'</span></div>';
   if(!compact){
     const links=[];
@@ -1950,13 +1957,46 @@ function workRow(w,s,compact){
   }
   return h+'</div>';
 }
+// Read-only, script-insensitive matching. Never rewrite stored text.
+let searchConverter,searchReturn=null;
+function searchText(value){
+  let text=String(value??'').normalize('NFKC').toLowerCase();
+  if(!searchConverter&&window.OpenCC)searchConverter=window.OpenCC.ConverterFactory(window.OpenCC.Locale.to.cn);
+  return searchConverter?searchConverter(text):text;
+}
+function searchMatches(values,query){return searchText(values.filter(v=>v!=null).join('\n')).includes(searchText(query).trim())}
+function searchWorks(query){if(SHARED_ONLY)return [];return [...S.works.values()].filter(w=>searchMatches([w.zh,w.en,w.title,w.notes,...copyVersions(w).flatMap(v=>[v.title,v.text])],query)||(S.subOn&&S.subs&&searchMatches([S.subs.get(w.id)],query)))}
+function searchPicks(query){return [...S.picks.values()].filter(p=>searchMatches([p.zh,p.en,p.note,p.genre,p.by,p.claim,p.status],query))}
+function openSearchResult(id,pick){
+  if(!(pick?S.picks:S.works).has(id))return toast('这条记录已变化，请重新搜索');
+  searchReturn={query:S.wq,view:S.view,wf:S.wf,copyView:S.copyView,pkGroup:S.pkGroup,date:PK_DATE};
+  S.wq='';$('#wq').value='';
+  if(pick){S.pkGroup='全部';PK_DATE=''}else{S.wf='全部';S.copyView='all'}
+  go(pick?'picks':'works');
+  requestAnimationFrame(()=>{const target=[...document.querySelectorAll(pick?'#pkList [data-search-id]':'#worksList [data-search-id]')].find(el=>el.dataset.searchId===id);if(target){target.setAttribute('tabindex','-1');target.focus({preventScroll:true});target.scrollIntoView({block:'center',behavior:'auto'})}});
+}
+function returnToSearch(){
+  if(!searchReturn)return;const saved=searchReturn;searchReturn=null;
+  S.wq=saved.query;$('#wq').value=saved.query;S.wf=saved.wf;S.copyView=saved.copyView;S.pkGroup=saved.pkGroup;PK_DATE=saved.date;go(saved.view);$('#wq').focus();
+}
+function renderLibrarySearch(){
+  const active=['works','picks'].includes(S.view),q=S.wq.trim();
+  $('#librarySearchBack').hidden=!searchReturn;$('#librarySearch').hidden=!active;$('#clearLibrarySearch').hidden=!q;
+  const results=$('#librarySearchResults');results.hidden=!q;
+  if(!q)$('#hitsWrap').hidden=true;
+  if(!active||!q)return;
+  $('#v-works').hidden=true;$('#v-picks').hidden=true;
+  const works=searchWorks(q),picks=searchPicks(q);
+  const row=(item,pick)=>'<div class="work"><div class="row" style="justify-content:space-between;gap:12px"><div style="min-width:0;overflow-wrap:anywhere"><h4>《'+esc(pick?item.zh||item.en:workChineseTitle(item))+'》</h4>'+(item.en?'<div class="en">'+esc(item.en)+'</div>':'')+'<div class="muted">'+esc(item.status||'')+'</div></div><button class="arrow" data-act="'+(pick?'pk-search-open':'search-open')+'" data-id="'+esc(item.id)+'">打开</button></div></div>';
+  results.innerHTML='<p class="muted">找到 '+(works.length+picks.length)+' 项 · 不受原列表日期和状态筛选限制</p>'+[[works,'作品库',false],[picks,'剧单',true]].map(([items,label,pick])=>'<div class="sh"><h2>'+label+' · '+items.length+'</h2></div><div class="pw"><div class="paper">'+(items.length?items.map(x=>row(x,pick)).join(''):'<p class="muted">没有匹配结果</p>')+'</div></div>').join('');
+}
 function renderWorks(){
   $('#wfChips').innerHTML=['全部'].concat(STATUS).map(k=>{const c=k==='全部'?S.works.size:[...S.works.values()].filter(w=>w.status===k).length;return '<button class="chip" data-act="wf" data-v="'+k+'" aria-pressed="'+(S.wf===k)+'">'+k+' '+c+'</button>'}).join('');
-  const q=S.wq.trim().toLowerCase(),ws=workStats();
+  const q=searchText(S.wq).trim(),ws=workStats();
   let list=[...S.works.values()];
   if(S.copyView==='weibo')list=list.filter(work=>visibleCopyVersions(work).length);
   if(S.wf!=='全部')list=list.filter(w=>w.status===S.wf);
-  if(q)list=list.filter(w=>[w.zh,w.en,w.title,w.notes,...copyVersions(w).flatMap(version=>[version.title,version.text])].join('\n').toLowerCase().includes(q)||(S.subOn&&S.subs&&String(S.subs.get(w.id)||'').toLowerCase().includes(q)));
+  if(q)list=list.filter(w=>searchMatches([w.zh,w.en,w.title,w.notes,...copyVersions(w).flatMap(version=>[version.title,version.text])],q)||(S.subOn&&S.subs&&searchMatches([S.subs.get(w.id)],q)));
   list.sort((a,b)=>((ws.get(b.id)||{}).last||b.pubDate||'').localeCompare((ws.get(a.id)||{}).last||a.pubDate||'')||(b.updatedAt||0)-(a.updatedAt||0));
   $('#worksList').innerHTML=list.length?list.map(w=>workRow(w,ws.get(w.id),false)).join(''):'<div class="muted">'+(S.works.size?'没有找到。':'还没有作品。记一条交付，或者点「＋ 新作品」。')+'</div>';
   const wrap=$('#hitsWrap'),hits=$('#hits');
@@ -1966,7 +2006,7 @@ function renderWorks(){
     const out=[],re=new RegExp(esc(S.wq.trim()).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');
     for(const [id,text] of S.subs){
       const w=S.works.get(id);if(!w)continue;
-      String(text).split(/\r?\n/).filter(x=>x.toLowerCase().includes(q)&&!/^\d+$/.test(x.trim())&&!/-->/.test(x)).slice(0,6)
+      String(text).split(/\r?\n/).filter(x=>searchMatches([x],q)&&!/^\d+$/.test(x.trim())&&!/-->/.test(x)).slice(0,6)
         .forEach(x=>out.push('<div class="hit"><span class="muted">《'+esc(workChineseTitle(w))+'》</span> '+esc(x).replace(re,m=>'<b>'+m+'</b>')+'</div>'));
     }
     hits.innerHTML='<div class="cap">Lines · '+out.length+' found</div>'+(out.length?out.join(''):'<div class="muted" style="margin-top:6px">字幕里没有这句。只有贴过字幕全文的作品能搜到。</div>');
@@ -1977,8 +2017,8 @@ async function loadSubs(){if(!db)return;try{await db.loadSubtitles()}catch(e){to
 function renderBest(){
   const all=[...S.days.entries()].filter(([k,d])=>d.best&&d.best.text).map(([k,d])=>Object.assign({date:k},d.best)).sort((a,b)=>b.date.localeCompare(a.date));
   $('#bfChips').innerHTML=['全部'].concat(BEST_KINDS).map(k=>{const c=k==='全部'?all.length:all.filter(b=>b.kind===k).length;return '<button class="chip" data-act="bf" data-v="'+k+'" aria-pressed="'+(S.bf===k)+'">'+k+' '+c+'</button>'}).join('');
-  const q=S.bq.trim().toLowerCase();
-  let list=all;if(S.bf!=='全部')list=list.filter(b=>b.kind===S.bf);if(q)list=list.filter(b=>(b.text+' '+(b.work||'')).toLowerCase().includes(q));
+  const q=searchText(S.bq).trim();
+  let list=all;if(S.bf!=='全部')list=list.filter(b=>b.kind===S.bf);if(q)list=list.filter(b=>searchMatches([b.text,b.work],q));
   $('#bestList').innerHTML=list.length?list.map((b,i)=>(i?'<hr>':'')+'<div class="cap">'+esc(b.date.replace(/-/g,'.'))+' · '+esc(b.kind||'')+'</div><div class="best"><span class="hlt">'+esc(withoutResourceLinks(b.text))+'</span></div><div class="acts" style="justify-content:space-between"><span class="muted">'+(b.work?'《'+esc(b.work)+'》':'')+'</span><button class="chip" data-act="copy-best" data-v="'+esc(b.date)+'">复制</button></div>').join(''):'<div class="muted">'+(all.length?'没有找到。':'每天在「今天」写下最满意的一项，会收进这里。')+'</div>';
 }
 
@@ -2326,7 +2366,7 @@ function renderPicks(){
     const claim=!p.claim?'<button class="linkbtn pk-soft" data-act="pk-claim" data-id="'+id+'">我来做</button>':(p.claimId===PK_ACTOR.id?'<button class="linkbtn pk-soft" data-act="pk-unclaim" data-id="'+id+'">放下</button>':'');
     const lnk=(u,t)=>pkSafeURL(u)?'<a href="'+esc(pkSafeURL(u))+'" target="_blank" rel="noopener noreferrer">'+t+'</a>':'';
     const links=(p.link||p.pubLink)?'<div class="pk-links">'+(p.link?lnk(p.link,'看原片'):'')+(p.pubLink?lnk(p.pubLink,'看发出去的'):'')+'</div>':'';
-    return '<div class="pw"><div class="paper '+(i%2?'c':'b')+' pk">'+
+    return '<div class="pw" data-search-id="'+id+'"><div class="paper '+(i%2?'c':'b')+' pk">'+
       '<div class="pk-head"><span class="cap">'+esc(p.by||'有人')+' · '+when+(p.updatedBy&&p.updatedBy!==p.by?' · '+esc(p.updatedBy)+' 改过':'')+'</span><span class="pk-stamp" data-k="'+pkStampKind(st)+'">'+esc(st)+'</span></div>'+
       '<div class="pk-title">'+(isNew?'<i class="pk-newdot" title="新放的"></i>':'')+'《'+esc(p.zh)+'》'+(inLib?'<span class="pk-inlib">已入库</span>':'')+'</div>'+
       (p.en?'<div class="pk-en">'+esc(p.en)+'</div>':'')+
@@ -2523,6 +2563,10 @@ document.addEventListener('click',e=>{
     case 'save-best':{const t=$('#fBest').value.trim();saveDay({best:t?{text:t,kind:S.bestKind,work:normName($('#fBestWork').value)}:null},t?'存进满意集了':'已清空');break}
     case 'save-pending':saveDay({pending:$('#fPending').value.trim()},'存下了');break;
     case 'del-log':armed(b,'确认',async()=>{try{await db.doc('logs/'+b.dataset.id).delete();toast('已删除')}catch(x){toast('没删掉，请再试一次')}});break;
+    case 'pk-search-back':returnToSearch();break;
+    case 'pk-search-open':openSearchResult(b.dataset.id,true);break;
+    case 'search-open':openSearchResult(b.dataset.id,false);break;
+    case 'clear-library-search':searchReturn=null;S.wq='';$('#wq').value='';render();$('#wq').focus();break;
     case 'new-work':openWork(null);break;
     case 'edit-work':openWork(b.dataset.id);break;
     case 'pk-month-prev':if(PK_MONTH>'1900-01'){PK_MONTH=pkShiftMonth(PK_MONTH,-1);render()}break;
@@ -2565,8 +2609,9 @@ $('#pkList').addEventListener('compositionend',e=>{const input=e.target;if(!inpu
 $('#pkList').addEventListener('input',e=>{const input=e.target;if(!input.classList.contains('pk-reply-input'))return;PK_RESPONSES.state(input.dataset.pick).draft=input.value;const count=document.getElementById('pk-count-'+input.dataset.pick);if(count)count.textContent=charCount(input.value.trim())+'/60'});
 $('#pkList').addEventListener('submit',e=>{const form=e.target.closest('.pk-response-form');if(!form)return;e.preventDefault();try{PK_RESPONSES.reply(form.dataset.pick)}catch(error){toast(error.message)}});
 
-let wqT;$('#wq').addEventListener('input',e=>{clearTimeout(wqT);wqT=setTimeout(()=>{S.wq=e.target.value;renderWorks()},200)});
-$('#subToggle').addEventListener('change',e=>{S.subOn=e.target.checked;renderWorks()});
+let wqT;function updateLibraryQuery(e){clearTimeout(wqT);if(e.isComposing)return;wqT=setTimeout(()=>{S.wq=$('#wq').value;render()},160)}
+$('#wq').addEventListener('input',updateLibraryQuery);$('#wq').addEventListener('compositionend',updateLibraryQuery);
+$('#subToggle').addEventListener('change',e=>{S.subOn=e.target.checked;render()});
 $('#bq').addEventListener('input',e=>{S.bq=e.target.value;renderBest()});
 $('#pText').addEventListener('input',renderPastePreview);
 $('#pZh').addEventListener('input',e=>{e.target.dataset.touched='1'});
