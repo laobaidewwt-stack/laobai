@@ -1,7 +1,7 @@
 /* A network-first static shell. No record cache, background sync, or write queue. */
 'use strict';
 const CACHE_PREFIX = 'laobai-notes-shell-';
-const CACHE_NAME = CACHE_PREFIX + '2026-11-07-selected-period-v1';
+const CACHE_NAME = CACHE_PREFIX + '2026-11-07-touch-manipulation-v1';
 const BASE = new URL('./', self.location.href);
 const SHELL = ['ledger.html', 'fonts/fonts.css', 'bg/bg-day.webp', 'bg/bg-night.webp', 'bg/bg-dusk.webp', 'bg/bg-dream.webp', 'ledger-app.css', 'ledger-app.js', 'ledger.webmanifest', 'core.js', 'reactions.js', 'reactions.css', 'activity.js', 'activity.css',
   'icons/laobai.svg', 'icons/laobai-180.png', 'icons/laobai-192.png',
