@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-jA+NZAOGRhl9hf2yIhe/QZUEcyXBVGXteYOAuuTbxj4='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-6VRiuTrMxz4ydZODsRRA8xlNEGtFpfl6bd3yf04sijQ='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -589,7 +589,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
   <div class="when"><button data-act="day-prev" aria-label="前一天">‹</button><span id="hWhen"></span><button data-act="day-next" aria-label="后一天">›</button></div>
   <div class="orn" aria-hidden="true"><i></i>✦<i></i></div>
   <div class="legend">
-    <button data-act="hd-lines"><b id="hdLines">…</b><span>今日字幕</span></button>
+    <button data-act="hd-lines"><b id="hdLines">…</b><span id="hdLinesLabel">今日字幕</span></button>
     <button data-act="hd-month"><b id="hdMonth">…</b><span>本月作品</span></button>
     <button data-act="hd-picks"><b><span id="hdPicks" style="font-size:inherit;letter-spacing:inherit;color:inherit">…</span><i class="dot" id="hdPicksDot" hidden></i></b><span>剧单动静</span></button>
   </div>
@@ -1790,7 +1790,9 @@ function renderChartHead(){
   chartText('hWhen',daily?chineseNumber(day.getMonth()+1)+'月'+chineseNumber(day.getDate())+'日 · 星期'+WK[day.getDay()]:monthly?String(month[0]).replace(/\d/g,n=>'〇一二三四五六七八九'[+n])+'年 · '+chineseNumber(month[1])+'月':({works:'作品库',picks:'剧单',best:'满意集'}[S.view]||'作品库'));
   const arrows=document.querySelectorAll('.chart-head .when button');arrows.forEach((b,i)=>{b.hidden=!daily&&!monthly;b.dataset.act=(monthly?'mon-':'day-')+(i?'next':'prev');b.setAttribute('aria-label',(i?'后':'前')+(monthly?'一月':'一天'))});
   const loaded=S.ready>=3;
-  chartText('hdLines',loaded?chartDaySubtitleLines(S.date):'…');
+  // The header follows the visible period, not the last day visited.
+  chartText('hdLinesLabel',monthly?'本月字幕':S.date===ymd(new Date())?'今日字幕':'当日字幕');
+  chartText('hdLines',loaded?(monthly?monthData(S.month).completedLines:chartDaySubtitleLines(S.date)):'…');
   chartText('hdMonth',loaded?monthData(S.month).done.length:'…');
   const activity=PK_ACTIVITY.state?.()||{loaded:false,unread:0};
   chartText('hdPicks',loaded&&activity.loaded?activity.unread:'…');
@@ -2469,7 +2471,7 @@ document.addEventListener('click',e=>{
   const shiftDay=n=>{const d=toDate(S.date);d.setDate(d.getDate()+n);S.date=ymd(d);$('#fBest').dataset.for='';render()};
   const shiftMon=n=>{const d=toDate(S.month+'-01');d.setMonth(d.getMonth()+n);S.month=ymd(d).slice(0,7);render()};
   switch(a){
-    case 'hd-lines':go('today');$('#todayRecords').scrollIntoView({block:'start'});break;
+    case 'hd-lines':if(S.view==='month'){$('#monStats').scrollIntoView({block:'start'})}else{go('today');$('#todayRecords').scrollIntoView({block:'start'})}break;
     case 'hd-month':go('month');break;
     case 'hd-picks':go('picks');void PK_ACTIVITY.open().then(state=>{if(state.refreshed&&state.unread===0)toast('没有未读的新动静')});break;
     case 'day-prev':shiftDay(-1);break;case 'day-next':shiftDay(1);break;
