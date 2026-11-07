@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-fb3s/u0wKIo3xFyaUhY8joB76m5QWRf9DSiOyPTKMU4='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-jA+NZAOGRhl9hf2yIhe/QZUEcyXBVGXteYOAuuTbxj4='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -738,7 +738,9 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
   </div>
 </nav>
 
-<datalist id="workNames"></datalist>
+<section class="pw" id="txBootFailure"><div class="paper">保存功能尚未加载。若一直停在这里，请联网重新打开；不要重复新建记录。此页面不会在模块缺失时改用旧的分步保存。</div></section>
+<section class="pw" id="txRecovery" hidden aria-live="polite"><div class="paper stack"><p id="txRecoveryText"></p><select class="in" id="txRecoverySelect" aria-label="选择待处理草稿" hidden></select><div class="acts"><button class="btn" type="button" id="txResume">核实上次保存结果</button><button class="btn ghost" type="button" id="txShow">查看原草稿</button><button class="btn warn" type="button" id="txDiscard" hidden>放弃被拒绝的保存</button></div></div></section>
+<p class="muted" id="subtitleSyncStatus" hidden aria-live="polite"></p><datalist id="workNames"></datalist>
 
 <!-- log sheet -->
 <div class="ov" id="logOv" hidden>
@@ -750,6 +752,8 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
       <label class="f">字幕条数<input class="in num" id="fLines" type="number" inputmode="numeric" min="0" placeholder="1198"></label>
       <label class="f" id="epsWrap">集数<input class="in num" id="fEps" type="number" inputmode="numeric" min="0" placeholder="可不填"></label>
     </div>
+    <label class="f" id="officialWrap">官中来源字幕条数（本次没有新翻译时填写）<input class="in num" id="fOfficial" type="number" inputmode="numeric" min="0" placeholder="例：1159；不计入新翻译"></label>
+    <p class="muted" id="logTxStatus" role="status"></p><div class="acts" id="logTxActions" hidden><button class="btn ghost" type="button" id="logTxShow">查看被拒绝的原草稿</button><button class="btn warn" type="button" id="logTxDiscard">放弃该草稿并载入最新版本</button></div>
     <label class="f" id="linkWrap"><span id="linkLabel">最新字幕链接（可不填）</span><input class="in" id="fLink" placeholder="https://"></label>
     <label class="f">做了什么<textarea class="in" id="fText" rows="2"></textarea></label>
     <div class="acts" style="justify-content:flex-end"><button class="btn ghost" type="button" data-act="close">取消</button><button class="btn" id="logBtn" type="submit">记下</button></div>
@@ -796,6 +800,16 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
       <label class="f">类型<select class="in" id="wKind"></select></label>
       <label class="f">状态<select class="in" id="wStatus"></select></label>
     </div>
+    <p class="muted" id="wTxStatus" role="status"></p><div class="acts" id="wTxActions" hidden><button class="btn ghost" type="button" id="wTxShow">查看被拒绝的原草稿</button><button class="btn warn" type="button" id="wTxDiscard">放弃该草稿并载入最新版本</button></div>
+    <div class="muted" id="wMetaTip" hidden>这次只保存状态和资料，不增加完成部数或字幕数。<button type="button" class="linkbtn" id="wMakeDelivery">改为记一次交付</button></div>
+    <details><summary>完成记录：默认只改资料，不增加完成数</summary>
+      <label class="f">本次保存<select class="in" id="wDeliveryMode"></select></label>
+      <div class="stack" id="wDeliveryFields" hidden>
+        <div class="row2"><label class="f">新翻译条数<input class="in" id="wTranslated" type="number" min="0" placeholder="无新翻译请填 0"></label><label class="f">官中来源条数<input class="in" id="wOfficial" type="number" min="0" placeholder="例：1159"></label></div>
+        <div class="row2"><label class="f">交付日期<input class="in" id="wDeliveryDate" type="date"></label><label class="f">集数<input class="in" id="wDeliveryEps" type="number" min="0"></label></div>
+        <label class="f">本次交付说明<textarea class="in" id="wDeliveryText" rows="2"></textarea></label>
+      </div><p class="muted">新交付至少填写一项已核实字幕条数。修正保留原交付日期和作品当前状态，不增加部数。日期记错请先人工核对，再单独处理，不要重复新建交付。只保存资料可补录状态，不生成交付记录或字幕数量。</p>
+    </details>
     <label class="f">粘贴一整条发布文案，自动拆开（可不填）<textarea class="in" id="wPaste" rows="2" placeholder="例：牢里谁都怕她，女医生偏敢让她乖乖听话！欧美 AI《我的狱中女友是财阀千金》（完结中字）强势善撩大小姐×清醒嘴硬女医生"></textarea></label>
     <label class="f">钩子<input class="in" id="wHook" placeholder="牢里谁都怕她，女医生偏敢让她乖乖听话！"></label>
     <div class="row2"><label class="f">类型标签<input class="in" id="wGenre" placeholder="欧美 AI"></label><label class="f">状态标注<input class="in" id="wState" placeholder="完结中字"></label></div>
@@ -881,14 +895,631 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
 <div class="toast" id="toast" role="status"></div>
 
 <script type="module">
+const {AuthScope,LedgerTransactions,createTransactionForms,LedgerReader,createExistingRpcTransport}=(()=>{
+ const coordinator=(()=>{
+// Isolated prototype. Not imported by the published application.
+// The injected transport owns authentication; credentials never enter the journal.
+const clone=value=>structuredClone(value);
+const canonical=value=>JSON.stringify(value,(key,item)=>item&&typeof item==='object'&&!Array.isArray(item)?Object.keys(item).sort().reduce((out,k)=>(out[k]=item[k],out),{}):item);
+const knownRejected=new Set(['validation','conflict','bad_key','unsupported','payload_mismatch']);
+const workIdOf=payload=>payload?.work?.id||payload?.workId;
+const validSnapshot=(row,coll,id)=>{
+ if(!row||Array.isArray(row)||typeof id!=='string'||!id||row.coll!==coll||row.id!==id||typeof row.exists!=='boolean'||typeof row.deleted!=='boolean')return false;
+ if(!row.exists)return !row.deleted&&row.version===null&&row.data===null;
+ return typeof row.version==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/.test(row.version)&&row.data!==null&&typeof row.data==='object'&&!Array.isArray(row.data);
+};
+const validBundle=(bundle,workId)=>{
+ if(!validSnapshot(bundle?.work,'works',workId)||!validSnapshot(bundle?.subs,'subs',workId)||!Array.isArray(bundle?.logs))return false;
+ const ids=new Set();return bundle.logs.every(row=>row&&validSnapshot(row,'logs',row.id)&&row.exists&&row.data?.workId===workId&&!ids.has(row.id)&&(ids.add(row.id),true));
+};
+class CompletionError extends Error{
+ constructor(code,message){super(message||code);this.code=code}
+}
+class CompletionCoordinator{
+ constructor({transport,journal,applyBundle,uuid=()=>crypto.randomUUID()}){
+  this.transport=transport;this.journal=journal;this.applyBundle=applyBundle;this.uuid=uuid;this.pending=null;this.running=null;this.epoch=0;this.pollSequence=0;this.appliedPoll=0;this.lastPublished=null;
+ }
+ async restore(){
+  const pending=await this.journal.load();
+  if(pending){if(!pending.operationId||!pending.payload||!['prepared','uncertain','committed','rejected'].includes(pending.state))throw new CompletionError('invalid_journal');this.pending=clone(pending);if(this.pending.state==='prepared')this.pending.state='uncertain';this.epoch++}
+ }
+ status(){return this.pending?clone({operationId:this.pending.operationId,state:this.pending.state}):null}
+ pollTicket(){return {epoch:this.epoch,sequence:++this.pollSequence}}
+ publish(bundle){const fingerprint=canonical(bundle);if(fingerprint===this.lastPublished)return false;const result=this.applyBundle(clone(bundle));if(result&&typeof result.then==='function')return result.then(()=>{this.lastPublished=fingerprint;return true});this.lastPublished=fingerprint;return true}
+ applyPoll(bundle,ticket){if(ticket?.epoch!==this.epoch||!Number.isSafeInteger(ticket?.sequence)||ticket.sequence!==this.pollSequence||ticket.sequence<=this.appliedPoll||this.pending||this.running)return false;this.publish(bundle);this.appliedPoll=ticket.sequence;return true}
+ submit(payload){
+  if(!payload||typeof payload!=='object'||typeof workIdOf(payload)!=='string'||!workIdOf(payload)) return Promise.reject(new CompletionError('validation'));
+  if(['p_key','key','ownerKey','token','password'].some(key=>Object.hasOwn(payload,key)))return Promise.reject(new CompletionError('credential_in_payload'));
+  const frozen=clone(payload);
+  if(this.pending&&canonical(this.pending.payload)!==canonical(frozen))return Promise.reject(new CompletionError('pending_operation','Resolve the earlier save before submitting changed content'));
+  if(this.running)return this.running;
+  if(this.pending?.state==='rejected')return Promise.reject(new CompletionError('rejected_operation','Keep the draft; explicitly replace the rejected operation'));
+  if(!this.pending){this.pending={operationId:this.uuid(),payload:frozen,state:'prepared'};this.epoch++}
+  const pending=this.pending;
+  this.running=this.run(pending).finally(()=>{this.running=null});return this.running;
+ }
+ async run(pending){
+  // Save stable IDs before sending anything. If storage fails, no network write occurs.
+  try{await this.journal.save(clone(pending))}catch(error){throw new CompletionError('journal_unavailable',error.message)}
+  let committed=pending.state==='committed';const resolving=pending.state==='uncertain';
+  try{
+   if(!committed&&pending.state==='uncertain'){
+    const outcome=await this.transport.status(pending.operationId);
+    committed=outcome.found===true;
+   }
+   if(!committed){await this.transport.commit(pending.operationId,clone(pending.payload));committed=true}
+  }catch(error){
+   // A status/authentication failure cannot prove an earlier unknown write failed.
+   pending.state=!resolving&&knownRejected.has(error.code)?'rejected':'uncertain';if(pending.state==='rejected'){pending.rejectionCode=error.code;pending.rejectionMessage=error.message}
+   try{await this.journal.save(clone(pending))}catch(storageError){if(storageError.code==='rejected_journal_pending')throw storageError}
+   throw error;
+  }
+  pending.state='committed';
+  // The server receipt is not a fresh state snapshot: a later edit may already exist.
+  try{await this.journal.save(clone(pending));const current=await this.transport.bundle(workIdOf(pending.payload));await this.publish(current);await this.journal.clear()}
+  catch(error){throw new CompletionError('committed_refresh_pending',error.message)}
+  this.pending=null;this.epoch++;return {operationId:pending.operationId,committed:true};
+ }
+ async discardRejected(){if(this.running||this.pending?.state!=='rejected')throw new CompletionError('unsafe_discard');await this.journal.clear();this.pending=null;this.epoch++}
+}
+function createExistingRpcTransport(call){
+ const protocol='ledger_tx_v1';
+ const invoke=async(name,args)=>{try{return await call(name,args)}catch(error){let wire=error;try{wire=JSON.parse(error.message)}catch{}const message=wire?.message||error.message||'';if(['PGRST202','42883','42501'].includes(wire?.code))throw new CompletionError('unsupported',message);if(wire?.code==='P0001'){
+  if(/^bad key$/.test(message))throw new CompletionError('bad_key');
+  if(/^VERSION_CONFLICT|^DELIVERY_ALREADY_EXISTS|^DUPLICATE_WORK_TITLE|^INVALID_CORRECTION_TARGET|^DELETED_RECORD_REQUIRES_REVIEW/.test(message))throw new CompletionError('conflict',message);
+  if(/^OPERATION_PAYLOAD_CONFLICT/.test(message))throw new CompletionError('payload_mismatch',message);
+  if(/^TRANSACTION_WRITES_DISABLED|^RESERVED_COMMAND/.test(message))throw new CompletionError('unsupported',message);
+  if(/^INVALID_|^UNKNOWN_FIELD|^MISSING_COUNT|^UNEXPECTED_|^REQUEST_TOO_LARGE|^REQUEST_TOO_DEEP|^COMPLETION_REQUIRES_DELIVERY|^COMPLETION_DATE_CHANGE_REQUIRES_REVIEW|^CORRECTION_WORK_MISSING|^CORRECTION_STATUS_CHANGE_REQUIRES_REVIEW/.test(message))throw new CompletionError('validation',message);
+ }throw error}};
+ const readBundle=async workId=>{const result=await invoke('ledger_tx_bundle',{p_work_id:workId});if(result?.protocol!==protocol)throw new CompletionError('unsupported','Transaction protocol is not confirmed');if(!validBundle(result,workId))throw new CompletionError('uncertain_response','Bundle does not match the requested work and snapshot shape');return result};
+ return {
+  async commit(operationId,request){
+   // Dedicated RPCs cannot become ordinary ledger documents on an old backend.
+   // No legacy command, handshake or fallback is sent.
+   const result=await invoke('ledger_tx_commit',{p_operation_id:operationId,p_request:request});
+   if(result?.protocol!==protocol||result.operationId!==operationId||result.workId!==workIdOf(request))throw new CompletionError('uncertain_response','Commit response is not a matching receipt');
+   return result;
+  },
+  async status(operationId){const result=await invoke('ledger_tx_status',{p_operation_id:operationId});if(result?.protocol!==protocol||typeof result.found!=='boolean')throw new CompletionError('unsupported');if(result.found&&(result.result?.protocol!==protocol||result.result.operationId!==operationId))throw new CompletionError('uncertain_response');return result},
+  bundle:readBundle
+ };
+}
+class CoherentBundleStore{
+ constructor(onChange=()=>{}){this.value={works:new Map(),logs:new Map(),subs:new Map()};this.onChange=onChange}
+ apply(bundle){
+  if(!validBundle(bundle,bundle?.work?.id))throw new CompletionError('invalid_bundle');
+  const workId=bundle.work.id;
+  // Construct all next maps before publishing any collection to subscribers.
+  const next={works:new Map(this.value.works),logs:new Map(this.value.logs),subs:new Map(this.value.subs)};
+  for(const [id,row] of next.logs)if(row.data?.workId===workId)next.logs.delete(id);
+  const put=(map,row)=>row.exists&&!row.deleted?map.set(row.id,clone(row)):map.delete(row.id);
+  put(next.works,bundle.work);put(next.subs,bundle.subs);for(const row of bundle.logs)put(next.logs,row);
+  this.value=next;this.onChange(this.snapshot());
+ }
+ snapshot(){return clone(this.value)}
+}
+
+return {CompletionError,CompletionCoordinator,createExistingRpcTransport,CoherentBundleStore};})();
+ const browser=(()=>{const {CompletionCoordinator,CompletionError}=coordinator;
+// Isolated test adapter, deliberately not imported by any production page.
+const PROTOCOL='ledger-browser-journal-v1';
+const SCHEMA=3;
+async function digestPayload(payload){const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical(payload)));return {version:1,algorithm:'SHA-256',hex:[...new Uint8Array(bytes)].map(byte=>byte.toString(16).padStart(2,'0')).join('')}}
+const canonical=value=>JSON.stringify(value,(_key,item)=>item&&typeof item==='object'&&!Array.isArray(item)?Object.keys(item).sort().reduce((out,key)=>(out[key]=item[key],out),Object.create(null)):item);
+const clone=value=>structuredClone(value);
+function assertSafePayload(payload){
+ const denied=new Set(['pkey','ownerkey','key','token','password','authorization','accesstoken','refreshtoken','__proto__','prototype','constructor']);
+ const ancestors=new Set();
+ function visit(value){
+  if(value===null||typeof value==='string'||typeof value==='boolean')return;
+  if(typeof value==='number'){if(!Number.isFinite(value))throw new CompletionError('invalid_payload');return}
+  if(typeof value!=='object'||ancestors.has(value))throw new CompletionError('invalid_payload');
+  if(!Array.isArray(value)&&Object.getPrototypeOf(value)!==Object.prototype&&Object.getPrototypeOf(value)!==null)throw new CompletionError('invalid_payload');
+  ancestors.add(value);
+  for(const [key,child]of Object.entries(value)){if(denied.has(key)||denied.has(key.replaceAll('_','').toLowerCase()))throw new CompletionError('credential_in_payload');visit(child)}
+  if(Array.isArray(value))for(const child of value)visit(child);
+  ancestors.delete(value);
+ }
+ visit(payload);
+ if(!payload||Array.isArray(payload)||typeof payload!=='object'||typeof (payload.work?.id||payload.workId)!=='string'||!(payload.work?.id||payload.workId))throw new CompletionError('validation');
+ return JSON.parse(JSON.stringify(payload));
+}
+function validateEnvelope(value){
+ if(!value||value.protocol!==PROTOCOL||![2,SCHEMA].includes(value.schema))throw new CompletionError('incompatible_journal','Do not erase or retry an unknown journal format');
+ if(!Number.isSafeInteger(value.generation)||value.generation<0||!Array.isArray(value.completed))throw new CompletionError('invalid_journal');
+ const check=active=>{if(!active?.intentId||!active.payload||!(active.record===null||active.record?.operationId))throw new CompletionError('invalid_journal');if(active.record&&(canonical(active.record.payload)!==canonical(active.payload)||!['prepared','uncertain','committed','rejected'].includes(active.record.state)))throw new CompletionError('invalid_journal')};
+ if(value.active!==null)check(value.active);
+ for(const receipt of value.completed)if(!receipt?.intentId||!receipt.operationId||receipt.payloadDigest?.version!==1||receipt.payloadDigest?.algorithm!=='SHA-256'||!/^([a-f0-9]{64})$/.test(receipt.payloadDigest?.hex))throw new CompletionError('invalid_journal');
+ // Schema 2 is converted only in memory on read, then atomically persisted on
+ // the next successful write. The original payload/IDs are never rewritten.
+ if(value.schema===2){value={...value,schema:SCHEMA,rejected:[],active:value.active};if(value.active?.record?.state==='rejected'){value.rejected=[value.active];value.active=null}}
+ if(!Array.isArray(value.rejected))throw new CompletionError('invalid_journal');
+ const intents=new Set(value.active?[value.active.intentId]:[]),works=new Set();
+ for(const item of value.rejected){check(item);const id=workId(item.payload);if(item.record?.state!=='rejected'||intents.has(item.intentId)||works.has(id))throw new CompletionError('invalid_journal');intents.add(item.intentId);works.add(id)}
+ if(value.active?.record?.state==='rejected'||(value.active&&works.has(workId(value.active.payload))))throw new CompletionError('invalid_journal');
+ return value;
+}
+const workId=p=>p.work?.id||p.workId;
+const empty=()=>({protocol:PROTOCOL,schema:SCHEMA,generation:0,active:null,rejected:[],completed:[]});
+class IndexedDbJournal {
+ constructor({scope,indexedDB=globalThis.indexedDB,fault=()=>{}}){
+  if(!/^[a-z0-9_-]{1,96}$/i.test(scope))throw new CompletionError('invalid_scope');
+  this.scope=scope;this.indexedDB=indexedDB;this.fault=fault;this.connection=null;this.opening=null;
+ }
+ async open(){
+  if(this.connection)return this.connection;
+  if(this.opening)return this.opening;
+  if(!this.indexedDB)throw new CompletionError('journal_unavailable');
+  this.fault('open');
+  this.opening=new Promise((resolve,reject)=>{
+   let blocked=false;
+   const request=this.indexedDB.open('synthetic-ledger-'+this.scope,1);
+   request.onupgradeneeded=()=>request.result.createObjectStore('journal');
+   request.onerror=()=>reject(request.error);
+   request.onblocked=()=>{blocked=true;reject(new CompletionError('journal_blocked','Close incompatible test tabs before retrying'))};
+   request.onsuccess=()=>{if(blocked){request.result.close();return}resolve(request.result)};
+  });
+  try{
+   const connection=await this.opening;
+   connection.onversionchange=()=>{connection.close();this.connection=null};this.connection=connection;return connection;
+  }finally{this.opening=null}
+ }
+ async transaction(write,update){
+  const db=await this.open();this.fault(write?'before-write':'before-read');
+  return new Promise((resolve,reject)=>{
+   let result,reason;
+   const tx=db.transaction('journal',write?'readwrite':'readonly');
+   const store=tx.objectStore('journal'),request=store.get('state');
+   request.onsuccess=()=>{
+    try{
+     const value=validateEnvelope(request.result??empty());
+     result=update?update(value):clone(value);
+     if(write){this.fault('before-put');store.put(value,'state');this.fault('after-put')}
+    }catch(error){reason=error;tx.abort()}
+   };
+   tx.oncomplete=()=>resolve(result);
+   tx.onabort=()=>reject(reason||tx.error||new CompletionError('journal_unavailable'));
+   tx.onerror=()=>{};
+  });
+ }
+ read(){return this.transaction(false)}
+ mutate(change){return this.transaction(true,change)}
+ async close(){this.connection?.close();this.connection=null}
+}
+class BrowserCompletionAdapter {
+ constructor({scope,transport,applyBundle,journal=new IndexedDbJournal({scope}),locks=globalThis.navigator?.locks,uuid=()=>crypto.randomUUID(),broadcast=true}){
+  this.scope=scope;this.transport=transport;this.applyBundle=applyBundle;this.journal=journal;this.locks=locks;this.uuid=uuid;this.sequence=0;this.applied=0;this.invalidation=0;this.lastPublished=null;this.deferredRejections=new Map();
+  // Stable across script versions. A schema suffix in the lock name would create split ownership.
+  this.lockName='synthetic-ledger-write:'+scope;
+  if(broadcast&&globalThis.BroadcastChannel){this.channel=new BroadcastChannel(this.lockName);this.channel.onmessage=()=>{this.invalidation++}}
+ }
+ withLock(action){if(!this.locks?.request)return Promise.reject(new CompletionError('coordination_unavailable','Web Locks required; no localStorage lease fallback'));return this.locks.request(this.lockName,{mode:'exclusive'},action)}
+ publish(bundle,assertCurrent=()=>{}){assertCurrent();const fingerprint=canonical(bundle);if(this.lastPublished===fingerprint)return false;const result=this.applyBundle(clone(bundle),assertCurrent);if(result&&typeof result.then==='function')return result.then(()=>{this.lastPublished=fingerprint;return true});this.lastPublished=fingerprint;return true}
+ changed(){this.invalidation++;this.channel?.postMessage({changed:true})}
+ async submit(intentId,input){
+  const payload=assertSafePayload(input),canonicalPayload=canonical(payload),payloadDigest=await digestPayload(payload);
+  if(typeof intentId!=='string'||!intentId)throw new CompletionError('invalid_intent');
+  return this.withLock(async()=>{
+   await this.flushRejections();const initial=validateEnvelope(await this.journal.read());
+   const receipt=initial.completed.find(item=>item.intentId===intentId);
+   if(receipt){if(canonical(receipt.payloadDigest)!==canonical(payloadDigest))throw new CompletionError('payload_mismatch');await this.publish(await this.transport.bundle(payload.work?.id||payload.workId));return {operationId:receipt.operationId,committed:true,replayed:true}}
+   const rejected=initial.rejected.find(item=>workId(item.payload)===workId(payload));
+   if(rejected)throw new CompletionError(rejected.intentId===intentId?'rejected_operation':'rejected_work','This work has a preserved rejected draft; review or explicitly discard it first');
+   if(initial.active&&(initial.active.intentId!==intentId||canonical(initial.active.payload)!==canonicalPayload))throw new CompletionError('pending_operation');
+   if(!initial.active){await this.journal.mutate(state=>{state.active={intentId,payload:clone(payload),record:null};state.generation++});this.changed()}
+   const journal={
+    load:async()=>{const state=await this.journal.read();return clone(state.active?.record||null)},
+    save:async record=>{
+     if(record.state==='rejected')this.deferredRejections.set(intentId,{intentId,payload:clone(payload),record:clone(record)});
+     try{await this.journal.mutate(state=>{if(state.active?.intentId!==intentId)throw new CompletionError('ownership_lost');state.active.record=clone(record);if(record.state==='rejected'){state.rejected.push(state.active);state.active=null}state.generation++})}
+     catch(error){if(record.state==='rejected')throw new CompletionError('rejected_journal_pending','Cloud rejected this save, but local archival failed; keep this page open and retry local archival before further writes');throw error}
+     this.deferredRejections.delete(intentId);this.changed()
+    },
+    clear:async()=>{await this.journal.mutate(state=>{
+     if(state.active?.intentId!==intentId)throw new CompletionError('ownership_lost');
+     const record=state.active.record;
+     if(record?.state==='committed')state.completed.push({intentId,operationId:record.operationId,payloadDigest});
+     else if(record?.state!=='rejected')throw new CompletionError('unsafe_discard');
+     state.active=null;state.generation++;
+    });this.changed()}
+   };
+   const coordinator=new CompletionCoordinator({transport:this.transport,journal,applyBundle:bundle=>this.publish(bundle),uuid:this.uuid});
+   await coordinator.restore();return coordinator.submit(payload);
+  });
+ }
+ async flushRejections(){
+  for(const [intentId,rejected]of this.deferredRejections){
+   try{await this.journal.mutate(state=>{const active=state.active;if(active?.intentId!==intentId||active.record?.operationId!==rejected.record.operationId)throw new CompletionError('ownership_lost');state.rejected.push(clone(rejected));state.active=null;state.generation++})}
+   catch{throw new CompletionError('rejected_journal_pending','Cloud rejection is known; local storage must recover before any new write')}
+   this.deferredRejections.delete(intentId);this.changed();
+  }
+ }
+ async discardRejected(intentId){return this.withLock(async()=>{await this.flushRejections();await this.journal.mutate(state=>{const i=state.rejected.findIndex(row=>row.intentId===intentId);if(i<0)throw new CompletionError('unsafe_discard');state.rejected.splice(i,1);state.generation++});this.changed()})}
+ async reconcile(intentId,assertCurrent=()=>{},operationId=null){return this.withLock(async()=>{
+  assertCurrent();const state=validateEnvelope(await this.journal.read());assertCurrent();const active=state.active;
+  if(!active||active.intentId!==intentId||!active.record?.operationId||(operationId&&active.record.operationId!==operationId))return null;
+  const record=active.record;if(!['uncertain','prepared','committed'].includes(record.state))throw new CompletionError('unsafe_recovery');
+  // This path never calls submit/commit, even if a receipt is absent.
+  const outcome=await this.transport.status(record.operationId);assertCurrent();if(!outcome.found)return {found:false};
+  const receipt=outcome.result;
+  if(receipt&&(receipt.workId!==workId(active.payload)||receipt.mode!==active.payload.mode||(receipt.deliveryId??null)!==(active.payload.delivery?.id??null)))throw new CompletionError('recovery_scope_unverified');
+  await this.journal.mutate(current=>{assertCurrent();if(current.active?.intentId!==intentId||current.active.record?.operationId!==record.operationId)throw new CompletionError('ownership_lost');current.active.record.state='committed';current.generation++});this.changed();
+  assertCurrent();const bundle=await this.transport.bundle(workId(active.payload));assertCurrent();await this.applyBundle(clone(bundle),assertCurrent);assertCurrent();
+  const payloadDigest=await digestPayload(active.payload);assertCurrent();
+  await this.journal.mutate(current=>{assertCurrent();if(current.active?.intentId!==intentId||current.active.record?.operationId!==record.operationId)throw new CompletionError('ownership_lost');current.completed.push({intentId,operationId:record.operationId,payloadDigest});current.active=null;current.generation++});this.changed();return {found:true,committed:true,operationId:record.operationId};
+ })}
+ async pollTicket(){return this.withLock(async()=>{const state=await this.journal.read();return {generation:state.generation,sequence:++this.sequence,invalidation:this.invalidation}})}
+ async applyPoll(bundle,ticket){return this.withLock(async()=>{const state=await this.journal.read();if(state.active||ticket?.generation!==state.generation||ticket?.sequence!==this.sequence||ticket?.sequence<=this.applied||ticket?.invalidation!==this.invalidation)return false;await this.publish(bundle);this.applied=ticket.sequence;return true})}
+ async status(){const state=clone(validateEnvelope(await this.journal.read())),rejected=state.active&&this.deferredRejections.get(state.active.intentId);if(rejected&&rejected.record.operationId===state.active.record?.operationId){state.rejected.push({...clone(rejected),storagePending:true});state.active=null}return state}
+ async close(){this.channel?.close();await this.journal.close()}
+}
+
+return {PROTOCOL,SCHEMA,digestPayload,canonical,assertSafePayload,validateEnvelope,IndexedDbJournal,BrowserCompletionAdapter};})();
+ const {BrowserCompletionAdapter}=browser;const {createExistingRpcTransport,CompletionError}=coordinator;
+// Ordinary reads deliberately have no IndexedDB, journal or Web Locks dependency.
+const clone=value=>structuredClone(value);
+const version=value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/.test(value);
+const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
+const headerKey=h=>h?`${h.version}|${h.etag}|${h.deleted}`:'absent';
+class LedgerReadError extends Error{constructor(code,message){super(message||code);this.code=code}}
+const validFingerprint=value=>typeof value==='string'&&/^ledger-fingerprint-v1:[a-f0-9]{64}$/.test(value);
+function validateFingerprint(value){if(value?.protocol!=='ledger_fingerprint_v1'||!validFingerprint(value.fingerprint))throw new LedgerReadError('invalid_fingerprint');return value.fingerprint}
+function validateMetadataSnapshot(value){
+ if(value?.protocol!=='ledger_snapshot_v1'||!validFingerprint(value.fingerprint)||value.full!==true||!Array.isArray(value.rows)||!Array.isArray(value.subtitles))throw new LedgerReadError('invalid_snapshot');
+ const ids=new Set(),subIds=new Set();
+ for(const row of value.rows){const key=row?.coll+'/'+row?.id;if(!['works','logs','days'].includes(row?.coll)||typeof row.id!=='string'||!row.id||row.deleted!==false||!object(row.data)||!version(row.version)||ids.has(key))throw new LedgerReadError('invalid_snapshot');ids.add(key)}
+ for(const h of value.subtitles){if(typeof h?.id!=='string'||!h.id||typeof h.deleted!=='boolean'||!version(h.version)||!/^([a-f0-9]{64})$/.test(h.etag)||subIds.has(h.id))throw new LedgerReadError('invalid_snapshot');subIds.add(h.id)}
+ return value;
+}
+class LedgerReader {
+ constructor({snapshot,fingerprint,bundle,onMetadata,onSubtitles,onUnchanged=()=>{},broadcast=true}){
+  this.snapshot=snapshot;this.fingerprint=fingerprint;this.acceptedFingerprint=null;this.forceFull=true;this.guards=[];this.onUnchanged=onUnchanged;this.bundle=bundle;this.onMetadata=onMetadata;this.onSubtitles=onSubtitles;this.epoch=0;this.sequence=0;this.dead=false;this.running=null;this.requested=false;this.headers=new Map();this.workIds=new Set();this.texts=new Map();this.cachedHeaders=new Map();this.subSequences=new Map();this.subErrors=new Map();this.subEnabled=false;this.subRun=null;this.pendingCount=0;
+  if(broadcast&&globalThis.BroadcastChannel){this.channel=new BroadcastChannel('ledger-metadata-refresh-v2');this.channel.onmessage=()=>{this.invalidate();void this.refresh().catch(()=>{})}}
+ }
+ invalidate({broadcast=false}={}){this.epoch++;this.forceFull=true;if(this.running)this.requested=true;if(broadcast)this.channel?.postMessage({changed:true})}
+ status(){return {enabled:this.subEnabled,pending:this.pendingCount,failed:this.subErrors.size,missing:this.staleIds().length}}
+ subtitleValues(){return this.subEnabled?new Map(this.texts):null}
+ emitSubtitles(){if(!this.dead)this.onSubtitles(this.subtitleValues(),this.status())}
+ staleIds(){return [...this.headers].filter(([id,h])=>this.workIds.has(id)&&!h.deleted&&this.cachedHeaders.get(id)!==headerKey(h)).map(([id])=>id)}
+ setHeaders(headers,works){
+  const next=new Map(headers.map(h=>[h.id,clone(h)]));
+  for(const id of new Set([...this.headers.keys(),...next.keys(),...this.texts.keys()])){
+   const before=this.headers.get(id),after=next.get(id);
+   if(headerKey(before)!==headerKey(after)||!works.has(id)||after?.deleted){this.subSequences.set(id,(this.subSequences.get(id)||0)+1);this.texts.delete(id);this.cachedHeaders.delete(id);this.subErrors.delete(id)}
+  }
+  this.headers=next;this.workIds=works;
+ }
+ refresh({force=false,guard=()=>{}}={}){
+  if(this.dead)return Promise.resolve(false);this.forceFull ||= force;this.guards.push(guard);this.requested=true;if(this.running)return this.running;
+  this.running=this.drain().finally(()=>{this.running=null});return this.running;
+ }
+ async drain(){let accepted=false;
+  while(this.requested&&!this.dead){this.requested=false;const guards=this.guards.splice(0),allowed=()=>guards.some(check=>{try{check();return true}catch{return false}});
+   if(!allowed())continue;const epoch=this.epoch,sequence=++this.sequence;let value;
+   try{
+    if(!this.forceFull&&this.acceptedFingerprint&&this.fingerprint){
+     const fingerprint=validateFingerprint(await this.fingerprint());
+     if(this.dead)return false;if(!allowed())continue;if(epoch!==this.epoch||sequence!==this.sequence){this.guards.push(...guards);this.requested=true;continue}
+     if(fingerprint===this.acceptedFingerprint){this.onUnchanged();accepted=true;if(this.subEnabled)void this.refreshSubtitles();continue}
+    }
+    if(!allowed())continue;value=validateMetadataSnapshot(await this.snapshot());
+   }catch(error){if(this.dead)return false;if(!allowed())continue;this.forceFull=true;if(epoch!==this.epoch){this.guards.push(...guards);this.requested=true;continue}throw error}
+   if(this.dead)return false;if(!allowed())continue;if(epoch!==this.epoch||sequence!==this.sequence){this.guards.push(...guards);this.requested=true;continue}
+   // Applying may partially mutate caches/UI before a callback throws. Keep a
+   // full refresh required until the entire application and token commit succeed.
+   this.forceFull=true;const frozen=clone(value);this.setHeaders(frozen.subtitles,new Set(frozen.rows.filter(r=>r.coll==='works').map(r=>r.id)));
+   // Cache only the token carried by the full snapshot which was actually applied.
+   // A preceding probe token is never paired with a later snapshot (ABA-safe).
+   this.onMetadata(frozen,this.subtitleValues(),this.status());this.acceptedFingerprint=frozen.fingerprint;this.forceFull=false;accepted=true;
+   if(this.subEnabled)void this.refreshSubtitles();
+  }
+  return accepted;
+ }
+ async loadSubtitles(){this.subEnabled=true;await this.refresh();await this.refreshSubtitles();return true}
+ refreshSubtitles(){
+  if(this.dead||!this.subEnabled)return Promise.resolve(false);if(this.subRun)return this.subRun;
+  this.subRun=this.drainSubtitles().finally(()=>{this.subRun=null});return this.subRun;
+ }
+ async drainSubtitles(){const attempted=new Set();let changed=false;
+  while(!this.dead){const ids=this.staleIds().filter(id=>!attempted.has(id+'|'+headerKey(this.headers.get(id)))).slice(0,4);if(!ids.length)break;
+   await Promise.all(ids.map(async id=>{const target=clone(this.headers.get(id)),key=headerKey(target),epoch=this.epoch,sequence=(this.subSequences.get(id)||0)+1;this.subSequences.set(id,sequence);attempted.add(id+'|'+key);this.pendingCount++;this.emitSubtitles();
+    const current=()=>!this.dead&&epoch===this.epoch&&sequence===this.subSequences.get(id)&&this.workIds.has(id)&&headerKey(this.headers.get(id))===key;
+    try{const bundle=await this.bundle(id);if(!current())return;
+     if(bundle?.work?.id!==id||!bundle.work.exists||bundle.work.deleted||bundle?.subs?.id!==id||!bundle.subs.exists||bundle.subs.deleted!==target.deleted||bundle.subs.version!==target.version||bundle.subsEtag!==target.etag)throw new LedgerReadError('subtitle_target_changed');
+     if(typeof bundle.subs.data?.text!=='string')throw new LedgerReadError('invalid_subtitle');
+     this.texts.set(id,bundle.subs.data.text);this.cachedHeaders.set(id,key);this.subErrors.delete(id);changed=true;
+    }catch(error){if(current()){this.texts.delete(id);this.cachedHeaders.delete(id);this.subErrors.set(id,error.code||'subtitle_read_failed')}}
+    finally{this.pendingCount--;this.emitSubtitles()}
+   }));
+  }
+  return changed;
+ }
+ close(){this.dead=true;this.epoch++;this.requested=false;this.guards=[];this.acceptedFingerprint=null;this.channel?.close();this.texts.clear();this.headers.clear();this.cachedHeaders.clear()}
+}
+
+// Isolated integration candidate. No credentials are persisted by this module.
+const absent=(coll,id)=>({coll,id,exists:false,deleted:false,version:null,data:null});
+const cp=x=>structuredClone(x);
+function changePatch(before,after){return Object.fromEntries(Object.entries(after).filter(([k,v])=>JSON.stringify(before?.[k])!==JSON.stringify(v)))}
+function safeCount(value){const raw=String(value).trim();if(!/^\d+$/.test(raw)||!Number.isSafeInteger(Number(raw)))throw new CompletionError('count_required');return Number(raw)}
+// A random namespace coordinates local tabs; it is NOT proof of credential binding.
+// It contains no key/hash. Only this runtime may transmit IDs it newly generated;
+// cold drafts require a matching committed receipt and are never blindly resent.
+class AuthScope {
+ constructor({storage,uuid=()=>crypto.randomUUID(),savedKey='',suppliedKey=''}){
+  if(!storage){try{storage=globalThis.localStorage}catch{}}
+  this.storage=storage;this.uuid=uuid;this.key=suppliedKey||savedKey;this.version=0;
+  try{this.id=storage.getItem('ledger_tx_scope');this.durable=!!this.id;if(!/^[a-z0-9_-]{1,96}$/i.test(this.id||'')||(suppliedKey&&suppliedKey!==savedKey))this.rotate();}catch{this.id=uuid();this.durable=false}
+ }
+ rotate(){this.id=this.uuid();this.version++;try{this.storage.setItem('ledger_tx_scope',this.id);this.durable=this.storage.getItem('ledger_tx_scope')===this.id}catch{this.durable=false}}
+ change(key){if(key!==this.key){this.key=key;this.rotate()}return this.id}
+ assert(id=this.id,key=this.key){if(id!==this.id||key!==this.key)throw new CompletionError('stale_key');if(this.durable){let saved;try{saved=this.storage.getItem('ledger_tx_scope')}catch{throw new CompletionError('scope_unavailable')}if(saved!==id)throw new CompletionError('stale_key')}}
+}
+class LedgerTransactions {
+ constructor({scope,key,call,assertCurrent,assertWritable=()=>{},applyBundle,beforeWrite=()=>{},afterWrite=()=>{},adapterOptions={}}){
+  this.beforeWrite=beforeWrite;this.afterWrite=afterWrite;this.scope=scope;this.key=key;this.assertCurrent=assertCurrent;this.assertWritable=assertWritable;this.dead=false;
+  const check=()=>{if(this.dead)throw new CompletionError('stale_key');assertCurrent(scope,key)};
+  this.check=check;
+  this.commitAttempts=0;this.authorizedOperations=new Set();this.localIntents=new Set();this.transport=createExistingRpcTransport(async(name,args)=>{check();const out=await call(name,args);check();return out});
+  const commit=this.transport.commit;this.transport.commit=(operationId,payload)=>{check();if(!this.authorizedOperations.has(operationId))throw new CompletionError('recovery_scope_unverified');this.beforeWrite();this.commitAttempts++;return commit(operationId,payload)};
+  this.adapter=new BrowserCompletionAdapter({scope:'app_'+scope,transport:this.transport,...adapterOptions,uuid:()=>{const id=crypto.randomUUID();this.authorizedOperations.add(id);return id},applyBundle:async (bundle,guard=()=>{})=>{check();guard();await applyBundle(bundle,()=>{check();guard()});check();guard()}});
+  const submit=this.adapter.submit.bind(this.adapter);this.adapter.submit=async(intentId,payload)=>{if(!this.localIntents.has(intentId))await this.verifyRecoveredIntent(intentId,payload);return submit(intentId,payload)};
+ }
+ async checkCapability(){this.check();this.assertWritable();if(!this.adapter.locks?.request)throw new CompletionError('coordination_unavailable');await this.adapter.status();return true}
+ async open(id){this.check();const bundle=await this.transport.bundle(id);this.check();const intentId=crypto.randomUUID();this.localIntents.add(intentId);return {id,intentId,bundle,payload:null,busy:false,done:false}}
+ async save(edit,payload){this.check();this.assertWritable();if(edit.done)return {committed:true};if(edit.busy)return edit.running;edit.busy=true;
+  // A retry uses the frozen draft, not newly edited fields or another operation ID.
+  const hadPayload=!!edit.payload,attempts=this.commitAttempts;edit.payload??=cp(payload);edit.running=this.adapter.submit(edit.intentId,edit.payload).finally(()=>{edit.busy=false});
+  try{const result=await edit.running;this.check();edit.done=true;return result}catch(error){
+   // Thaw only a provably unsent first attempt. Never discard a prepared/uncertain
+   // record or an operation another tab may have taken over.
+   if(!hadPayload&&attempts===this.commitAttempts){
+    try{await this.adapter.withLock(async()=>{const state=await this.adapter.status();if(state.completed.some(r=>r.intentId===edit.intentId))return;if(!state.active){edit.payload=null;return}if(state.active.intentId===edit.intentId&&state.active.record===null){await this.adapter.journal.mutate(current=>{if(current.active?.intentId!==edit.intentId||current.active.record!==null)throw new CompletionError('ownership_lost');current.active=null;current.generation++});this.adapter.changed();edit.payload=null}})}catch{}
+    // If storage is still unavailable the exact draft stays frozen, with an
+    // explicit retry button; we cannot prove the durable journal is empty.
+    if(!error.code)error=new CompletionError('journal_unavailable',error.message);
+   }
+   throw error;
+  }finally{edit.running=null;this.afterWrite()}
+ }
+ async recoverables(){this.check();const state=await this.adapter.status();this.check();return cp({active:state.active,rejected:state.rejected})}
+ async pending(intentId){const state=await this.recoverables();const all=[state.active,...state.rejected].filter(Boolean);return intentId?all.find(row=>row.intentId===intentId)||null:all[0]||null}
+ async verifyRecoveredIntent(intentId,payload){
+  const state=await this.adapter.status(),record=state.active?.intentId===intentId?state.active.record:state.completed.find(row=>row.intentId===intentId);
+  if(!record?.operationId)throw new CompletionError('recovery_scope_unverified');
+  if(this.authorizedOperations.has(record.operationId))return;
+  const outcome=await this.transport.status(record.operationId),result=outcome.result;
+  if(!outcome.found||result.workId!==payload.work.id||result.mode!==payload.mode||(result.deliveryId??null)!==(payload.delivery?.id??null))throw new CompletionError('recovery_scope_unverified');
+ }
+ async recover(intentId,{guard=()=>{},operationId=null}={}){this.check();guard();this.assertWritable();const active=await this.pending(intentId);this.check();guard();if(!active||(operationId&&active.record?.operationId!==operationId))return null;if(active.record?.state==='rejected')throw new CompletionError('rejected_operation');
+  try{const out=await this.adapter.reconcile(active.intentId,()=>{this.check();guard()},operationId);this.check();guard();if(!out?.found)throw new CompletionError('recovery_scope_unverified');return out}finally{try{this.check();guard();this.afterWrite()}catch{}}
+ }
+ async discardRejected(intentId){this.check();const active=await this.pending(intentId);this.check();if(active)await this.adapter.discardRejected(active.intentId)}
+ async close(){this.dead=true;await this.adapter.close()}
+}
+
+function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,toast,findWork,normName,ymd,legacyLog,writable}){
+ const $=s=>document.querySelector(s),uuid=()=>crypto.randomUUID();let work=null,log=null,opening=0,recoveryIntent=null,autoTimer=null;const autoAttempted=new Set();
+ const fields={zh:'wZh',en:'wEn',kind:'wKind',status:'wStatus',subLink:'wSub',title:'wTitle',copy:'wCopy',pubLink:'wPub',notes:'wNotes',hook:'wHook',genre:'wGenre',state:'wState',cp:'wCp',rec:'wRec'};
+ const message=error=>({read_only:'当前只读，未发送修改；云端记录仍会更新。',conflict:'另一台设备已修改这部作品。本次没有覆盖，请先查看草稿，再载入最新版本。',unsupported:'当前云端尚未启用同步保存。本次未写入，草稿已保留。',title_required:'请填写作品中文名。',loading:'正在读取作品，请稍候再保存。',subtitle_too_long:'字幕全文超过 240,000 字节，请缩短后再保存。',count_required:'请明确填写完成字幕条数：新翻译或官中来源至少一项大于 0。',recovery_scope_unverified:'未找到匹配的已提交回执，本次没有重发。请查看并复制原草稿，手动核对云端结果；不要直接重复记一次交付。',status_only:'这个状态需要交付信息。仅文案或无字幕作品暂不能用此表单新设完成状态；草稿已保留。',stale_key:'钥匙已变更，本次草稿不会在另一把钥匙下重试。',scope_unavailable:'本机无法持久保存恢复标记，本次未发送云端写入。请允许网站保存数据后重新打开。',journal_unavailable:'本机无法安全保存恢复记录，未开始新的云端写入。',rejected_journal_pending:'云端已明确拒绝这次保存，但本机存储暂时无法归档。原草稿仍保留，请勿关闭页面；恢复存储后再点保存，只会先归档，不会重发被拒绝的操作。',coordination_unavailable:'此浏览器不支持安全保存锁，请换用最新浏览器。',incompatible_journal:'本机保存记录版本不兼容，已保留原记录，请勿清除网站数据。',pending_operation:'还有一次保存结果待核实，请先核实上一条结果。',rejected_work:'这部作品上次保存被拒绝，原草稿仍保留。请直接查看或放弃该草稿；其他作品可以照常保存。',rejected_operation:'这次保存已明确被拒绝，未覆盖云端。请直接查看或放弃原草稿；其他作品可以照常保存。',cancelled_recovery:'已取消自动核实，原草稿仍保留。'}[error?.code]||'保存结果尚未确认。请用“核实上次保存结果”；重载后未找到回执不会重发，原稿可复制并手动核对。');
+ const formDisable=(id,disabled)=>{$(id).querySelectorAll('input,select,textarea,button:not([data-act="close"])').forEach(el=>{el.disabled=disabled;if(!disabled&&'readOnly'in el)el.readOnly=false})};
+ function completionFields(edit){
+  const choices=$('#wDeliveryMode');choices.innerHTML='<option value="save">只修改资料，不新增交付</option><option value="complete">新增一次交付</option>';
+  for(const row of edit.bundle.logs.filter(r=>!r.deleted&&r.data?.type==='交付')){const option=document.createElement('option');option.value='correct:'+row.id;option.textContent='修正 '+row.data.date+' 的交付（不新增）';choices.appendChild(option)}
+  choices.value='save';$('#wDeliveryDate').value=ymd(new Date());$('#wTranslated').value='';$('#wOfficial').value='';$('#wDeliveryEps').value='';$('#wDeliveryText').value='';updateDelivery();
+ }
+ function updateDelivery(){
+  const mode=$('#wDeliveryMode').value;$('#wDeliveryFields').hidden=mode==='save';$('#wDeliveryDate').disabled=mode.startsWith('correct:');
+  $('#wStatus').disabled=!writable()||mode.startsWith('correct:');
+  updateMetadataTip();
+  if(mode.startsWith('correct:')&&work){$('#wStatus').value=work.bundle.work.data?.status||'翻译中';$('#wStatus').disabled=true;const row=work.bundle.logs.find(r=>r.id===mode.slice(8));if(row){$('#wDeliveryDate').value=row.data.date;$('#wTranslated').value=row.data.lines??0;$('#wOfficial').value=row.data.sourceSubtitleLines??0;$('#wDeliveryEps').value=row.data.eps??0;$('#wDeliveryText').value=row.data.text||''}}
+ }
+ function updateMetadataTip(){const original=work?.bundle.work.data?.status;$('#wMetaTip').hidden=!work||$('#wDeliveryMode').value!=='save'||['已交付','已发布'].includes(original)||!['已交付','已发布'].includes($('#wStatus').value)}
+ function cancelAuto(){if(autoTimer!==null)clearTimeout(autoTimer);autoTimer=null}
+ function contextActions(edit,prefix){const el=$('#'+prefix+'TxActions');if(!el)return;const rejected=edit?.rejectedIntent;el.hidden=!rejected;for(const button of el.querySelectorAll('button'))button.disabled=false}
+ async function selectedPending(intentId){const tx=getDb().transactions();return tx.pending(intentId||recoveryIntent||undefined)}
+ async function refreshPending(){
+  const auth=getDb().authGeneration();try{const state=await getDb().transactions().recoverables();if(auth!==getDb().authGeneration())return;const all=[state.active,...state.rejected].filter(Boolean);
+   if(!all.some(row=>row.intentId===recoveryIntent))recoveryIntent=all[0]?.intentId||null;const active=all.find(row=>row.intentId===recoveryIntent);$('#txRecovery').hidden=!active;
+   const select=$('#txRecoverySelect');select.replaceChildren();for(const row of all){const option=document.createElement('option');option.value=row.intentId;option.textContent=(row.payload.work.patch?.zh||row.payload.work.expected?.data?.zh||row.payload.work.id)+' · '+(row.record?.state==='rejected'?'被拒绝的草稿':'结果待核实');select.appendChild(option)}select.value=recoveryIntent||'';select.hidden=all.length<2;
+   if(active){$('#txRecoveryText').textContent=active.storagePending?message({code:'rejected_journal_pending'}):active.record?.state==='rejected'?'这部作品上次保存被明确拒绝，未覆盖云端。原草稿仍在本机，可查看或放弃；其他作品可以照常保存。':'上次保存结果待核实。刷新后只核实已提交结果，不重发未确认的旧草稿；请查看原稿，手动核对。';$('#txDiscard').hidden=active.record?.state!=='rejected';$('#txResume').hidden=active.record?.state==='rejected'}
+  }catch(e){if(auth!==getDb().authGeneration())return;$('#txRecovery').hidden=false;$('#txRecoveryText').textContent=message(e);$('#txDiscard').hidden=true;$('#txResume').hidden=true}
+ }
+ async function markRejected(edit,prefix){const state=await getDb().transactions().recoverables();const rejected=state.rejected.find(row=>row.payload.work.id===edit.id);edit.rejectedIntent=rejected?.intentId||null;contextActions(edit,prefix);if(rejected){recoveryIntent=rejected.intentId;$('#'+prefix+'TxStatus').textContent=message({code:rejected.storagePending?'rejected_journal_pending':'rejected_work'})}return rejected}
+ async function scheduleCheck(edit,generation,ownsForm,prefix){
+  try{const tx=getDb().transactions(),auth=getDb().authGeneration();const guard=()=>{if(auth!==getDb().authGeneration())throw new CompletionError('stale_key');tx.check()};
+  guard();const pending=await tx.pending(edit.intentId);guard();if(pending?.record?.state!=='uncertain'||autoAttempted.has(edit.intentId))return;autoAttempted.add(edit.intentId);recoveryIntent=edit.intentId;cancelAuto();const operationId=pending.record.operationId;
+   // Navigation changes the form ticket, not authorization to read the original
+   // already-sent operation. Only the matching journal operation can be cleared.
+   autoTimer=setTimeout(async()=>{autoTimer=null;try{guard();const result=await tx.recover(edit.intentId,{guard,operationId});guard();if(!result?.committed)return;edit.done=true;if(ownsForm()){$('#'+prefix+'TxStatus').textContent='已保存，已自动核实云端结果。';closeOv()}toast('已保存，已自动核实，没有重复提交。');await refreshPending()}catch(e){try{guard();if(ownsForm())$('#'+prefix+'TxStatus').textContent=message(e);await refreshPending()}catch{}}},2000);
+  }catch{}
+ }
+ async function openWork(id){
+  work=null;contextActions(null,'w');populateWork(id);const token=++opening;formDisable('#workForm',true);$('#wTxStatus').textContent='正在核对云端版本…';
+  try{const tx=getDb().transactions();const edit=await tx.open(id||uuid());if(token!==opening)return;work=edit;populateWork(edit.bundle.work.exists?edit.id:null,edit.bundle.work.data||null);$('#wSubs').value=edit.bundle.subs.deleted?'':edit.bundle.subs.data?.text||'';$('#wSubs').dataset.orig=$('#wSubs').value;completionFields(edit);formDisable('#workForm',!writable());$('#wTxStatus').textContent=writable()?'资料与字幕将一起保存。只有明确新增交付才会增加完成数。':getDb().writeReason();updateDelivery();await markRejected(edit,'w')}
+  catch(e){if(token===opening){$('#wTxStatus').textContent=message(e);toast(message(e))}}
+ }
+ function bodyFromFields(){const body={};for(const [k,id]of Object.entries(fields))body[k]=k==='zh'?normName($('#'+id).value):$('#'+id).value.trim();body.score=cp(S.score);return body}
+ function requestFromWork(){
+  if(!work)throw new CompletionError('loading');const old=work.bundle.work.data||{},body=bodyFromFields();if(!body.zh)throw new CompletionError('title_required');
+  const patch=changePatch(old,body);if(['zh','hook','genre','state','cp'].some(k=>Object.hasOwn(patch,k)))patch.publishLine='';if(patch.status==='已发布'&&!old.pubDate)patch.pubDate=ymd(new Date());
+  const choice=$('#wDeliveryMode').value,mode=choice.startsWith('correct:')?'correct':choice;
+  // Metadata-only intent preserves historical status-entry workflows without inventing delivery.
+  const original=work.bundle.subs.deleted?'':work.bundle.subs.data?.text||'',text=$('#wSubs').value;
+  if(new TextEncoder().encode(text).length>240000)throw new CompletionError('subtitle_too_long');
+  const request={version:1,mode,work:{id:work.id,expected:work.bundle.work,patch},subs:{expected:work.bundle.subs,action:text===original?'keep':text.trim()?'replace':'clear'}};if(request.subs.action==='replace')request.subs.text=text;if(mode==='save')request.savePurpose='metadata_only';
+  if(mode!=='save'){
+   const lines=safeCount($('#wTranslated').value||'0'),official=safeCount($('#wOfficial').value||'0'),eps=safeCount($('#wDeliveryEps').value||'0');if(!lines&&!official)throw new CompletionError('count_required');
+   const row=mode==='correct'?work.bundle.logs.find(r=>r.id===choice.slice(8)):null,id=row?.id||uuid();
+   request.delivery={id,expected:row||absent('logs',id),data:{date:row?.data.date||$('#wDeliveryDate').value,type:'交付',workId:work.id,work:body.zh,lines,sourceSubtitleLines:official,completedWorks:1,eps,text:$('#wDeliveryText').value.trim(),link:body.subLink}};
+  }
+  return request;
+ }
+ async function saveWork(e){e.preventDefault();if(!writable())return toast('还连不上账本，暂时不能保存');if(!work||work.busy||work.done)return;
+  const edit=work,generation=opening,ownsForm=()=>work===edit&&opening===generation&&!$('#workOv').hidden;
+  try{const request=edit.payload||requestFromWork();formDisable('#workForm',true);await getDb().transactions().save(edit,request);if(ownsForm())closeOv();toast(request.mode==='save'?'作品资料和字幕已一起保存，未新增交付':'作品、字幕和交付信息已同步保存');}
+  catch(e){if(ownsForm()){$('#wTxStatus').textContent=message(e);if(!edit.payload)formDisable('#workForm',false);else $('#workForm button[type="submit"]').disabled=false;try{await markRejected(edit,'w')}catch{}}await scheduleCheck(edit,generation,ownsForm,'w');toast(message(e))}finally{await refreshPending()}
+ }
+
+ async function openLog(){log=null;contextActions(null,'log');const token=++opening;try{if(await getDb().transactions().pending())await refreshPending()}catch{};return token}
+ async function captureLog(){
+  if(S.type!=='交付')return null;const name=normName($('#fWork').value);if(!name)return null;if(log?.name===name)return log;
+  const token=++opening,w=findWork(name);log=null;$('#logTxStatus').textContent='正在核对作品版本…';
+  try{const edit=await getDb().transactions().open(w?.id||uuid());if(token!==opening)return {cancelled:true};edit.name=name;log=edit;$('#logTxStatus').textContent='交付会与作品状态一起保存。官中请填来源条数，新翻译可填 0。';await markRejected(edit,'log');return edit}catch(e){if(token===opening)$('#logTxStatus').textContent=message(e);else return {cancelled:true}}
+ }
+ async function saveLog(e){
+  if(S.type!=='交付'){if(log?.payload){e.preventDefault();return toast('请先核实上一条交付，不能改成另一种记录重试')}return legacyLog(e)}
+  e.preventDefault();if(!writable())return toast('还连不上账本，暂时不能保存');if(log?.busy||log?.done)return;
+  let edit=null,generation=null;const ownsForm=()=>edit&&log===edit&&opening===generation&&!$('#logOv').hidden;
+  try{if(!log||log.name!==normName($('#fWork').value)){const captured=await captureLog();if(captured?.cancelled)return;if(!captured)throw new CompletionError('title_required');edit=captured}else edit=log;generation=opening;
+   let request=edit.payload;if(!request){const lines=safeCount($('#fLines').value||'0'),official=safeCount($('#fOfficial').value||'0'),eps=safeCount($('#fEps').value||'0');if(!lines&&!official)throw new CompletionError('count_required');const link=$('#fLink').value.trim(),patch={};if(!edit.bundle.work.exists)patch.zh=edit.name;if(link)patch.subLink=link;const id=uuid();request={version:1,mode:'complete',work:{id:edit.id,expected:edit.bundle.work,patch},subs:{action:'keep',expected:edit.bundle.subs},delivery:{id,expected:absent('logs',id),data:{date:S.date,type:'交付',workId:edit.id,work:edit.name,lines,sourceSubtitleLines:official,completedWorks:1,eps,text:$('#fText').value.trim(),link}}}}
+   formDisable('#logForm',true);await getDb().transactions().save(edit,request);if(ownsForm()){['fLines','fOfficial','fEps','fText','fLink'].forEach(id=>$('#'+id).value='');closeOv()}toast('交付、作品状态和完成数已同步保存');
+  }catch(e){if(!edit||ownsForm()){$('#logTxStatus').textContent=message(e);if(!edit?.payload)formDisable('#logForm',false);else $('#logBtn').disabled=false;if(edit){try{await markRejected(edit,'log')}catch{}}}if(edit)await scheduleCheck(edit,generation,ownsForm,'log');toast(message(e))}finally{await refreshPending()}
+ }
+
+ async function showPending(intentId){
+  const generation=opening;try{const active=await selectedPending(intentId);if(!active||opening!==generation)return;const p=active.payload;work={id:p.work.id,intentId:active.intentId,bundle:{work:p.work.expected,subs:p.subs.expected,logs:p.delivery?[p.delivery.expected]:[]},payload:cp(p),busy:false,done:false,rejectedIntent:active.record?.state==='rejected'?active.intentId:null};recoveryIntent=active.intentId;
+   const body={...(p.work.expected.data||{}),...p.work.patch};populateWork(p.work.id,body);completionFields(work);$('#wSubs').value=p.subs.action==='replace'?p.subs.text:p.subs.action==='clear'?'':p.subs.expected.data?.text||'';
+   if(p.delivery){$('#wDeliveryMode').value=p.mode==='correct'?'correct:'+p.delivery.id:'complete';$('#wDeliveryFields').hidden=false;$('#wTranslated').value=p.delivery.data.lines;$('#wOfficial').value=p.delivery.data.sourceSubtitleLines??0;$('#wDeliveryEps').value=p.delivery.data.eps;$('#wDeliveryDate').value=p.delivery.data.date;$('#wDeliveryText').value=p.delivery.data.text||''}
+   formDisable('#workForm',true);$('#workForm').querySelectorAll('input,textarea').forEach(el=>{el.disabled=false;el.readOnly=true});contextActions(work,'w');$('#wTxStatus').textContent=active.storagePending?message({code:'rejected_journal_pending'}):active.record?.state==='rejected'?'这次保存被明确拒绝。下方可直接放弃该草稿，或先选中复制。其他作品可以照常保存。':'这是只读原草稿，可选中并复制。请用上方“核实上次保存结果”。重载后未确认的旧操作不会重发，需要手动核对；只有明确被拒绝的保存可放弃。';
+  }catch(e){toast(message(e))}
+ }
+ async function resume(){cancelAuto();const generation=opening,auth=getDb().authGeneration(),btn=$('#txResume');if(btn.disabled)return;btn.disabled=true;try{await getDb().transactions().recover(recoveryIntent||undefined);if(auth!==getDb().authGeneration())return;await getDb().retry();if(opening===generation)closeOv();toast('已核实提交结果，没有新增重复交付')}catch(e){if(auth===getDb().authGeneration())toast(message(e))}finally{btn.disabled=false;await refreshPending()}}
+ async function discard(intentId){cancelAuto();const generation=opening,auth=getDb().authGeneration();if(!globalThis.confirm('这次保存已被云端拒绝。放弃本次保存草稿并载入最新版本？请先复制需要保留的内容。'))return;try{const active=await selectedPending(intentId);if(!active)return;await getDb().transactions().discardRejected(active.intentId);if(auth!==getDb().authGeneration())return;if(opening===generation)await openWork(active.payload.work.id);await refreshPending()}catch(e){toast(message(e))}}
+ $('#txRecoverySelect').addEventListener('change',()=>{recoveryIntent=$('#txRecoverySelect').value;void refreshPending()});
+ for(const [prefix,current]of [['w',()=>work],['log',()=>log]]){$('#'+prefix+'TxShow').addEventListener('click',()=>void showPending(current()?.rejectedIntent));$('#'+prefix+'TxDiscard').addEventListener('click',()=>void discard(current()?.rejectedIntent))}
+ $('#wDeliveryMode').addEventListener('change',updateDelivery);$('#wStatus').addEventListener('change',updateMetadataTip);$('#wMakeDelivery').addEventListener('click',()=>{if(!writable()||work?.payload)return;$('#wDeliveryMode').value='complete';$('#wDeliveryMode').closest('details').open=true;updateDelivery();$('#wTranslated').focus()});$('#fWork').addEventListener('change',()=>void captureLog());$('#txResume').addEventListener('click',resume);$('#txShow').addEventListener('click',()=>void showPending());$('#txDiscard').addEventListener('click',()=>void discard());
+ return {openWork,saveWork,openLog,saveLog,refreshPending,captureLog,showPending,resume,discard,reset(){cancelAuto();opening++;work=null;log=null;recoveryIntent=null;$('#txRecovery').hidden=true;closeOv()},navigated(){opening++},state:()=>({work,log})};
+}
+
+return {absent,changePatch,safeCount,AuthScope,LedgerTransactions,createTransactionForms,LedgerReadError,validateFingerprint,validateMetadataSnapshot,LedgerReader,createExistingRpcTransport};})();
 import {ReactionController,summaryHTML as pkResponseSummary,panelHTML as pkResponsePanel,unanswered as pkUnanswered,captureResponseFocus,restoreResponseFocus,charCount} from './reactions.js?v=20261106-reactions1';
-import {createNoticeUI} from './notifications.js?v=20261106-push1';
+const {createNoticeUI}=(()=>{
+/* Opt-in per browser/device. No automatic permission prompt, no key in storage/URLs. */
+function supportMessage(env=globalThis) {
+ const nav=env.navigator,ios=/iPad|iPhone|iPod/.test(nav.userAgent)||(nav.platform==='MacIntel'&&nav.maxTouchPoints>1);
+ if(!env.isSecureContext)return '通知需要通过 HTTPS 打开。';
+ if(ios&&!env.matchMedia('(display-mode: standalone)').matches&&nav.standalone!==true)return 'iPhone 请先添加到主屏幕，再从「老白笔记」图标打开（需 iOS 16.4 或更新版本）。';
+ if(!('Notification'in env)||!('PushManager'in env)||!('serviceWorker'in nav))return '当前浏览器不支持系统推送；页面更新记录仍可查看。';
+ if(env.Notification.permission==='denied')return '系统通知已被拒绝，请到设备的通知设置中允许「老白笔记」，再回来刷新。';
+ return '';
+}
+function applicationKey(text) {
+ const bytes=Uint8Array.from(atob(text.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+ if(bytes.length!==65||bytes[0]!==4)throw new Error('PUSH_NOT_CONFIGURED');return bytes;
+}
+function changeText(item) {
+ const labels={created:'新增',status:'状态变化',claim:'认领变化',deleted:'从剧单删除',updated:'更新',progress:'进度更新',issue_done:'问题已处理'};
+ const fields={zh:'剧名',en:'英文名',epsDone:'进度',epsTotal:'集数',issues:'问题',watchDate:'追剧日期',duration:'时长',note:'备注',claim:'认领',airing:'播出状态',official:'官中状态',pubLink:'发布链接',link:'链接',genre:'类型',status:'状态'};
+ const detail=(item.fields||[]).map(f=>fields[f]).filter(Boolean).join('、');
+ return `${labels[item.kind]||'更新'}${detail&&item.kind==='updated'?' · '+detail:''} · ${item.status}`;
+}
+const bounded=(promise,ms=12000)=>{let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('TIMEOUT')),ms)})]).finally(()=>clearTimeout(timer))};
+async function pushWorker(reg) {
+ if(!reg.active)throw new Error('WORKER_UPDATE');
+ const channel=new MessageChannel();
+ try{return await bounded(new Promise((resolve,reject)=>{channel.port1.onmessage=e=>e.data?.pushVersion===1?resolve(reg):reject(new Error('WORKER_UPDATE'));reg.active.postMessage({type:'LAOBAI_PUSH_VERSION'},[channel.port2])}),1500)}
+ catch{throw new Error('WORKER_UPDATE')}finally{channel.port1.close();channel.port2.close()}
+}
+function createNoticeUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalThis),canWrite=()=>true}={}) {
+ let epoch=0,connected=false,busy=false,refreshing=false,config=null,registration=null,subscribed=false,rows=[],cursor=null,more=true,ready=false;
+ const $=id=>document.getElementById(id),message=text=>{$('pkPushStatus').textContent=text};
+ function assertWritable(){if(!canWrite())throw new Error('READ_ONLY')}
+ function paint(){
+  $('pkPushEntry').hidden=!connected;
+  $('pkPushEnable').hidden=subscribed;$('pkPushDisable').hidden=!subscribed;$('pkPushTest').hidden=!subscribed;
+  $('pkPushEnable').disabled=!canWrite()||busy||!ready||!!supportMessage()||!config?.enabled;
+  $('pkPushDisable').disabled=!canWrite()||busy;$('pkPushTest').disabled=!canWrite()||busy||!ready;
+  $('pkChangesMore').hidden=!more;$('pkChangesMore').disabled=refreshing;
+ }
+ async function rpc(op,payload={}) {
+  if(!['config','status','changes','events_since'].includes(op))assertWritable();
+  const e=epoch,cloud=getCloud(),key=cloud.key;if(!connected||!key)throw new Error('CANCELLED');
+  const r=await fetcher(cloud.url+'/rest/v1/rpc/ledger_picks_notice',{method:'POST',credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json',apikey:cloud.anon},body:JSON.stringify({p_key:key,p_op:op,p_payload:payload})});
+  const data=await r.json();if(e!==epoch||key!==getCloud().key)throw new Error('CANCELLED');
+  if(!r.ok)throw new Error(data.message||'REQUEST_FAILED');return data;
+ }
+ function explain(error) {
+  const m=error?.message||'';
+  if(m==='CANCELLED')return;
+  if(m==='READ_ONLY')message('当前只读，未更改系统通知或订阅。');
+  else if(m==='WORKER_UPDATE')message('通知功能已更新。请关闭所有「老白笔记」页面，再从主屏幕重新打开。');
+  else if(/PUSH_NOT_CONFIGURED/.test(m))message('后台推送尚未启用；更新记录可先使用。');
+  else if(/TEST_COOLDOWN/.test(m))message('测试已排队，请等一分钟后再试。');
+  else if(/permission|denied|NotAllowed/i.test(m))message('未获得通知许可。可以在系统设置中允许后重试。');
+  else if(/23505|unique/.test(m))message('此设备已有订阅，请关闭通知后重新开启。');
+  else message('这次未确认成功，请刷新核对后再试。剧单保存不受影响。');
+ }
+ function renderChanges(){
+  const list=$('pkChangesList');list.replaceChildren();
+  for(const item of rows){const li=document.createElement('li'),title=document.createElement('strong'),detail=document.createElement('span'),time=document.createElement('time');
+   title.textContent=item.title;detail.textContent=changeText(item);time.dateTime=item.createdAt;time.textContent=new Date(item.createdAt).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+(item.actor?' · '+item.actor:'');
+   li.append(title,detail,time);list.append(li);
+  }
+  $('pkChangesEmpty').hidden=rows.length>0;
+ }
+ async function changes(append=false){
+  if(!connected||refreshing)return;const e=epoch;refreshing=true;paint();
+  try{const data=await rpc('changes',{limit:20,...(append&&cursor?{before:cursor}:{})});if(e!==epoch)return;
+   rows=append?[...rows,...data]:data;cursor=rows.at(-1)?.id;more=data.length===20;renderChanges();$('pkChangesNote').textContent='记录启用后的变化；署名仅作协作标记。';
+  }catch(error){if(e===epoch&&error.message!=='CANCELLED')$('pkChangesNote').textContent='更新记录暂时未能读取，稍后刷新即可。'}finally{if(e===epoch){refreshing=false;paint()}}
+ }
+ async function refresh(){
+  if(!connected||busy)return;const e=epoch;ready=false;paint();
+  try{
+   config=await rpc('config');const state=await rpc('status',{deviceId:getActor().id});if(e!==epoch)return;subscribed=state.subscribed;
+   const issue=supportMessage();if(issue){message(issue);return}
+   if(!config.enabled){message('后台推送尚未启用；更新记录可先使用。');return}
+   registration=await pushWorker(await bounded(navigator.serviceWorker.ready));if(e!==epoch)return;ready=true;
+   const local=await registration.pushManager.getSubscription();if(e!==epoch)return;
+   if(subscribed&&!local){subscribed=false;message('此设备的系统订阅已失效，请重新开启。')}
+   else message(subscribed?'已开通系统通知。关闭网页后仍可接收，每分钟最多一条合并提醒。':'只在这台设备开启，另一台设备不会自动订阅。');
+  }catch(error){if(e===epoch)explain(error)}finally{if(e===epoch)paint()}
+ }
+ function enable(){
+  if(!canWrite()){message('当前只读，未更改系统通知或订阅。');return}
+  if(busy||!ready||!config?.enabled||supportMessage())return;const e=epoch;
+  busy=true;paint();message('等待系统通知许可…');
+  // Must be invoked synchronously inside this click, before any await (iOS requirement).
+  const permission=Notification.permission==='granted'?Promise.resolve('granted'):Notification.requestPermission();
+  void (async()=>{let created=null;
+   try{if(await permission!=='granted')throw new Error('permission denied');if(e!==epoch)return;assertWritable();
+    let sub=await registration.pushManager.getSubscription();if(e!==epoch)return;assertWritable();
+    if(sub?.options?.applicationServerKey){const old=new Uint8Array(sub.options.applicationServerKey),next=applicationKey(config.publicKey);if(old.length!==next.length||old.some((v,i)=>v!==next[i])){assertWritable();await sub.unsubscribe();if(e!==epoch)return;assertWritable();sub=null}}
+    if(!sub){assertWritable();sub=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:applicationKey(config.publicKey)});created=sub}
+    if(e!==epoch)return;assertWritable();
+    await rpc('subscribe',{deviceId:getActor().id,actorId:getActor().id,subscription:sub.toJSON()});if(e!==epoch)return;
+    subscribed=true;message('此设备已开启。可点「发送测试通知」，确认锁屏弹窗是否收到。');
+   }catch(error){if(e===epoch)explain(error)}finally{if(e===epoch){busy=false;paint()}}
+  })();
+ }
+ async function disable(){
+  if(!canWrite()){message('当前只读，未更改系统通知或订阅。');return}
+  if(busy)return;const e=epoch;busy=true;paint();
+  try{
+   // Server first: confirmed removal stops future deliveries even if local API fails.
+   await rpc('unsubscribe',{deviceId:getActor().id});if(e!==epoch)return;assertWritable();subscribed=false;
+   let localRemoved=true;try{const reg=registration||await bounded(navigator.serviceWorker.ready);if(e!==epoch)return;assertWritable();const sub=await reg.pushManager.getSubscription();if(e!==epoch)return;assertWritable();if(sub)localRemoved=await sub.unsubscribe()}catch{localRemoved=false}
+   if(e===epoch)message(localRemoved?'已关闭此设备的剧单通知。':'后台订阅已移除。设备清理未完成，可在系统通知设置中关闭。');
+  }catch(error){if(e===epoch)explain(error)}finally{if(e===epoch){busy=false;paint()}}
+ }
+ async function test(){if(!canWrite()){message('当前只读，未更改系统通知或订阅。');return}if(busy||!subscribed)return;const e=epoch;busy=true;paint();try{await rpc('test',{deviceId:getActor().id});if(e===epoch)message('测试已排队，通常一分钟左右送出。这里不能确认系统是否展示，请检查通知中心。')}catch(error){if(e===epoch)explain(error)}finally{if(e===epoch){busy=false;paint()}}}
+ return {
+  init(){ $('pkPushEntry').addEventListener('click',()=>{if(!$('pkNoticePanel').open){$('pkNoticePanel').showModal();void refresh()}});$('pkPushClose').addEventListener('click',()=>{$('pkNoticePanel').close();$('pkPushEntry').focus()});$('pkNoticePanel').addEventListener('click',e=>{if(e.target===$('pkNoticePanel')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close()}});$('pkPushEnable').addEventListener('click',enable);$('pkPushDisable').addEventListener('click',disable);$('pkPushTest').addEventListener('click',test);$('pkChangesRefresh').addEventListener('click',()=>{void changes();void refresh()});$('pkChangesMore').addEventListener('click',()=>void changes(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden&&connected){void refresh();void changes()}});paint(); },
+  connect(){if(connected)return;connected=true;epoch++;void refresh();void changes();paint()},
+  sync(){void changes()},
+  clear(){if($('pkNoticePanel').open)$('pkNoticePanel').close();epoch++;connected=false;busy=false;refreshing=false;config=null;registration=null;subscribed=false;ready=false;rows=[];cursor=null;more=true;renderChanges();message('');paint()}
+ };
+}
+
+return {createNoticeUI};})();
 import {createActivityUI} from './activity.js?v=20261107-chart2';
 import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261107-picks-validation1';
 const SHARED_ONLY=false;
 
 (function(){
 const $=s=>document.querySelector(s);
+$('#txBootFailure').hidden=true;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
@@ -911,7 +1542,7 @@ const md=s=>{const d=toDate(s);return (d.getMonth()+1)+'月'+d.getDate()+'日'};
 const S={picks:new Map(),pkGroup:'全部',pkWho:'全部',pkSeenAt:null,pkEdit:null,pkFormStatus:'待看',works:new Map(),logs:[],days:new Map(),ready:0,view:'today',date:ymd(new Date()),month:ymd(new Date()).slice(0,7),
   copyView:'all',wq:'',wf:'全部',bq:'',bf:'全部',subs:null,subOn:false,type:'交付',bestKind:'对白',editId:null,score:{look:0,plot:0,spice:0},
   exp:{range:'week',style:'self',from:'',to:''}};
-let db=null,writable=false;
+let db=null,writable=false,txForms=null;
 
 /* ---------- look ---------- */
 function rng(seed){let s=seed;return()=>(s=(s*16807)%2147483647)/2147483647}
@@ -970,8 +1601,8 @@ function armed(btn,label,fn){
   btn._old=btn.textContent;btn.classList.add('armed');btn.textContent=label;
   btn._h=setTimeout(()=>{btn.classList.remove('armed');btn.textContent=btn._old},3000);
 }
-function openOv(id){document.querySelectorAll('.ov').forEach(o=>o.hidden=o.id!==id)}
-function closeOv(){if(!pkCloseGuard())return;document.querySelectorAll('.ov').forEach(o=>o.hidden=true)}
+function openOv(id){txForms?.navigated();document.querySelectorAll('.ov').forEach(o=>o.hidden=o.id!==id)}
+function closeOv(){if(!pkCloseGuard())return;txForms?.navigated();document.querySelectorAll('.ov').forEach(o=>o.hidden=true)}
 
 /* ---------- derived numbers ---------- */
 function uniqueDeliveryLogs(logs){
@@ -1243,6 +1874,7 @@ function renderLogForm(){
   $('#logCap').textContent='Log Entry · '+md(S.date);
   $('#typeChips').innerHTML=TYPES.map(t=>'<button type="button" class="chip" data-act="type" data-v="'+t+'" aria-pressed="'+(S.type===t)+'">'+t+'</button>').join('');
   $('#numRow').hidden=!(S.type==='交付'||S.type==='返修');$('#epsWrap').hidden=S.type!=='交付';
+  $('#officialWrap').hidden=S.type!=='交付';$('#logTxStatus').hidden=S.type!=='交付';
   $('#linkWrap').hidden=!(S.type==='交付'||S.type==='返修'||S.type==='发布');
   $('#linkLabel').textContent=S.type==='发布'?'发布链接':'最新字幕链接（可不填）';
   $('#fText').placeholder={交付:'例：完成文案及标题修订',返修:'例：修掉重复字幕 23 条',文案:'例：定下发布标题和简介',发布:'例：微博首发',解决问题:'例：原稿短轴问题已记录',其他:'今天做了什么'}[S.type];
@@ -1335,12 +1967,8 @@ function renderWorks(){
     hits.innerHTML='<div class="cap">Lines · '+out.length+' found</div>'+(out.length?out.join(''):'<div class="muted" style="margin-top:6px">字幕里没有这句。只有贴过字幕全文的作品能搜到。</div>');
   }else wrap.hidden=true;
 }
-async function loadSubs(){
-  if(!db)return;
-  try{const snap=await db.collection('subs').get();S.subs=new Map(snap.docs.map(d=>[d.id,(d.data()||{}).text||'']))}
-  catch(e){S.subs=new Map();toast('字幕读取失败')}
-  render();
-}
+async function loadSubs(){if(!db)return;try{await db.loadSubtitles()}catch(e){toast('字幕读取失败，请稍后重试')}}
+
 function renderBest(){
   const all=[...S.days.entries()].filter(([k,d])=>d.best&&d.best.text).map(([k,d])=>Object.assign({date:k},d.best)).sort((a,b)=>b.date.localeCompare(a.date));
   $('#bfChips').innerHTML=['全部'].concat(BEST_KINDS).map(k=>{const c=k==='全部'?all.length:all.filter(b=>b.kind===k).length;return '<button class="chip" data-act="bf" data-v="'+k+'" aria-pressed="'+(S.bf===k)+'">'+k+' '+c+'</button>'}).join('');
@@ -1352,7 +1980,7 @@ function renderBest(){
 /* ---------- writes ---------- */
 function findWork(name){const n=normName(name).toLowerCase();for(const w of S.works.values())if((w.zh||'').toLowerCase()===n)return w;return null}
 const clean=o=>{const c=Object.assign({},o);delete c.id;return c};
-async function saveLog(e){
+async function saveLegacyLog(e){
   e.preventDefault();if(!writable)return toast('还连不上账本，暂时不能保存');
   const type=S.type,name=normName($('#fWork').value),lines=Math.max(0,parseInt($('#fLines').value)||0),eps=Math.max(0,parseInt($('#fEps').value)||0),text=$('#fText').value.trim(),link=$('#fLink').value.trim();
   if((type==='交付'||type==='返修'||type==='发布')&&!name)return toast(type+'要写作品名');
@@ -1379,37 +2007,23 @@ async function saveDay(patch,msg){
   const cur=S.days.get(S.date)||{};
   try{await db.doc('days/'+S.date).set(Object.assign({},cur,patch,{updatedAt:Date.now()}));toast(msg)}catch(e){toast('没存上，请再试一次')}
 }
-function openWork(id){
-  const w=id?S.works.get(id):null;S.editId=id||null;
+function populateWork(id,snapshot){
+  const w=snapshot||(id?S.works.get(id):null);S.editId=id||null;
   $('#wfTitle').textContent=w?'编辑作品':'新作品';
-  $('#wKind').innerHTML=KINDS.map(k=>'<option>'+k+'</option>').join('');
-  $('#wStatus').innerHTML=STATUS.map(k=>'<option>'+k+'</option>').join('');
-  $('#wZh').value=w?w.zh:'';$('#wEn').value=w?w.en||'':'';$('#wKind').value=w?w.kind||'完整剧':'完整剧';$('#wStatus').value=w?w.status||'翻译中':'翻译中';
+  $('#wKind').innerHTML=[...new Set(KINDS.concat(w&&w.kind?[w.kind]:[]))].map(k=>'<option>'+esc(k)+'</option>').join('');
+  $('#wStatus').innerHTML=[...new Set(STATUS.concat(w&&w.status?[w.status]:[]))].map(k=>'<option>'+esc(k)+'</option>').join('');
+  $('#wZh').value=w?w.zh||'':'';$('#wEn').value=w?w.en||'':'';$('#wKind').value=w?w.kind||'完整剧':'完整剧';$('#wStatus').value=w?w.status||'翻译中':'翻译中';
   $('#wSub').value=w?w.subLink||'':'';$('#wTitle').value=w?w.title||'':'';$('#wCopy').value=w?w.copy||'':'';$('#wPub').value=w?w.pubLink||'':'';$('#wNotes').value=w?w.notes||'':'';
   $('#wHook').value=w?w.hook||'':'';$('#wGenre').value=w?w.genre||'':'';$('#wState').value=w?w.state||'':'';$('#wCp').value=w?w.cp||'':'';$('#wRec').value=w?w.rec||'':'';$('#wPaste').value='';
   $('#wVersionArchive').innerHTML='';
   S.score=Object.assign({look:0,plot:0,spice:0},w&&w.score||{});renderScoreInputs();
   $('#wSubs').value='';$('#wSubs').dataset.orig='';$('#wDel').hidden=!w;
   openOv('workOv');
-  if(w&&db)db.doc('subs/'+w.id).get().then(s=>{if(S.editId===w.id&&s.exists){const t=(s.data()||{}).text||'';$('#wSubs').value=t;$('#wSubs').dataset.orig=t}}).catch(()=>{});
+  // Exact work/subtitle snapshots are loaded together by the transaction form.
 }
-async function saveWork(e){
-  e.preventDefault();if(!writable)return toast('还连不上账本，暂时不能保存');
-  const zh=normName($('#wZh').value);if(!zh)return toast('写上中文名');
-  const dup=findWork(zh);if(dup&&dup.id!==S.editId)return toast('已经有这部作品了');
-  const cur=S.editId?S.works.get(S.editId):null;
-  const body=Object.assign({createdAt:Date.now(),pubDate:''},cur?clean(cur):{},{zh,en:$('#wEn').value.trim(),kind:$('#wKind').value,status:$('#wStatus').value,subLink:$('#wSub').value.trim(),title:$('#wTitle').value.trim(),copy:$('#wCopy').value.trim(),pubLink:$('#wPub').value.trim(),notes:$('#wNotes').value.trim(),hook:$('#wHook').value.trim(),genre:$('#wGenre').value.trim(),state:$('#wState').value.trim(),cp:$('#wCp').value.trim(),rec:$('#wRec').value.trim(),score:Object.assign({},S.score),updatedAt:Date.now()});
-  if(cur&&['zh','hook','genre','state','cp'].some(k=>body[k]!==cur[k]))body.publishLine='';
-  if(body.status==='已发布'&&!body.pubDate)body.pubDate=ymd(new Date());
-  const subs=$('#wSubs').value;
-  if(subs!==$('#wSubs').dataset.orig&&new Blob([subs]).size>240000)return toast('字幕全文太长，存不下。可以只贴台词部分');
-  try{
-    const ref=S.editId?db.doc('works/'+S.editId):db.collection('works').doc();
-    await ref.set(body);
-    if(subs!==$('#wSubs').dataset.orig){if(subs.trim())await db.doc('subs/'+ref.id).set({text:subs,updatedAt:Date.now()});else await db.doc('subs/'+ref.id).delete();S.subs=null}
-    closeOv();toast('已保存');
-  }catch(err){toast('没存上，请再试一次')}
-}
+function openWork(id){return txForms.openWork(id)}
+function saveWork(e){return txForms.saveWork(e)}
+function saveLog(e){return txForms.saveLog(e)}
 
 function renderScoreInputs(){
   $('#wScores').innerHTML=DIMS.map(([k,n])=>'<div class="scorerow"><span>'+n+'</span>'+[1,2,3,4,5].map(i=>'<button type="button" class="sbtn" data-act="score" data-d="'+k+'" data-v="'+i+'" aria-label="'+n+' '+i+' 星" aria-pressed="'+(i<=(+S.score[k]||0))+'">★</button>').join('')+'</div>').join('');
@@ -1629,6 +2243,7 @@ function renderPastePreview(){
     '<div>一句话文案：'+(p.fan?esc(p.last):'没认出来。最后一行要是「钩子！类型《剧名》……」这样的一句')+'</div>';
 }
 async function importCopy(o){
+  const generation=db.authGeneration(),assertImportSession=()=>{if(generation!==db.authGeneration())throw Object.assign(new Error('key changed'),{code:'stale_key'})};assertImportSession();
   const text=String(o.copy||'');if(!text.trim())throw new Error('empty copy');
   const p=parseCopy(text),fan=(o.line&&parseFan(o.line))||p.fan,zh=normName(o.zh||(fan&&fan.zh)||p.zh);if(!zh)throw new Error('missing title');
   const en=(o.en||'').trim()||p.en,w=[...S.works.values()].find(w=>en&&String(w.en||'').trim().toLowerCase()===en.toLowerCase())||findWork(zh),now=Date.now(),patch={zh,copy:text,publishLine:String(o.line||''),updatedAt:now};
@@ -1636,11 +2251,11 @@ async function importCopy(o){
   if(fan)Object.assign(patch,{hook:fan.hook,genre:fan.genre,state:fan.state,cp:fan.cp});
   let id;
   if(w){id=w.id;await db.doc('works/'+id).update(patch)}
-  else{const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode((en||zh).trim().toLowerCase()));const stable='w-'+[...new Uint8Array(bytes)].map(x=>x.toString(16).padStart(2,'0')).join('');const ref=db.collection('works').doc(stable);await ref.set(Object.assign({zh,en:'',kind:'完整剧',status:'翻译中',subLink:'',title:'',copy:'',pubLink:'',pubDate:'',notes:'',hook:'',genre:'',state:'',cp:'',rec:'',score:{look:0,plot:0,spice:0},createdAt:now},patch));id=ref.id}
-  const day=o.date||ymd(new Date());
+  else{const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode((en||zh).trim().toLowerCase()));assertImportSession();const stable='w-'+[...new Uint8Array(bytes)].map(x=>x.toString(16).padStart(2,'0')).join('');const ref=db.collection('works').doc(stable);await ref.set(Object.assign({zh,en:'',kind:'完整剧',status:'翻译中',subLink:'',title:'',copy:'',pubLink:'',pubDate:'',notes:'',hook:'',genre:'',state:'',cp:'',rec:'',score:{look:0,plot:0,spice:0},createdAt:now},patch));id=ref.id}
+  assertImportSession();const day=o.date||ymd(new Date());
   if(!S.logs.some(l=>l.date===day&&l.type==='文案'&&l.workId===id))
     await db.doc('logs/copy-'+day+'-'+id).set({date:day,type:'文案',workId:id,work:zh,lines:0,eps:0,text:w&&w.copy?'更新文案':'完成文案',link:'',createdAt:now});
-  return id;
+  assertImportSession();return id;
 }
 async function savePaste(){
   if(!writable)return toast('还连不上账本，暂时不能保存');
@@ -1736,9 +2351,9 @@ function pkIssueRows(){
 }
 /* Full-access shared-key mode: same private ledger key, no accounts or new credentials. */
 const PK_ACTOR={id:'',name:''};
-const PK_CLIENT=new OwnerKeyPicksClient(()=>CLOUD,()=>PK_ACTOR),PK_ROWS=new RowStore();
+const PK_CLIENT=new OwnerKeyPicksClient(()=>CLOUD,()=>PK_ACTOR,guardedLedgerFetch),PK_ROWS=new RowStore();
 let PK_EDIT=null,PK_TIMER=null,PK_SESSION=0,PK_SYNCING=false,PK_CONNECTED=false;
-const PK_NOTICE=createNoticeUI(()=>CLOUD,()=>PK_ACTOR);const PK_ACTIVITY=createActivityUI(()=>CLOUD,()=>PK_ACTOR,{onUnreadChange:()=>renderChartHead(),onError:e=>{if(e.message==='STORAGE_UNAVAILABLE')toast('浏览器未允许保存已读进度，刷新后可能再次看到提醒')}});
+const PK_NOTICE=createNoticeUI(()=>CLOUD,()=>PK_ACTOR,{fetcher:guardedLedgerFetch,canWrite:()=>writable});const PK_ACTIVITY=createActivityUI(()=>CLOUD,()=>PK_ACTOR,{fetcher:guardedLedgerFetch,onUnreadChange:()=>renderChartHead(),onError:e=>{if(e.message==='STORAGE_UNAVAILABLE')toast('浏览器未允许保存已读进度，刷新后可能再次看到提醒')}});
 const PK_RESPONSES=new ReactionController({store:PK_ROWS,request:(name,args)=>PK_CLIENT.rpc(name,args),getActor:()=>PK_ACTOR,onChange:()=>pkPublish(),onCommit:()=>{PK_NOTICE.sync();PK_ACTIVITY.sync()},onError:(error,uncertain)=>{if(error.code==='bad_key'||error.code==='actor_required')pkError(error);else{toast(uncertain?'没存上，请再试一次。已保留草稿，先核对上次结果':'没存上，请再试一次');void pkSync()}}});
 let PK_COMPOSING=false,PK_RESPONSE_REDRAW=false,PK_COMPOSITION_TOKEN=0;
 const PK_BUSY=new Set();let PK_MONTH=ymd(new Date()).slice(0,7),PK_DATE=null;
@@ -1841,7 +2456,7 @@ function ledgerViewFromHash(){
   const h=location.hash.slice(1),v=new URLSearchParams(h).get('view')||h;
   return ['today','month','works','best','picks'].includes(v)?v:'';
 }
-const go=v=>{if(SHARED_ONLY&&!['picks','lib'].includes(v))return toast('私人账本不在共享范围');if(SHARED_ONLY&&v==='lib')v='picks';if(v==='lib')v=pkUnseen()?'picks':(pkGet('ledger_lib')||'works');if(v==='works'||v==='picks')pkSet('ledger_lib',v);if(S.view==='picks'&&v!=='picks')S.pkSeenAt=null;S.view=v;try{
+const go=v=>{txForms?.navigated();if(SHARED_ONLY&&!['picks','lib'].includes(v))return toast('私人账本不在共享范围');if(SHARED_ONLY&&v==='lib')v='picks';if(v==='lib')v=pkUnseen()?'picks':(pkGet('ledger_lib')||'works');if(v==='works'||v==='picks')pkSet('ledger_lib',v);if(S.view==='picks'&&v!=='picks')S.pkSeenAt=null;S.view=v;try{
   const u=new URL(location.href);u.searchParams.delete('k');u.hash=v;
   history.replaceState(null,'',u.pathname+u.search+u.hash);
 }catch(x){}render();window.scrollTo(0,0)};
@@ -1861,7 +2476,7 @@ document.addEventListener('click',e=>{
     case 'go-today':S.date=ymd(new Date());$('#fBest').dataset.for='';go('today');break;
     case 'mon-prev':shiftMon(-1);break;case 'mon-next':shiftMon(1);break;case 'mon-now':S.month=ymd(new Date()).slice(0,7);render();break;
     case 'goday':S.date=v;$('#fBest').dataset.for='';go('today');break;
-    case 'open-log':renderLogForm();openOv('logOv');break;
+    case 'open-log':renderLogForm();document.querySelectorAll('#logForm input,#logForm textarea').forEach(el=>el.disabled=false);void txForms.openLog();openOv('logOv');break;
     case 'open-skin':renderSkins();openOv('skinOv');break;
     case 'skin':setSkin(v);break;
     case 'close':closeOv();break;
@@ -1961,6 +2576,8 @@ pkInitialize();drawSky();render();
 
 /* ---------- cloud (GitHub Pages + Supabase) ---------- */
 const CLOUD={url:'https://tvoynrohczmovuyorplm.supabase.co',anon:'sb_publishable_Gmn9YRMI7NmoUWRT5AG5wA_wGzM40DN',key:''};
+let TX_SCOPE;
+function setLedgerKey(key){const changed=CLOUD.key!==key;CLOUD.key=key;TX_SCOPE.change(key);if(changed&&db)db.resetSession()}
 function ledgerKeyFromEntry(value){
   const raw=String(value||'').trim();
   if(/^https?:\/\//i.test(raw)){try{const u=new URL(raw);return new URLSearchParams(u.hash.slice(1)).get('k')||u.searchParams.get('k')||''}catch(e){return ''}}
@@ -1982,38 +2599,70 @@ function confirmLedgerAccess(){
 }
 function rejectLedgerAccess(){
   pkDisconnect();
-  const invalid=CLOUD.key;CLOUD.key='';
+  const invalid=CLOUD.key;setLedgerKey('');
   try{if(localStorage.getItem('ledger_key')===invalid)localStorage.removeItem('ledger_key')}catch(e){}
   showLedgerAccess('钥匙不正确，请重新输入。原来的钥匙没有更换。');
 }
 {
   const supplied=new URLSearchParams(location.hash.slice(1)).get('k')||new URLSearchParams(location.search).get('k')||'';
   let saved='';try{saved=localStorage.getItem('ledger_key')||''}catch(e){}
-  CLOUD.key=supplied||saved;stripLedgerKeyFromUrl();
+  TX_SCOPE=new AuthScope({savedKey:saved,suppliedKey:supplied});CLOUD.key=supplied||saved;stripLedgerKeyFromUrl();
 }
 $('#ledgerAccessForm').addEventListener('submit',async e=>{
   e.preventDefault();const key=ledgerKeyFromEntry($('#ledgerAccessKey').value);
   if(!key)return showLedgerAccess('请先输入钥匙，或粘贴原来的专属链接。');
-  pkDisconnect();CLOUD.key=key;$('#ledgerAccessSubmit').disabled=true;$('#ledgerAccessMessage').textContent='正在验证并读取云端记录…';
+  pkDisconnect();setLedgerKey(key);$('#ledgerAccessSubmit').disabled=true;$('#ledgerAccessMessage').textContent='正在验证并读取云端记录…';
   setStatus('正在读取云端账本…');
   try{await db.retry()}finally{$('#ledgerAccessSubmit').disabled=false}
 });
 window.addEventListener('hashchange',()=>{
   const supplied=new URLSearchParams(location.hash.slice(1)).get('k');
-  if(supplied){pkDisconnect();CLOUD.key=supplied;stripLedgerKeyFromUrl();if(db)db.retry()}
+  if(supplied){pkDisconnect();setLedgerKey(supplied);stripLedgerKeyFromUrl();if(db)db.retry()}
 });
+function guardedLedgerFetch(url,options={}){
+ const name=String(url).split('/').pop(),body=typeof options.body==='string'?JSON.parse(options.body):{};
+ const read=['ledger_tx_fingerprint','ledger_tx_snapshot','ledger_tx_bundle','ledger_tx_status','ledger_get','ledger_all','ledger_pull','ledger_inbox_pending_page','ledger_picks_list'].includes(name)||(name==='ledger_picks_notice'&&['config','status','changes','events_since'].includes(body.p_op));
+ if(!read&&!writable)return Promise.reject(Object.assign(new Error('当前为只读，未发送修改。'),{code:'read_only'}));
+ return fetch(url,options);
+}
+window.addEventListener('storage',e=>{if((e.key==='ledger_tx_scope'||e.key==='ledger_key')&&db){try{TX_SCOPE.assert();if(e.key==='ledger_key'&&localStorage.getItem('ledger_key')!==CLOUD.key)throw Error('key changed')}catch{CLOUD.key='';TX_SCOPE.key='';db.resetSession();pkDisconnect();showLedgerAccess('钥匙在另一标签页发生变化。旧草稿不会转移，请重新输入当前钥匙。')}}});
 function supaDb(){
-  const call=async(fn,args)=>{
-    const requestKey=CLOUD.key;
-    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
-    try{
-      const r=await fetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',signal:controller.signal,headers:{apikey:CLOUD.anon,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_key:requestKey},args||{}))});
-      const t=await r.text();if(requestKey!==CLOUD.key){const changed=new Error('key changed');changed.code='stale_key';throw changed}if(!r.ok){const e=new Error(t);e.code=/bad key/.test(t)?'bad_key':(r.status===413?'quota_exceeded':'http_'+r.status);throw e}
-      return t?JSON.parse(t):null;
-    }finally{clearTimeout(timeout)}
-  };
-  const COLS=['works','logs','days'],cache={works:new Map(),logs:new Map(),days:new Map()},seen={works:new Map(),logs:new Map(),days:new Map()},subs={works:[],logs:[],days:[]};
-  let since=null,timer=null,loaded=false,broken=false,running=false;
+ const COLS=['works','logs','days','subs'],cache={works:new Map(),logs:new Map(),days:new Map(),subs:new Map()},listeners={works:[],logs:[],days:[],subs:[]},batches=[];
+ let session=0,tx=null,reader=null,timer=null,loaded=false,connected=false,capable=false,probe=null,inboxRunning=false,subStatus={enabled:false,pending:0,failed:0,missing:0},lastPublished='',reason='正在检查本机保存能力…';
+ const call=async(fn,args)=>{
+  const requestKey=CLOUD.key,requestSession=session,controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+  try{const r=await guardedLedgerFetch(CLOUD.url+'/rest/v1/rpc/'+fn,{method:'POST',signal:controller.signal,headers:{apikey:CLOUD.anon,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_key:requestKey},args||{}))});
+   const text=await r.text();if(requestKey!==CLOUD.key||requestSession!==session)throw Object.assign(new Error('key changed'),{code:'stale_key'});
+   if(!r.ok){const e=new Error(text);e.code=/bad key/.test(text)?'bad_key':r.status===413?'quota_exceeded':'http_'+r.status;throw e}return text?JSON.parse(text):null;
+  }finally{clearTimeout(timeout)}
+ };
+ const readTransport=createExistingRpcTransport(call);
+ const snap=c=>({docs:[...cache[c]].map(([id,data])=>({id,data:()=>structuredClone(data)})),metadata:{fromCache:false,hasPendingWrites:false}});
+ function publish(){if(!loaded)return;const fingerprint=JSON.stringify([COLS.map(c=>[...cache[c]]),subStatus,capable,connected,reason]);if(fingerprint===lastPublished)return;
+  // Only successful delivery to every synchronous subscriber is deduplicable.
+  // Clear the prior marker on failure too: a later A after partial B must repaint.
+  try{const value=Object.fromEntries(COLS.map(c=>[c,c==='subs'&&!subStatus.enabled?null:snap(c)]));value.subtitleStatus={...subStatus};batches.forEach(s=>s.cb(value));COLS.forEach(c=>listeners[c]?.forEach(s=>s.cb(snap(c))));lastPublished=fingerprint}
+  catch(error){lastPublished='';throw error}
+ }
+ function subtitleNotice(){const el=$('#subtitleSyncStatus');if(!el)return;el.hidden=!subStatus.enabled||!(subStatus.pending||subStatus.failed||subStatus.missing);el.textContent=subStatus.failed?'有 '+subStatus.failed+' 部字幕暂未读到，已保留其他作品结果，会自动重试。':'字幕正在更新，暂未读到的作品不会显示旧台词。'}
+ function applyMetadata(snapshot,texts,status){
+  const next={works:new Map(),logs:new Map(),days:new Map()};for(const row of snapshot.rows)next[row.coll].set(row.id,structuredClone(row.data));
+  for(const c of ['works','logs','days'])cache[c]=next[c];cache.subs=new Map([...(texts||[])].map(([id,text])=>[id,{text}]));subStatus=status;loaded=true;connected=true;subtitleNotice();publish();
+ }
+ function makeReader(){return new LedgerReader({snapshot:()=>call('ledger_tx_snapshot'),fingerprint:()=>call('ledger_tx_fingerprint'),onUnchanged:()=>{connected=true;writable=loaded&&connected&&capable;publish()},bundle:id=>readTransport.bundle(id),onMetadata:applyMetadata,onSubtitles:(texts,status)=>{cache.subs=new Map([...(texts||[])].map(([id,text])=>[id,{text}]));subStatus=status;subtitleNotice();publish()}})}
+ reader=makeReader();
+ async function applyBundle(_bundle,guard=()=>{}){
+  // A delayed transaction bundle may predate an already accepted snapshot.
+  // Only a new authoritative full snapshot can publish global metadata.
+  guard();const target=reader;target.invalidate({broadcast:true});await target.refresh({force:true,guard});guard();
+  if(subStatus.enabled)await target.refreshSubtitles();
+ }
+ const transactions=()=>{TX_SCOPE.assert();if(!CLOUD.key)throw Object.assign(new Error('No key'),{code:'stale_key'});if(!tx){const epoch=session;tx=new LedgerTransactions({scope:TX_SCOPE.id,key:CLOUD.key,call,assertCurrent:(scope,key)=>{TX_SCOPE.assert(scope,key);if(key!==CLOUD.key)throw Object.assign(new Error('Key changed'),{code:'stale_key'})},assertWritable:()=>{if(!TX_SCOPE.durable)throw Object.assign(new Error('Scope unavailable'),{code:'scope_unavailable'})},beforeWrite:()=>reader.invalidate(),afterWrite:()=>{if(epoch===session)void reader.refresh().catch(readFailure)},applyBundle})}return tx};
+ function resetSession(){session++;tx?.close();tx=null;reader.close();reader=makeReader();loaded=false;connected=false;capable=false;probe=null;inboxRunning=false;reason='正在检查本机保存能力…';lastPublished='';clearTimeout(timer);COLS.forEach(c=>cache[c].clear());subStatus={enabled:false,pending:0,failed:0,missing:0};inboxAfter=null;inboxProblems.clear();inboxScanProblems.clear();S.works=new Map();S.logs=[];S.subs=null;S.days=new Map();S.ready=0;writable=false;txForms?.reset();subtitleNotice();render()}
+ async function probeWrites(){
+  if(probe)return probe;const epoch=session;probe=(async()=>{let okay=false,note='';try{await transactions().checkCapability();okay=true}catch(e){note=e.code==='coordination_unavailable'?'此浏览器没有安全保存锁':e.code==='scope_unavailable'?'无法持久保存本机恢复标记':'本机恢复存储不可用'}if(epoch!==session)return false;capable=okay;reason=okay?'':'只读模式：'+note+'。云端记录继续更新，所有修改与自动导入已停用。';writable=loaded&&connected&&capable;publish();return okay})().finally(()=>{if(epoch===session)probe=null});return probe;
+ }
+ function readFailure(error){if(error?.code==='stale_key')return;connected=false;writable=false;batches.forEach(s=>s.err?.(error));COLS.forEach(c=>listeners[c]?.forEach(s=>s.err?.(error)))}
   let inboxAfter=null,inboxProblems=new Map(),inboxScanProblems=new Map();
   function showInboxProblems(){
     const issues=new Map([...inboxProblems,...inboxScanProblems]),el=$('#inboxStatus');
@@ -2030,19 +2679,20 @@ function supaDb(){
     return {input:{zh,en:String(r.en||''),line:String(r.line||''),copy:r.copy,date:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(created)}};
   }
   async function drainInbox(){
+    const generation=session,assertInboxSession=()=>{if(generation!==session)throw Object.assign(new Error('key changed'),{code:'stale_key'});if(!writable)throw Object.assign(new Error('read only'),{code:'read_only'})};
     let count=0;
     // Bound each poll; resume after the last examined ID, then start a new pass.
     for(let page=0;page<5;page++){
-      const rows=await call('ledger_inbox_pending_page',{p_after:inboxAfter})||[];
-      if(!Array.isArray(rows))throw new Error('invalid inbox response');
+      assertInboxSession();const rows=await call('ledger_inbox_pending_page',{p_after:inboxAfter})||[];
+      assertInboxSession();if(!Array.isArray(rows))throw new Error('invalid inbox response');
       for(const r of rows){
         if(!r||!/^\d+$/.test(String(r.id))||String(r.id)===inboxAfter)throw new Error('invalid inbox cursor');
         const id=String(r.id),entry=inboxInput(r);
         if(entry.problem){inboxScanProblems.set(id,entry.problem);showInboxProblems()}
         else{
           // Never acknowledge rejected data or a failed/uncertain save.
-          await importCopy(entry.input);
-          await call('ledger_inbox_ack',{p_id:id});count++;
+          assertInboxSession();await importCopy(entry.input);
+          assertInboxSession();await call('ledger_inbox_ack',{p_id:id});assertInboxSession();count++;
           inboxProblems.delete(id);inboxScanProblems.delete(id);
         }
         inboxAfter=id;
@@ -2052,42 +2702,25 @@ function supaDb(){
     showInboxProblems();
     if(count)toast('收到 '+count+' 篇新文案，放进「今日文案」了');
   }
-  const snap=c=>({docs:[...cache[c].entries()].map(([id,d])=>({id,data:()=>JSON.parse(JSON.stringify(d))})),metadata:{fromCache:false,hasPendingWrites:false}});
-  const fire=c=>{if(loaded&&subs[c])subs[c].forEach(s=>s.cb(snap(c)))};
-  const local=(c,id,d)=>{if(!cache[c])return;if(d==null){cache[c].delete(id);seen[c].delete(id)}else{cache[c].set(id,d);seen[c].set(id,JSON.stringify(d))}fire(c)};
-  async function pull(){
-    const rows=await call('ledger_pull',{p_since:since})||[],touched=new Set();
-    for(const r of rows){if(!cache[r.coll])continue;if(since==null||r.ts>since)since=r.ts;
-      if(r.deleted){if(cache[r.coll].has(r.id)){cache[r.coll].delete(r.id);seen[r.coll].delete(r.id);touched.add(r.coll)}continue}
-      const s=JSON.stringify(r.data);if(seen[r.coll].get(r.id)!==s){cache[r.coll].set(r.id,r.data);seen[r.coll].set(r.id,s);touched.add(r.coll)}}
-    return touched}
-  async function loop(){
-    if(!CLOUD.key)return;
-    if(running)return;running=true;
-    try{const t=await pull();if(!PK_CONNECTED)confirmLedgerAccess();if(!loaded){loaded=true;COLS.forEach(fire)}else t.forEach(fire);
-      if(broken){broken=false;writable=true;confirmLedgerAccess();setStatus('');render()}
-      await drainInbox();
-    }catch(e){broken=true;COLS.forEach(c=>subs[c].forEach(s=>s.err&&s.err(e)))}
-    running=false;clearTimeout(timer);timer=setTimeout(loop,document.hidden?60000:10000)}
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden){clearTimeout(timer);loop()}});
-  const split=p=>{const i=p.indexOf('/');return [p.slice(0,i),p.slice(i+1)]};
-  const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
-  const ref=(c,id)=>({id,path:c+'/'+id,
-    async get(){const d=cache[c]?cache[c].get(id):await call('ledger_get',{p_coll:c,p_id:id});return {id,exists:d!=null,data:()=>d==null?undefined:JSON.parse(JSON.stringify(d))}},
-    async set(d){await call('ledger_set',{p_coll:c,p_id:id,p_data:d});local(c,id,JSON.parse(JSON.stringify(d)))},
-    async update(d){const r=await call('ledger_merge',{p_coll:c,p_id:id,p_data:d});local(c,id,r)},
-    async delete(){await call('ledger_del',{p_coll:c,p_id:id});local(c,id,null)}});
-  setTimeout(loop,0);
-  return {
-    retry(){clearTimeout(timer);return loop()},
-    doc:p=>{const [c,id]=split(p);return ref(c,id)},
-    collection:c=>({
-      doc:id=>ref(c,id||newId()),
-      async add(d){const r=ref(c,newId());await r.set(d);return r},
-      async get(){const rows=cache[c]?[...cache[c].entries()].map(([id,data])=>({id,data})):(await call('ledger_all',{p_coll:c})||[]);return {docs:rows.map(r=>({id:r.id,data:()=>r.data}))}},
-      onSnapshot(cb,err){if(!subs[c])subs[c]=[];const s={cb,err};subs[c].push(s);if(loaded)cb(snap(c));return()=>{subs[c]=subs[c].filter(x=>x!==s)}}})
-  };
+
+ function scheduleInbox(){if(!capable||!writable||inboxRunning)return;inboxRunning=true;const epoch=session;void drainInbox().catch(e=>{if(epoch===session&&e.code!=='stale_key')toast('云端文案暂未导入，已保留等待重试')}).finally(()=>{if(epoch===session)inboxRunning=false})}
+ async function loop(){if(!CLOUD.key)return false;const epoch=session;clearTimeout(timer);try{const accepted=await reader.refresh();if(epoch!==session)return false;if(accepted){if(!PK_CONNECTED)confirmLedgerAccess();void probeWrites().then(ok=>{if(epoch===session&&ok)scheduleInbox()});void txForms?.refreshPending()}return accepted}catch(e){if(epoch===session)readFailure(e);return false}finally{if(epoch===session){clearTimeout(timer);timer=setTimeout(loop,document.hidden?60000:10000)}}}
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){clearTimeout(timer);void loop()}});
+ const split=p=>{const i=p.indexOf('/');return[p.slice(0,i),p.slice(i+1)]},newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+ const local=(c,id,data)=>{reader.invalidate({broadcast:true});if(cache[c]&&c!=='subs'){if(data==null)cache[c].delete(id);else cache[c].set(id,structuredClone(data));publish()}void reader.refresh().catch(readFailure)};
+ const ref=(c,id)=>({id,path:c+'/'+id,
+  async get(){const data=cache[c]&&c!=='subs'?cache[c].get(id):await call('ledger_get',{p_coll:c,p_id:id});return{id,exists:data!=null,data:()=>data==null?undefined:structuredClone(data)}},
+  async set(data){if(!writable)throw Object.assign(new Error(reason),{code:'read_only'});reader.invalidate();await call('ledger_set',{p_coll:c,p_id:id,p_data:data});local(c,id,data)},
+  async update(data){if(!writable)throw Object.assign(new Error(reason),{code:'read_only'});reader.invalidate();const result=await call('ledger_merge',{p_coll:c,p_id:id,p_data:data});local(c,id,result)},
+  async delete(){if(!writable)throw Object.assign(new Error(reason),{code:'read_only'});reader.invalidate();await call('ledger_del',{p_coll:c,p_id:id});local(c,id,null)}});
+ setTimeout(loop,0);
+ return {close(){session++;clearTimeout(timer);reader.close();tx?.close()},transactions,resetSession,authGeneration:()=>session,canWrite:()=>loaded&&connected&&capable,writeReason:()=>connected?reason:'云端连接暂时中断，显示上次读取的记录，暂不能修改。',probeWrites,reader:()=>reader,
+  async loadSubtitles(){return reader.loadSubtitles()},
+  onBatch(cb,err){const item={cb,err};batches.push(item);if(loaded){lastPublished='';publish()}return()=>{const i=batches.indexOf(item);if(i>=0)batches.splice(i,1)}},
+  retry(){clearTimeout(timer);return loop()},doc:p=>{const[c,id]=split(p);return ref(c,id)},
+  collection:c=>({doc:id=>ref(c,id||newId()),async add(data){const item=ref(c,newId());await item.set(data);return item},async get(){const rows=cache[c]&&c!=='subs'?[...cache[c]].map(([id,data])=>({id,data})):await call('ledger_all',{p_coll:c})||[];return{docs:rows.map(row=>({id:row.id,data:()=>structuredClone(row.data)}))}},onSnapshot(cb,err){const item={cb,err};(listeners[c]??=[]).push(item);if(loaded)cb(snap(c));return()=>{listeners[c]=listeners[c].filter(x=>x!==item)}}})};
 }
+
 async function offerFile(name,data,mime){
   const c=window.claude,dl=c&&c.use?await c.use('downloads').catch(()=>null):null;
   if(dl){await dl.save({filename:name,data});return}
@@ -2099,15 +2732,18 @@ async function offerFile(name,data,mime){
 (async()=>{
   // Every device uses the same cloud ledger, never an embedded preview database.
   db=supaDb();
+  txForms=createTransactionForms({document,getDb:()=>db,S,populateWork,openOv,closeOv,toast,findWork,normName,ymd,legacyLog:saveLegacyLog,writable:()=>writable});
   writable=false;setStatus(CLOUD.key?'正在读取云端账本…':'请输入一次钥匙，打开这台设备上的账本。');
   if(!CLOUD.key)showLedgerAccess();
   const timer=setTimeout(()=>{if(CLOUD.key&&S.ready<3)setStatus('暂时连不上账本，显示的可能不是最新内容。')},10000);
-  const fail=e=>{clearTimeout(timer);writable=false;if(e&&e.code==='bad_key'){rejectLedgerAccess();setStatus('请输入正确钥匙。记录仍保存在云端。')}else if(e&&e.code==='revoked'){writable=false;setStatus('这个页面的访问权限变了，暂时只能看')}else setStatus(S.ready<3?'云端数据尚未加载成功 正在自动重试 这不代表今天没有记录':'云端连接暂时中断 正在自动重试 当前显示上次读取的记录');render()};
-  const seen={works:false,logs:false,days:false};
-  const mark=(k,snap)=>{if(!seen[k]&&!snap.metadata.fromCache){seen[k]=true;S.ready++;if(S.ready>=3){clearTimeout(timer);writable=true;confirmLedgerAccess();setStatus('')}}};
-  db.collection('works').onSnapshot(snap=>{S.works=new Map(snap.docs.map(d=>[d.id,Object.assign({id:d.id},d.data())]));mark('works',snap);render()},fail);
-  db.collection('logs').onSnapshot(snap=>{S.logs=snap.docs.map(d=>Object.assign({id:d.id},d.data()));mark('logs',snap);render()},fail);
-  db.collection('days').onSnapshot(snap=>{S.days=new Map(snap.docs.map(d=>[d.id,d.data()]));mark('days',snap);render()},fail);
+  const fail=e=>{if(e?.code==='stale_key')return;clearTimeout(timer);writable=false;if(e&&e.code==='bad_key'){rejectLedgerAccess();setStatus('请输入正确钥匙。记录仍保存在云端。')}else if(e&&e.code==='revoked'){writable=false;setStatus('这个页面的访问权限变了，暂时只能看')}else setStatus(S.ready<3?'云端数据尚未加载成功 正在自动重试 这不代表今天没有记录':'云端连接暂时中断 正在自动重试 当前显示上次读取的记录');render()};
+  db.onBatch(snap=>{
+    S.works=new Map(snap.works.docs.map(d=>[d.id,Object.assign({id:d.id},d.data())]));
+    S.logs=snap.logs.docs.map(d=>Object.assign({id:d.id},d.data()));
+    S.days=new Map(snap.days.docs.map(d=>[d.id,d.data()]));
+    S.subs=snap.subs?new Map(snap.subs.docs.map(d=>[d.id,d.data().text||''])):null;
+    const first=S.ready<3;S.ready=3;writable=db.canWrite();clearTimeout(timer);setStatus(db.writeReason());render();if(first)confirmLedgerAccess();
+  },fail);
 })();
 })();
 </script>

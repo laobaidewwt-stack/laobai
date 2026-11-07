@@ -24,17 +24,19 @@ async function pushWorker(reg) {
  try{return await bounded(new Promise((resolve,reject)=>{channel.port1.onmessage=e=>e.data?.pushVersion===1?resolve(reg):reject(new Error('WORKER_UPDATE'));reg.active.postMessage({type:'LAOBAI_PUSH_VERSION'},[channel.port2])}),1500)}
  catch{throw new Error('WORKER_UPDATE')}finally{channel.port1.close();channel.port2.close()}
 }
-export function createNoticeUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalThis)}={}) {
+export function createNoticeUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalThis),canWrite=()=>true}={}) {
  let epoch=0,connected=false,busy=false,refreshing=false,config=null,registration=null,subscribed=false,rows=[],cursor=null,more=true,ready=false;
  const $=id=>document.getElementById(id),message=text=>{$('pkPushStatus').textContent=text};
+ function assertWritable(){if(!canWrite())throw new Error('READ_ONLY')}
  function paint(){
   $('pkPushEntry').hidden=!connected;
   $('pkPushEnable').hidden=subscribed;$('pkPushDisable').hidden=!subscribed;$('pkPushTest').hidden=!subscribed;
-  $('pkPushEnable').disabled=busy||!ready||!!supportMessage()||!config?.enabled;
-  $('pkPushDisable').disabled=busy;$('pkPushTest').disabled=busy||!ready;
+  $('pkPushEnable').disabled=!canWrite()||busy||!ready||!!supportMessage()||!config?.enabled;
+  $('pkPushDisable').disabled=!canWrite()||busy;$('pkPushTest').disabled=!canWrite()||busy||!ready;
   $('pkChangesMore').hidden=!more;$('pkChangesMore').disabled=refreshing;
  }
  async function rpc(op,payload={}) {
+  if(!['config','status','changes','events_since'].includes(op))assertWritable();
   const e=epoch,cloud=getCloud(),key=cloud.key;if(!connected||!key)throw new Error('CANCELLED');
   const r=await fetcher(cloud.url+'/rest/v1/rpc/ledger_picks_notice',{method:'POST',credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',signal:AbortSignal.timeout(15000),headers:{'Content-Type':'application/json',apikey:cloud.anon},body:JSON.stringify({p_key:key,p_op:op,p_payload:payload})});
   const data=await r.json();if(e!==epoch||key!==getCloud().key)throw new Error('CANCELLED');
@@ -43,7 +45,8 @@ export function createNoticeUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(
  function explain(error) {
   const m=error?.message||'';
   if(m==='CANCELLED')return;
-  if(m==='WORKER_UPDATE')message('通知功能已更新。请关闭所有「老白笔记」页面，再从主屏幕重新打开。');
+  if(m==='READ_ONLY')message('当前只读，未更改系统通知或订阅。');
+  else if(m==='WORKER_UPDATE')message('通知功能已更新。请关闭所有「老白笔记」页面，再从主屏幕重新打开。');
   else if(/PUSH_NOT_CONFIGURED/.test(m))message('后台推送尚未启用；更新记录可先使用。');
   else if(/TEST_COOLDOWN/.test(m))message('测试已排队，请等一分钟后再试。');
   else if(/permission|denied|NotAllowed/i.test(m))message('未获得通知许可。可以在系统设置中允许后重试。');
@@ -77,31 +80,33 @@ export function createNoticeUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(
   }catch(error){if(e===epoch)explain(error)}finally{if(e===epoch)paint()}
  }
  function enable(){
+  if(!canWrite()){message('当前只读，未更改系统通知或订阅。');return}
   if(busy||!ready||!config?.enabled||supportMessage())return;const e=epoch;
   busy=true;paint();message('等待系统通知许可…');
   // Must be invoked synchronously inside this click, before any await (iOS requirement).
   const permission=Notification.permission==='granted'?Promise.resolve('granted'):Notification.requestPermission();
   void (async()=>{let created=null;
-   try{if(await permission!=='granted')throw new Error('permission denied');if(e!==epoch)return;
-    let sub=await registration.pushManager.getSubscription();if(e!==epoch)return;
-    if(sub?.options?.applicationServerKey){const old=new Uint8Array(sub.options.applicationServerKey),next=applicationKey(config.publicKey);if(old.length!==next.length||old.some((v,i)=>v!==next[i])){await sub.unsubscribe();sub=null}}
-    if(!sub){sub=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:applicationKey(config.publicKey)});created=sub}
-    if(e!==epoch){if(created)await created.unsubscribe();return}
+   try{if(await permission!=='granted')throw new Error('permission denied');if(e!==epoch)return;assertWritable();
+    let sub=await registration.pushManager.getSubscription();if(e!==epoch)return;assertWritable();
+    if(sub?.options?.applicationServerKey){const old=new Uint8Array(sub.options.applicationServerKey),next=applicationKey(config.publicKey);if(old.length!==next.length||old.some((v,i)=>v!==next[i])){assertWritable();await sub.unsubscribe();if(e!==epoch)return;assertWritable();sub=null}}
+    if(!sub){assertWritable();sub=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:applicationKey(config.publicKey)});created=sub}
+    if(e!==epoch)return;assertWritable();
     await rpc('subscribe',{deviceId:getActor().id,actorId:getActor().id,subscription:sub.toJSON()});if(e!==epoch)return;
     subscribed=true;message('此设备已开启。可点「发送测试通知」，确认锁屏弹窗是否收到。');
    }catch(error){if(e===epoch)explain(error)}finally{if(e===epoch){busy=false;paint()}}
   })();
  }
  async function disable(){
+  if(!canWrite()){message('当前只读，未更改系统通知或订阅。');return}
   if(busy)return;const e=epoch;busy=true;paint();
   try{
    // Server first: confirmed removal stops future deliveries even if local API fails.
-   await rpc('unsubscribe',{deviceId:getActor().id});if(e!==epoch)return;subscribed=false;
-   let localRemoved=true;try{const reg=registration||await bounded(navigator.serviceWorker.ready);const sub=await reg.pushManager.getSubscription();if(sub)localRemoved=await sub.unsubscribe()}catch{localRemoved=false}
+   await rpc('unsubscribe',{deviceId:getActor().id});if(e!==epoch)return;assertWritable();subscribed=false;
+   let localRemoved=true;try{const reg=registration||await bounded(navigator.serviceWorker.ready);if(e!==epoch)return;assertWritable();const sub=await reg.pushManager.getSubscription();if(e!==epoch)return;assertWritable();if(sub)localRemoved=await sub.unsubscribe()}catch{localRemoved=false}
    if(e===epoch)message(localRemoved?'已关闭此设备的剧单通知。':'后台订阅已移除。设备清理未完成，可在系统通知设置中关闭。');
   }catch(error){if(e===epoch)explain(error)}finally{if(e===epoch){busy=false;paint()}}
  }
- async function test(){if(busy||!subscribed)return;const e=epoch;busy=true;paint();try{await rpc('test',{deviceId:getActor().id});if(e===epoch)message('测试已排队，通常一分钟左右送出。这里不能确认系统是否展示，请检查通知中心。')}catch(error){if(e===epoch)explain(error)}finally{if(e===epoch){busy=false;paint()}}}
+ async function test(){if(!canWrite()){message('当前只读，未更改系统通知或订阅。');return}if(busy||!subscribed)return;const e=epoch;busy=true;paint();try{await rpc('test',{deviceId:getActor().id});if(e===epoch)message('测试已排队，通常一分钟左右送出。这里不能确认系统是否展示，请检查通知中心。')}catch(error){if(e===epoch)explain(error)}finally{if(e===epoch){busy=false;paint()}}}
  return {
   init(){ $('pkPushEntry').addEventListener('click',()=>{if(!$('pkNoticePanel').open){$('pkNoticePanel').showModal();void refresh()}});$('pkPushClose').addEventListener('click',()=>{$('pkNoticePanel').close();$('pkPushEntry').focus()});$('pkNoticePanel').addEventListener('click',e=>{if(e.target===$('pkNoticePanel')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close()}});$('pkPushEnable').addEventListener('click',enable);$('pkPushDisable').addEventListener('click',disable);$('pkPushTest').addEventListener('click',test);$('pkChangesRefresh').addEventListener('click',()=>{void changes();void refresh()});$('pkChangesMore').addEventListener('click',()=>void changes(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden&&connected){void refresh();void changes()}});paint(); },
   connect(){if(connected)return;connected=true;epoch++;void refresh();void changes();paint()},
