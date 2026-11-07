@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-6VRiuTrMxz4ydZODsRRA8xlNEGtFpfl6bd3yf04sijQ='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-b+1RWOmXQuTavZ2lmfqDpf0LQtDoAlJWSXN3GSe1LjY='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,6 +15,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/laobai-192.png">
 <link rel="stylesheet" href="./ledger-app.css">
 <script defer src="./ledger-app.js"></script>
+<script defer src="./vendor/opencc-1.0.5.js"></script>
+<script defer src="./ledger-script.js"></script>
 <meta name="apple-mobile-web-app-title" content="老白笔记">
 <meta name="format-detection" content="telephone=no">
 <title>老白笔记</title>
@@ -835,6 +837,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
   <div class="sheet-wrap"><div class="paper stack" style="gap:16px">
     <div><div class="cap">Appearance · Same Sea</div><div class="ptitle">外观</div><div class="muted">只影响这台设备。选「跟随系统」就按手机的深浅色走。</div></div>
     <div class="swatches" id="swatches"></div>
+    <div><div class="muted" style="margin-bottom:8px">显示文字</div><div class="acts" role="group" aria-label="简繁显示切换" data-script-original><button type="button" class="chip" data-script-mode="hans" aria-pressed="true">简体</button><button type="button" class="chip" data-script-mode="hant" aria-pressed="false">繁體</button></div><div class="muted" style="margin-top:8px">只改变显示；编辑、复制按钮和导出保留原文，不改云端记录。</div></div>
     <div class="acts" style="justify-content:space-between"><button class="btn ghost" data-act="skin" data-v="">跟随系统</button><button class="btn" data-act="close">好了</button></div>
   </div></div>
 </div>
@@ -2486,7 +2489,7 @@ document.addEventListener('click',e=>{
     case 'bkind':S.bestKind=v;render();break;
     case 'wf':S.wf=v;render();break;case 'bf':S.bf=v;render();break;
     case 'copy-day':{if(S.ready<3){toast('请等云端记录加载后再复制');break}const t=dayNoteText(S.date);t?copyText(md(S.date)+'｜'+(S.date===ymd(new Date())?'今日完成':'当日完成')+'\n'+t):toast('这一天还没有可复制的剧名');break}
-    case 'copy-month':copyText($('#monNote').textContent);break;
+    case 'copy-month':copyText(window.LedgerScript?window.LedgerScript.originalText($('#monNote')):$('#monNote').textContent);break;
     case 'copy-best':{const d=S.days.get(v);if(d&&d.best)copyText(d.best.text);break}
     case 'copy-title':{const w=S.works.get(b.dataset.id);if(w)copyText(w.title);break}
     case 'copy-view':{if(['all','weibo','draft'].includes(v)){S.copyView=v;render()}break}
