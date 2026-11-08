@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-mcn1ctP4k7V2CJp9cdyJ6zJ1e/PYdnYxcsdHL2iTrK4='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-f6bgbzS6++9IvpT88rnfgvP65O3uWrC8z6wKwKP7QkU='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -787,13 +787,13 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
     <label class="f">在哪看到的（链接）<input class="in" id="kLink" inputmode="url" placeholder="https://"></label>
     <label class="f">类型标签<input class="in" id="kGenre" placeholder="欧美 AI、泰剧、短剧……"></label>
     <label class="pk-tragedy-option"><input type="checkbox" id="kTragedy"> <span>标记为悲剧</span><small>选填，可随时取消</small></label>
-    <label class="f">时长（可选）<input class="in" id="kDuration" maxlength="80" placeholder="例如：每集 20 分钟 / 全剧 2 小时"></label>
+    <label class="f">时长（选填 · 时:分:秒）<input class="in" id="kDuration" maxlength="80" inputmode="numeric" aria-describedby="kDurationHelp" placeholder="00:00:00"><small id="kDurationHelp">连续输入时分秒，例如 013020 → 01:30:20；原有文字说明仍保留。</small></label>
     <label class="f">为什么推荐<textarea class="in" id="kNote" rows="2" placeholder="一句话就行"></textarea></label>
     <div class="f">状态<div class="chips" id="kStatusChips"></div></div>
     <div class="f">播出<div class="chips" id="kAirChips"></div></div>
     <div class="row2">
       <label class="f">做到第几集<input class="in" id="kEpsDone" type="number" inputmode="numeric" min="0"></label>
-      <label class="f">一共几集<input class="in" id="kEpsTotal" type="number" inputmode="numeric" min="0" placeholder="不知道可空着"></label>
+      <label class="f">总集数（集）<input class="in" id="kEpsTotal" type="number" inputmode="numeric" min="0" step="1" placeholder="直接填数字，不知道可空着"></label>
     </div>
     <div class="f">官中<div class="chips" id="kOffChips"></div></div>
     <div class="f">集数问题<div id="kIssues" class="stack" style="gap:10px;margin-top:4px"></div><button type="button" class="chip" data-act="pk-iss-add" style="align-self:flex-start;margin-top:8px">＋ 记一集问题</button></div>
@@ -2469,14 +2469,20 @@ function pkRenderCalendar(){
 function pkIsTragedy(genre){return /(?:^|[、,，;；/\s])悲[剧劇](?=$|[、,，;；/\s])/.test(String(genre||''))}
 function pkWithoutTragedy(genre){return String(genre||'').split(/([、,，;；/\s]+)/).filter(x=>!/^悲[剧劇]$/.test(x)).join('').replace(/^[、,，;；/\s]+|[、,，;；/\s]+$/g,'').replace(/([、,，;；/])(?:[、,，;；/\s]*[、,，;；/])/g,'$1').trim()}
 function pkToggleTragedy(genre,on){if(on)return pkIsTragedy(genre)?genre:(String(genre||'').trim()?String(genre).trim()+'、悲剧':'悲剧');return pkIsTragedy(genre)?pkWithoutTragedy(genre):genre}
+function pkDurationAscii(v){return String(v).replace(/[０-９]/g,c=>String(c.charCodeAt(0)-65296)).replace(/：/g,':').trim()}
+function pkDurationMask(d){return d.slice(0,2)+(d.length>2?':'+d.slice(2,4):'')+(d.length>4?':'+d.slice(4):'')}
+function pkDurationError(v){if(!v||!/^[0-9:]+$/.test(v))return '';const d=v.replace(/:/g,'');if(d.length!==6)return '请连续输入六位时分秒，例如 013020；也可以清空不填';if(Number(d.slice(2,4))>59||Number(d.slice(4,6))>59)return '分钟和秒数请填 00 到 59';return ''}
+function pkDurationInput(e){const el=e.target,raw=pkDurationAscii(el.value);if(raw&&!/^[0-9:]+$/.test(raw)){el.setCustomValidity('');return}const caret=el.selectionStart??raw.length,before=pkDurationAscii(el.value.slice(0,caret)).replace(/:/g,'').length;let digits=raw.replace(/:/g,'');if(e.inputType==='insertFromPaste'&&/^\d{1,2}:\d{1,2}:\d{1,2}$/.test(raw))digits=raw.split(':').map(x=>x.padStart(2,'0')).join('');el.value=pkDurationMask(digits);let pos=before+(before>2?1:0)+(before>4?1:0);el.setSelectionRange(Math.min(pos,el.value.length),Math.min(pos,el.value.length));el.setCustomValidity(pkDurationError(el.value))}
+function pkDurationDelete(e){const el=e.target,a=el.selectionStart,b=el.selectionEnd;if(a!==b||!/^\d{0,2}(?::\d{0,2}){0,2}$/.test(el.value))return;if(e.inputType==='deleteContentBackward'&&a>0&&el.value[a-1]===':')el.setSelectionRange(a-2,a);else if(e.inputType==='deleteContentForward'&&el.value[a]===':')el.setSelectionRange(a,a+2)}
+function pkDurationBlur(e){const el=e.target,v=pkDurationAscii(el.value);if(/^\d{1,2}:\d{1,2}:\d{1,2}$/.test(v)){el.value=v.split(':').map(x=>x.padStart(2,'0')).join(':');el.setCustomValidity(pkDurationError(el.value))}}
 function pkReadDraft(){return{zh:normName($('#kZh').value),en:$('#kEn').value.trim(),link:$('#kLink').value.trim(),genre:$('#kGenre').value.trim(),duration:$('#kDuration').value.trim(),note:$('#kNote').value.trim(),status:S.pkFormStatus||'待看',airing:S.pkAir||'',official:S.pkOff||'',epsDone:Number($('#kEpsDone').value||0),epsTotal:Number($('#kEpsTotal').value||0),issues:pkReadIssues().filter(x=>x.ep||x.note).map(x=>({id:x.id||crypto.randomUUID(),ep:Number(x.ep||0),kind:x.kind,action:x.action,note:x.note,done:!!x.done})),pubLink:$('#kPub').value.trim(),watchDate:$('#kWatchDate').value||null}}
 function openPick(id){
  if(!PK_CONNECTED)return toast('先用原钥匙打开账本');if(!PK_ACTOR.name){toast('先写一个协作署名');return pkAskMe()}if(PK_EDIT?.saving||POSTERS.isBusy())return;
  const r=id?PK_ROWS.rows.get(id):null;if(id&&(!r||r.deleted))return toast('这部剧已删除');
- const p=pkEditable(r);if(!id)p.watchDate=PK_DATE||ymd(new Date());
+ const p=pkEditable(r);if(!id){p.watchDate=PK_DATE||ymd(new Date());p.genre='欧美AI';}
  PK_EDIT={id:id||crypto.randomUUID(),isNew:!id,revision:r?.revision,original:structuredClone(p),saving:false};
  S.pkEdit=id||null;S.pkFormStatus=p.status;S.pkAir=p.airing;S.pkOff=p.official;S.pkIssues=structuredClone(p.issues);
- $('#kTitle').textContent=id?'改一下这部剧':'放一部剧';$('#kZh').value=p.zh;$('#kEn').value=p.en;$('#kLink').value=p.link;$('#kGenre').value=p.genre;$('#kTragedy').checked=pkIsTragedy(p.genre);$('#kDuration').value=p.duration;$('#kNote').value=p.note;$('#kPub').value=p.pubLink;$('#kWatchDate').value=p.watchDate||'';$('#kEpsDone').value=p.epsDone;$('#kEpsTotal').value=p.epsTotal;
+ $('#kTitle').textContent=id?'改一下这部剧':'放一部剧';$('#kZh').value=p.zh;$('#kEn').value=p.en;$('#kLink').value=p.link;$('#kGenre').value=p.genre;$('#kTragedy').checked=pkIsTragedy(p.genre);$('#kDuration').value=p.duration;$('#kDuration').setCustomValidity('');$('#kNote').value=p.note;$('#kPub').value=p.pubLink;$('#kWatchDate').value=p.watchDate||'';$('#kEpsDone').value=p.epsDone;$('#kEpsTotal').value=p.epsTotal;
  $('#kMeWrap').hidden=true;$('#kConflict').hidden=true;$('#kDel').hidden=!id;pkStatusChips();pkAirChips();pkIssueRows();pkFillClaim(r?.claim||'');$('#kClaim').disabled=true;$('#kClaim').title='认领在剧单卡片上操作';pkSetBusy(false);openOv('pkOv');POSTERS.mountEditor('pick',id||null,$('#kPosters'));
 }
 function pkSetBusy(busy){document.querySelectorAll('#pkForm button,#pkForm input,#pkForm textarea,#pkForm select').forEach(n=>n.disabled=busy);$('#kClaim').disabled=true}
@@ -2620,6 +2626,9 @@ $('#logForm').addEventListener('submit',saveLog);
 $('#workForm').addEventListener('submit',saveWork);
 $('#kTragedy').addEventListener('change',()=>{$('#kGenre').value=pkToggleTragedy($('#kGenre').value,$('#kTragedy').checked)});
 $('#kGenre').addEventListener('input',()=>{$('#kTragedy').checked=pkIsTragedy($('#kGenre').value)});
+$('#kDuration').addEventListener('beforeinput',pkDurationDelete);
+$('#kDuration').addEventListener('input',pkDurationInput);
+$('#kDuration').addEventListener('blur',pkDurationBlur);
 $('#pkForm').addEventListener('submit',savePick);
 $('#pkList').addEventListener('compositionstart',e=>{if(!e.target.classList.contains('pk-reply-input'))return;PK_COMPOSITION_TOKEN++;PK_COMPOSING=true});
 $('#pkList').addEventListener('compositionend',e=>{const input=e.target;if(!input.classList.contains('pk-reply-input'))return;const token=PK_COMPOSITION_TOKEN;setTimeout(()=>{if(token!==PK_COMPOSITION_TOKEN)return;PK_COMPOSING=false;if(input.isConnected)PK_RESPONSES.state(input.dataset.pick).draft=input.value;if(PK_RESPONSE_REDRAW){PK_RESPONSE_REDRAW=false;renderPicks()}},0)});
