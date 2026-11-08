@@ -120,7 +120,7 @@ export function createActivityFeed({request,getActor,storage,view,onError=()=>{}
  };
 }
 export function createActivityUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalThis),document:doc=globalThis.document,window:win=globalThis,onError=()=>{},onUnreadChange=()=>{}}={}) {
- let initialized=false,overlay,card,list,title,older,storage,restoreFocus=null,oldOverflow=null,observer,inbox,banner,bannerText,bannerAck=null,bannerTimer=null;
+ let initialized=false,overlay,card,list,title,older,storage,restoreFocus=null,oldOverflow=null,observer,inbox,inboxLabel=null,banner,bannerText,bannerAck=null,bannerTimer=null;
  try{storage=win.localStorage}catch{}
  const make=(tag,className,text)=>{const el=doc.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el};
  function otherModal(){return [...doc.querySelectorAll('.ov,dialog[open],[role="dialog"][aria-modal="true"],[role="alertdialog"]')].some(el=>el!==overlay&&!el.hidden&&el.getAttribute('aria-hidden')!=='true'&&el.getClientRects().length>0)}
@@ -137,7 +137,7 @@ export function createActivityUI(getCloud,getActor,{fetcher=globalThis.fetch.bin
  const view={blocked,hide,deferModal:true,go(){win.location.hash='picks'},show(data,ack){
   if(!initialized||blocked())return;
   if(data.mode==='inbox'){
-   const label=`新动静 ${data.count}`;if(inbox.textContent!==label)inbox.textContent=label;
+   const label=`新动静 ${data.count}`;if(inboxLabel!==label){inboxLabel=label;inbox.textContent=label;}
    if(inbox.hidden)inbox.hidden=false;return;
   }
   if(inbox&&!inbox.hidden)inbox.hidden=true;
