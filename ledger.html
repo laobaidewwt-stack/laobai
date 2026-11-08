@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-8+DcSH1RPNpbTgdVxWBn1GbBGxcDsNJQ9BLVOXcQ2UA='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-C5OJed/hv/vaIJdISodqcXr/D6Ym4wOPvmh5TRLs6jM='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2466,7 +2466,7 @@ function pkReadDraft(){return{zh:normName($('#kZh').value),en:$('#kEn').value.tr
 function openPick(id){
  if(!PK_CONNECTED)return toast('先用原钥匙打开账本');if(!PK_ACTOR.name){toast('先写一个协作署名');return pkAskMe()}if(PK_EDIT?.saving||POSTERS.isBusy())return;
  const r=id?PK_ROWS.rows.get(id):null;if(id&&(!r||r.deleted))return toast('这部剧已删除');
- const p=pkEditable(r);if(!id)p.watchDate=PK_DATE;
+ const p=pkEditable(r);if(!id)p.watchDate=PK_DATE||ymd(new Date());
  PK_EDIT={id:id||crypto.randomUUID(),isNew:!id,revision:r?.revision,original:structuredClone(p),saving:false};
  S.pkEdit=id||null;S.pkFormStatus=p.status;S.pkAir=p.airing;S.pkOff=p.official;S.pkIssues=structuredClone(p.issues);
  $('#kTitle').textContent=id?'改一下这部剧':'放一部剧';$('#kZh').value=p.zh;$('#kEn').value=p.en;$('#kLink').value=p.link;$('#kGenre').value=p.genre;$('#kDuration').value=p.duration;$('#kNote').value=p.note;$('#kPub').value=p.pubLink;$('#kWatchDate').value=p.watchDate||'';$('#kEpsDone').value=p.epsDone;$('#kEpsTotal').value=p.epsTotal;
