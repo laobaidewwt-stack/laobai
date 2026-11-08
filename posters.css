@@ -1,0 +1,66 @@
+/* 老白笔记 · 海报。颜色全部取自现有皮肤变量，随皮肤切换。 */
+.pst-cover{float:left;position:relative;width:66px;aspect-ratio:2/3;margin:3px 15px 8px 0;padding:0;border:0;background:none;cursor:zoom-in;transform:rotate(-1.4deg);transform-origin:50% 60%;transition:transform .25s ease}
+.pst-cover:active{transform:rotate(0) scale(.98)}
+.pst-mount{position:absolute;inset:0;display:block;padding:3px;background:var(--paper-bg,#f6f2ea);box-shadow:0 0 0 1px var(--p-rule,rgba(0,0,0,.15)),0 8px 16px -10px rgba(10,16,40,.55),0 2px 3px -2px rgba(10,16,40,.35)}
+.pst-mount::before{content:"";position:absolute;inset:3px;background:repeating-linear-gradient(135deg,var(--p-rule,rgba(0,0,0,.1)) 0 1px,transparent 1px 7px);opacity:.8}
+.pst-mount img,.pst-v-mat img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
+.pst-mount img{position:relative;display:block;width:100%;height:100%;object-fit:cover;opacity:0;filter:saturate(.9) contrast(1.02);transition:opacity .35s ease}
+.ready .pst-mount img,.pst-thumb.ready img{opacity:1}
+/* 相片角：两只金色小三角压住海报，像贴进手账 */
+.pst-cover::before,.pst-cover::after{content:"";position:absolute;z-index:2;width:13px;height:13px;background:var(--hd-gold,#b08a46);opacity:.85}
+.pst-cover::before{left:-2px;top:-2px;clip-path:polygon(0 0,100% 0,0 100%)}
+.pst-cover::after{right:-2px;bottom:-2px;clip-path:polygon(100% 0,100% 100%,0 100%)}
+.pst-count{position:absolute;z-index:3;right:7px;top:7px;font:600 10px/1 var(--mono,monospace);letter-spacing:.06em;padding:3px 5px;border-radius:999px;background:var(--p-ink,#22385a);color:var(--paper,#f6f2ea);box-shadow:0 2px 6px -2px rgba(0,0,0,.4)}
+.work.has-cover{display:flow-root}
+.work.has-cover>:nth-child(n+4){clear:left}
+/* 剧单卡片：海报靠右，稍大，角度相反 */
+.paper.pk.has-cover>.pst-cover{float:right;width:88px;margin:8px 0 8px 16px;transform:rotate(1.6deg)}
+.paper.pk.has-cover>:not(.pk-head):not(.pk-title):not(.pk-en):not(.pk-meta):not(.pk-note):not(.pst-cover){clear:both}
+.pst-cover.failed .pst-mount::after{content:"✦";position:absolute;inset:0;display:grid;place-items:center;color:var(--p-ink3,#8a9ab4);font-size:16px}
+
+/* 看大图 */
+.pst-viewer{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:rgba(6,12,30,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#f3ead6;padding:calc(10px + env(safe-area-inset-top,0px)) 12px calc(14px + env(safe-area-inset-bottom,0px));touch-action:pan-y;animation:pst-in .22s ease}
+.pst-viewer[hidden]{display:none}
+@keyframes pst-in{from{opacity:0}to{opacity:1}}
+html.pst-viewing,html.pst-viewing body{overflow:hidden}
+.pst-v-top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.pst-v-title{font-family:var(--serif,serif);font-size:15px;letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pst-v-btn{flex:0 0 auto;width:44px;height:44px;border-radius:50%;border:1px solid rgba(243,234,214,.35);background:rgba(243,234,214,.06);color:inherit;font-size:20px;line-height:1;display:grid;place-items:center}
+.pst-v-btn[hidden]{display:none}
+.pst-v-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:8px}
+.pst-v-mat{position:relative;margin:0;padding:8px;background:var(--paper-bg,#f6f2ea);box-shadow:0 30px 60px -30px rgba(0,0,0,.8);max-width:min(100%,560px);max-height:100%;display:flex;transform:rotate(-.6deg)}
+.pst-v-mat::before,.pst-v-mat::after{content:"";position:absolute;width:20px;height:20px;background:var(--hd-gold,#b08a46);opacity:.85}
+.pst-v-mat::before{left:-3px;top:-3px;clip-path:polygon(0 0,100% 0,0 100%)}
+.pst-v-mat::after{right:-3px;bottom:-3px;clip-path:polygon(100% 0,100% 100%,0 100%)}
+.pst-v-mat img{display:block;max-width:100%;max-height:calc(100dvh - 190px);min-width:120px;min-height:180px;object-fit:contain;opacity:0;transition:opacity .3s ease;background:repeating-linear-gradient(135deg,var(--p-rule,rgba(0,0,0,.1)) 0 1px,transparent 1px 8px)}
+.pst-v-mat.ready img{opacity:1;min-width:0;min-height:0;background:none}
+.pst-v-foot{display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:12px;font:12px/1 var(--mono,monospace);letter-spacing:.14em;opacity:.85}
+.pst-v-dots{display:flex;gap:6px}
+.pst-v-dots button{width:22px;height:22px;padding:0;border:0;background:none;position:relative}
+.pst-v-dots button::after{content:"";position:absolute;left:8px;top:8px;width:6px;height:6px;border-radius:50%;background:rgba(243,234,214,.35)}
+.pst-v-dots button[aria-current="true"]::after{background:var(--hd-gold,#d9b26a);transform:scale(1.25)}
+@media (max-width:520px){.pst-v-prev,.pst-v-next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(6,12,30,.35)}.pst-v-prev{left:6px}.pst-v-next{right:6px}}
+
+/* 编辑弹层里的海报区 */
+.pst-edit{display:flex;flex-direction:column;gap:10px;padding:12px 0 4px;border-top:1px dashed var(--p-rule);border-bottom:1px dashed var(--p-rule)}
+.pst-edit[hidden]{display:none}
+.pst-ed-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pst-ed-name{font-size:14px;letter-spacing:.2em;color:var(--p-ink)}
+.pst-ed-note{font-size:12px;color:var(--p-ink2)}
+.pst-strip{display:flex;gap:12px;overflow-x:auto;padding:8px 4px 10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.pst-thumb,.pst-add{position:relative;flex:0 0 auto;width:62px;aspect-ratio:2/3;scroll-snap-align:start}
+.pst-thumb{padding:0;border:0;background:none}
+.pst-thumb.on .pst-mount{box-shadow:0 0 0 2px var(--accent,#1f5fae),0 8px 16px -10px rgba(10,16,40,.55)}
+.pst-thumb.on{transform:translateY(-3px)}
+.pst-ribbon{position:absolute;z-index:2;left:-4px;bottom:6px;font-size:11px;letter-spacing:.18em;text-indent:.18em;padding:2px 6px;color:var(--paper,#f6f2ea);background:var(--hd-gold,#b08a46);box-shadow:0 2px 6px -3px rgba(0,0,0,.5)}
+.pst-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:1.5px dashed var(--p-ink3,#8a9ab4);color:var(--p-ink2);cursor:pointer;background:transparent}
+.pst-add input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+.pst-add span{font-size:22px;line-height:1}
+.pst-add small{font-size:11px;letter-spacing:.1em}
+.pst-add.busy{opacity:.45}
+.pst-tools{display:flex;flex-wrap:wrap;gap:6px}
+.pst-tools .chip{min-height:36px;padding:4px 11px;font-size:12.5px}
+.pst-tools .chip:disabled{opacity:.4}
+.pst-tools .pst-del.armed{border-color:#b4442c;color:#b4442c;font-weight:600}
+.pst-msg{margin:0;min-height:1em;font-size:12px;color:var(--p-ink2)}
+@media (prefers-reduced-motion:reduce){.pst-cover,.pst-viewer,.pst-mount img,.pst-v-mat img{transition:none;animation:none}}

@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-f84AzZ0mVsu07uRBKoMKMnZpUolEPW0ChOZhwEKaHRM='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-tnjaMbY0rLz2xD1lbInfAU6RiS6eOi0Kug+IlrG2ung='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,6 +14,7 @@
 <link rel="icon" type="image/svg+xml" href="./icons/laobai.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/laobai-192.png">
 <link rel="stylesheet" href="./ledger-app.css">
+<link rel="stylesheet" href="./posters.css?v=20261108-posters-safe1">
 <script defer src="./ledger-app.js"></script>
 <script defer src="./vendor/opencc-1.0.5.js"></script>
 <script defer src="./ledger-script.js"></script>
@@ -773,6 +774,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
 <div class="ov" id="pkOv" hidden>
   <div class="sheet-wrap"><form class="paper stack" id="pkForm" autocomplete="off" style="gap:14px">
     <div><div class="cap">Shared Pick</div><div class="ptitle" id="kTitle">放一部剧</div></div>
+    <div class="pst-edit" id="kPosters" hidden></div>
     <p id="kConflict" class="pk-conflict" hidden>对方刚改过，你的草稿没有覆盖新内容。<button type="button" class="linkbtn" data-act="pk-reload">载入最新版本</button></p>
     <label class="f">计划追剧日期<input class="in" id="kWatchDate" type="date" min="1900-01-01" max="2100-12-31"></label>
     <label class="f" id="kMeWrap">你是谁（这台手机会记住）<input class="in" id="kMe" maxlength="12" placeholder="例如：老白"></label>
@@ -801,6 +803,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
 <div class="ov" id="workOv" hidden>
   <div class="sheet-wrap"><form class="paper stack" id="workForm" autocomplete="off" style="gap:14px">
     <div><div class="cap">Archive Entry</div><div class="ptitle" id="wfTitle">作品</div></div>
+    <div class="pst-edit" id="wPosters" hidden></div>
     <div class="row2 w1">
       <label class="f">中文名<input class="in" id="wZh" required></label>
       <label class="f">英文名<input class="in" id="wEn"></label>
@@ -1524,10 +1527,13 @@ function createNoticeUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalT
 
 return {createNoticeUI};})();
 import {createActivityUI} from './activity.js?v=20261107-chart2';
+import {createPosterUI} from './posters.js?v=20261108-posters-safe1';
 import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261107-picks-validation1';
 const SHARED_ONLY=false;
 
 (function(){
+// 海报：读写经过同一个只读门禁；回调都在用到时才取值（CLOUD 等在本函数后面才定义）。
+const POSTERS=createPosterUI({getCloud:()=>CLOUD,fetcher:(u,o)=>guardedLedgerFetch(u,o),canWrite:()=>writable,toast:m=>toast(m),titleOf:(kind,id)=>kind==='work'?(S.works.has(id)?workChineseTitle(S.works.get(id)):''):(S.picks.get(id)?.zh||S.picks.get(id)?.en||'')});
 const $=s=>document.querySelector(s);
 $('#txBootFailure').hidden=true;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1999,6 +2005,7 @@ function renderWorks(){
   if(q)list=list.filter(w=>searchMatches([w.zh,w.en,w.title,w.notes,...copyVersions(w).flatMap(version=>[version.title,version.text])],q)||(S.subOn&&S.subs&&searchMatches([S.subs.get(w.id)],q)));
   list.sort((a,b)=>((ws.get(b.id)||{}).last||b.pubDate||'').localeCompare((ws.get(a.id)||{}).last||a.pubDate||'')||(b.updatedAt||0)-(a.updatedAt||0));
   $('#worksList').innerHTML=list.length?list.map(w=>workRow(w,ws.get(w.id),false)).join(''):'<div class="muted">'+(S.works.size?'没有找到。':'还没有作品。记一条交付，或者点「＋ 新作品」。')+'</div>';
+  POSTERS.decorate('work',$('#worksList'));
   const wrap=$('#hitsWrap'),hits=$('#hits');
   if(S.subOn&&q){
     wrap.hidden=false;
@@ -2066,7 +2073,7 @@ function populateWork(id,snapshot){
   openOv('workOv');
   // Exact work/subtitle snapshots are loaded together by the transaction form.
 }
-function openWork(id){return txForms.openWork(id)}
+function openWork(id){POSTERS.mountEditor('work',id&&S.works.has(id)?id:null,$('#wPosters'));return txForms.openWork(id)}
 function saveWork(e){return txForms.saveWork(e)}
 function saveLog(e){return txForms.saveLog(e)}
 
@@ -2246,7 +2253,7 @@ async function makeImage(){
 
 /* ---------- backup ---------- */
 const lastBk=()=>{try{return localStorage.getItem('ledger_backup')||''}catch(e){return ''}};
-function renderBackup(){const l=lastBk();$('#bkInfo').innerHTML='把作品、每天的记录、满意集和字幕台词存成一个文件，建议每月存一次。共享剧单单独保存，不包含在此私人备份中。'+(l?'<br>上次备份：'+esc(md(l))+'。':'<br>还没备份过。')}
+function renderBackup(){const l=lastBk();$('#bkInfo').innerHTML='把作品、每天的记录、满意集和字幕台词存成一个文件，建议每月存一次。共享剧单和海报单独保存，不包含在此私人备份中。'+(l?'<br>上次备份：'+esc(md(l))+'。':'<br>还没备份过。')}
 async function buildBackup(){
   let subs=[];try{const sn=await db.collection('subs').get();subs=sn.docs.map(d=>Object.assign({id:d.id},d.data()))}catch(e){}
   return {app:'作品账本',format:1,exportedAt:new Date().toISOString(),
@@ -2374,6 +2381,7 @@ function renderPicks(){
       (p.note?'<div class="pk-note">'+esc(p.note)+'</div>':'')+pkResponseSummary(p,PK_ACTOR,PK_RESPONSES.state(p.id))+follow+links+
       '<div class="pk-acts"><div>'+main+alt+'</div><div>'+claim+'<button type="button" class="linkbtn pk-response-entry" data-act="pk-response-open" data-id="'+id+'" aria-controls="pk-response-'+id+'" aria-expanded="'+PK_RESPONSES.state(p.id).open+'">✦ 回应</button><button class="linkbtn pk-soft" data-act="pk-edit" data-id="'+id+'">编辑</button></div></div>'+
       pkResponsePanel(p,PK_ACTOR,PK_RESPONSES.state(p.id),PK_RESPONSES)+'</div></div>'}).join('');
+  POSTERS.decorate('pick',$('#pkList'));
   restoreResponseFocus(document,responseFocus);
 }
 function pkFillClaim(cur){const names=pkNames();if(cur&&!names.includes(cur))names.push(cur);$('#kClaim').innerHTML='<option value="">还没人认领</option>'+names.map(n=>'<option value="'+esc(n)+'"'+(n===cur?' selected':'')+'>'+esc(n)+'</option>').join('')}
@@ -2462,7 +2470,7 @@ function openPick(id){
  PK_EDIT={id:id||crypto.randomUUID(),isNew:!id,revision:r?.revision,original:structuredClone(p),saving:false};
  S.pkEdit=id||null;S.pkFormStatus=p.status;S.pkAir=p.airing;S.pkOff=p.official;S.pkIssues=structuredClone(p.issues);
  $('#kTitle').textContent=id?'改一下这部剧':'放一部剧';$('#kZh').value=p.zh;$('#kEn').value=p.en;$('#kLink').value=p.link;$('#kGenre').value=p.genre;$('#kDuration').value=p.duration;$('#kNote').value=p.note;$('#kPub').value=p.pubLink;$('#kWatchDate').value=p.watchDate||'';$('#kEpsDone').value=p.epsDone;$('#kEpsTotal').value=p.epsTotal;
- $('#kMeWrap').hidden=true;$('#kConflict').hidden=true;$('#kDel').hidden=!id;pkStatusChips();pkAirChips();pkIssueRows();pkFillClaim(r?.claim||'');$('#kClaim').disabled=true;$('#kClaim').title='认领在剧单卡片上操作';pkSetBusy(false);openOv('pkOv');
+ $('#kMeWrap').hidden=true;$('#kConflict').hidden=true;$('#kDel').hidden=!id;pkStatusChips();pkAirChips();pkIssueRows();pkFillClaim(r?.claim||'');$('#kClaim').disabled=true;$('#kClaim').title='认领在剧单卡片上操作';pkSetBusy(false);openOv('pkOv');POSTERS.mountEditor('pick',id||null,$('#kPosters'));
 }
 function pkSetBusy(busy){document.querySelectorAll('#pkForm button,#pkForm input,#pkForm textarea,#pkForm select').forEach(n=>n.disabled=busy);$('#kClaim').disabled=true}
 function pkCloseGuard(){if(!PK_EDIT||$('#pkOv').hidden)return true;if(PK_EDIT.saving)return false;const changed=Object.keys(pkPatchBetween(PK_EDIT.original,pkReadDraft())).length;if(changed&&!confirm('放下这次未保存的修改？'))return false;PK_EDIT=null;return true}
@@ -2671,7 +2679,7 @@ window.addEventListener('hashchange',()=>{
 });
 function guardedLedgerFetch(url,options={}){
  const name=String(url).split('/').pop(),body=typeof options.body==='string'?JSON.parse(options.body):{};
- const read=['ledger_tx_fingerprint','ledger_tx_snapshot','ledger_tx_bundle','ledger_tx_status','ledger_get','ledger_all','ledger_pull','ledger_inbox_pending_page','ledger_picks_list'].includes(name)||(name==='ledger_picks_notice'&&['config','status','changes','events_since'].includes(body.p_op));
+ const read=['ledger_tx_fingerprint','ledger_tx_snapshot','ledger_tx_bundle','ledger_tx_status','ledger_get','ledger_all','ledger_pull','ledger_inbox_pending_page','ledger_picks_list','ledger_poster_sets','ledger_poster_get'].includes(name)||(name==='ledger_picks_notice'&&['config','status','changes','events_since'].includes(body.p_op));
  if(!read&&!writable)return Promise.reject(Object.assign(new Error('当前为只读，未发送修改。'),{code:'read_only'}));
  return fetch(url,options);
 }
