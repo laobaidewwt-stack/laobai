@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-C5OJed/hv/vaIJdISodqcXr/D6Ym4wOPvmh5TRLs6jM='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-mcn1ctP4k7V2CJp9cdyJ6zJ1e/PYdnYxcsdHL2iTrK4='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -570,6 +570,8 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
   /* 换天色：整页一起渐变，像天光在变 */
   ::view-transition-old(root),::view-transition-new(root){animation-duration:1.1s;animation-timing-function:cubic-bezier(.4,0,.2,1)}
 }
+
+.pk-tragedy-option{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:44px;color:var(--ink);font-size:14px}.pk-tragedy-option input{width:18px;height:18px;accent-color:#976a59}.pk-tragedy-option small{font-size:12px;opacity:.65}.pk-tragedy-tag{display:inline-block;margin:6px 0;padding:3px 9px;border:1px solid currentColor;border-radius:3px;color:var(--ink);font-size:12px;font-weight:600;letter-spacing:.12em;opacity:.85}
 </style>
 </head>
 <body>
@@ -784,6 +786,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
     </div>
     <label class="f">在哪看到的（链接）<input class="in" id="kLink" inputmode="url" placeholder="https://"></label>
     <label class="f">类型标签<input class="in" id="kGenre" placeholder="欧美 AI、泰剧、短剧……"></label>
+    <label class="pk-tragedy-option"><input type="checkbox" id="kTragedy"> <span>标记为悲剧</span><small>选填，可随时取消</small></label>
     <label class="f">时长（可选）<input class="in" id="kDuration" maxlength="80" placeholder="例如：每集 20 分钟 / 全剧 2 小时"></label>
     <label class="f">为什么推荐<textarea class="in" id="kNote" rows="2" placeholder="一句话就行"></textarea></label>
     <div class="f">状态<div class="chips" id="kStatusChips"></div></div>
@@ -2360,7 +2363,7 @@ function renderPicks(){
   $('#pkList').innerHTML=list.map((p,i)=>{
     const id=esc(p.id),st=p.status||'待看',isNew=(p.createdAt||0)>S.pkSeenAt&&p.by&&p.byId!==PK_ACTOR.id,inLib=!!findWork(p.zh);
     const when=ymd(new Date(p.createdAt||Date.now())).slice(5).replace('-','.');
-    const meta=[p.genre,p.duration,p.watchDate?'追剧 '+p.watchDate:'',p.claim?p.claim+' 在做':''].filter(Boolean).map(esc).join('　·　');
+    const meta=[pkIsTragedy(p.genre)?pkWithoutTragedy(p.genre):p.genre,p.duration,p.watchDate?'追剧 '+p.watchDate:'',p.claim?p.claim+' 在做':''].filter(Boolean).map(esc).join('　·　');
     const fl=[];
     if(p.airing==='未完结')fl.push(['追更','第 '+(+p.epsDone||0)+(p.epsTotal?' / '+p.epsTotal:'')+' 集','<button class="linkbtn" data-act="pk-ep-plus" data-id="'+id+'">做完第 '+((+p.epsDone||0)+1)+' 集</button>']);
     if(p.airing==='已完结'&&p.official!=='已出官中')fl.push(['已完结','还没官中','']);
@@ -2377,6 +2380,7 @@ function renderPicks(){
       '<div class="pk-head"><span class="cap">'+esc(p.by||'有人')+' · '+when+(p.updatedBy&&p.updatedBy!==p.by?' · '+esc(p.updatedBy)+' 改过':'')+'</span><span class="pk-stamp" data-k="'+pkStampKind(st)+'">'+esc(st)+'</span></div>'+
       '<div class="pk-title">'+(isNew?'<i class="pk-newdot" title="新放的"></i>':'')+'《'+esc(p.zh)+'》'+(inLib?'<span class="pk-inlib">已入库</span>':'')+'</div>'+
       (p.en?'<div class="pk-en">'+esc(p.en)+'</div>':'')+
+      (pkIsTragedy(p.genre)?'<span class="pk-tragedy-tag">悲剧</span>':'')+
       (meta?'<div class="pk-meta">'+meta+'</div>':'')+
       (p.note?'<div class="pk-note">'+esc(p.note)+'</div>':'')+pkResponseSummary(p,PK_ACTOR,PK_RESPONSES.state(p.id))+follow+links+
       '<div class="pk-acts"><div>'+main+alt+'</div><div>'+claim+'<button type="button" class="linkbtn pk-response-entry" data-act="pk-response-open" data-id="'+id+'" aria-controls="pk-response-'+id+'" aria-expanded="'+PK_RESPONSES.state(p.id).open+'">✦ 回应</button><button class="linkbtn pk-soft" data-act="pk-edit" data-id="'+id+'">编辑</button></div></div>'+
@@ -2462,6 +2466,9 @@ function pkRenderCalendar(){
  $('#pkCalendarGrid').innerHTML=pkMonthDays(PK_MONTH).map(d=>'<button class="pk-day'+(d.inMonth?'':' outside')+'" data-act="pk-date" data-v="'+d.date+'"'+(pkValidDate(d.date)?'':' disabled')+' aria-pressed="'+(PK_DATE===d.date)+'" aria-label="'+d.date+'，'+(counts.get(d.date)||0)+' 部剧"><span>'+d.day+'</span><small>'+(counts.get(d.date)?counts.get(d.date)+' 部':'')+'</small></button>').join('');
  $('#pkDateLabel').textContent=PK_DATE?'正在看 '+PK_DATE+' 的剧':'全部日期';
 }
+function pkIsTragedy(genre){return /(?:^|[、,，;；/\s])悲[剧劇](?=$|[、,，;；/\s])/.test(String(genre||''))}
+function pkWithoutTragedy(genre){return String(genre||'').split(/([、,，;；/\s]+)/).filter(x=>!/^悲[剧劇]$/.test(x)).join('').replace(/^[、,，;；/\s]+|[、,，;；/\s]+$/g,'').replace(/([、,，;；/])(?:[、,，;；/\s]*[、,，;；/])/g,'$1').trim()}
+function pkToggleTragedy(genre,on){if(on)return pkIsTragedy(genre)?genre:(String(genre||'').trim()?String(genre).trim()+'、悲剧':'悲剧');return pkIsTragedy(genre)?pkWithoutTragedy(genre):genre}
 function pkReadDraft(){return{zh:normName($('#kZh').value),en:$('#kEn').value.trim(),link:$('#kLink').value.trim(),genre:$('#kGenre').value.trim(),duration:$('#kDuration').value.trim(),note:$('#kNote').value.trim(),status:S.pkFormStatus||'待看',airing:S.pkAir||'',official:S.pkOff||'',epsDone:Number($('#kEpsDone').value||0),epsTotal:Number($('#kEpsTotal').value||0),issues:pkReadIssues().filter(x=>x.ep||x.note).map(x=>({id:x.id||crypto.randomUUID(),ep:Number(x.ep||0),kind:x.kind,action:x.action,note:x.note,done:!!x.done})),pubLink:$('#kPub').value.trim(),watchDate:$('#kWatchDate').value||null}}
 function openPick(id){
  if(!PK_CONNECTED)return toast('先用原钥匙打开账本');if(!PK_ACTOR.name){toast('先写一个协作署名');return pkAskMe()}if(PK_EDIT?.saving||POSTERS.isBusy())return;
@@ -2469,7 +2476,7 @@ function openPick(id){
  const p=pkEditable(r);if(!id)p.watchDate=PK_DATE||ymd(new Date());
  PK_EDIT={id:id||crypto.randomUUID(),isNew:!id,revision:r?.revision,original:structuredClone(p),saving:false};
  S.pkEdit=id||null;S.pkFormStatus=p.status;S.pkAir=p.airing;S.pkOff=p.official;S.pkIssues=structuredClone(p.issues);
- $('#kTitle').textContent=id?'改一下这部剧':'放一部剧';$('#kZh').value=p.zh;$('#kEn').value=p.en;$('#kLink').value=p.link;$('#kGenre').value=p.genre;$('#kDuration').value=p.duration;$('#kNote').value=p.note;$('#kPub').value=p.pubLink;$('#kWatchDate').value=p.watchDate||'';$('#kEpsDone').value=p.epsDone;$('#kEpsTotal').value=p.epsTotal;
+ $('#kTitle').textContent=id?'改一下这部剧':'放一部剧';$('#kZh').value=p.zh;$('#kEn').value=p.en;$('#kLink').value=p.link;$('#kGenre').value=p.genre;$('#kTragedy').checked=pkIsTragedy(p.genre);$('#kDuration').value=p.duration;$('#kNote').value=p.note;$('#kPub').value=p.pubLink;$('#kWatchDate').value=p.watchDate||'';$('#kEpsDone').value=p.epsDone;$('#kEpsTotal').value=p.epsTotal;
  $('#kMeWrap').hidden=true;$('#kConflict').hidden=true;$('#kDel').hidden=!id;pkStatusChips();pkAirChips();pkIssueRows();pkFillClaim(r?.claim||'');$('#kClaim').disabled=true;$('#kClaim').title='认领在剧单卡片上操作';pkSetBusy(false);openOv('pkOv');POSTERS.mountEditor('pick',id||null,$('#kPosters'));
 }
 function pkSetBusy(busy){document.querySelectorAll('#pkForm button,#pkForm input,#pkForm textarea,#pkForm select').forEach(n=>n.disabled=busy);$('#kClaim').disabled=true}
@@ -2611,6 +2618,8 @@ document.addEventListener('click',e=>{
 document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===e.currentTarget||e.target.classList.contains('sheet-wrap'))closeOv()}));
 $('#logForm').addEventListener('submit',saveLog);
 $('#workForm').addEventListener('submit',saveWork);
+$('#kTragedy').addEventListener('change',()=>{$('#kGenre').value=pkToggleTragedy($('#kGenre').value,$('#kTragedy').checked)});
+$('#kGenre').addEventListener('input',()=>{$('#kTragedy').checked=pkIsTragedy($('#kGenre').value)});
 $('#pkForm').addEventListener('submit',savePick);
 $('#pkList').addEventListener('compositionstart',e=>{if(!e.target.classList.contains('pk-reply-input'))return;PK_COMPOSITION_TOKEN++;PK_COMPOSING=true});
 $('#pkList').addEventListener('compositionend',e=>{const input=e.target;if(!input.classList.contains('pk-reply-input'))return;const token=PK_COMPOSITION_TOKEN;setTimeout(()=>{if(token!==PK_COMPOSITION_TOKEN)return;PK_COMPOSING=false;if(input.isConnected)PK_RESPONSES.state(input.dataset.pick).draft=input.value;if(PK_RESPONSE_REDRAW){PK_RESPONSE_REDRAW=false;renderPicks()}},0)});
