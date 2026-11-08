@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-tnjaMbY0rLz2xD1lbInfAU6RiS6eOi0Kug+IlrG2ung='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-8+DcSH1RPNpbTgdVxWBn1GbBGxcDsNJQ9BLVOXcQ2UA='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,7 +14,7 @@
 <link rel="icon" type="image/svg+xml" href="./icons/laobai.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/laobai-192.png">
 <link rel="stylesheet" href="./ledger-app.css">
-<link rel="stylesheet" href="./posters.css?v=20261108-posters-safe1">
+<link rel="stylesheet" href="./posters.css?v=20261108-posters-create1">
 <script defer src="./ledger-app.js"></script>
 <script defer src="./vendor/opencc-1.0.5.js"></script>
 <script defer src="./ledger-script.js"></script>
@@ -1344,7 +1344,7 @@ function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,to
   guard();const pending=await tx.pending(edit.intentId);guard();if(pending?.record?.state!=='uncertain'||autoAttempted.has(edit.intentId))return;autoAttempted.add(edit.intentId);recoveryIntent=edit.intentId;cancelAuto();const operationId=pending.record.operationId;
    // Navigation changes the form ticket, not authorization to read the original
    // already-sent operation. Only the matching journal operation can be cleared.
-   autoTimer=setTimeout(async()=>{autoTimer=null;try{guard();const result=await tx.recover(edit.intentId,{guard,operationId});guard();if(!result?.committed)return;edit.done=true;if(ownsForm()){$('#'+prefix+'TxStatus').textContent='已保存，已自动核实云端结果。';closeOv()}toast('已保存，已自动核实，没有重复提交。');await refreshPending()}catch(e){try{guard();if(ownsForm())$('#'+prefix+'TxStatus').textContent=message(e);await refreshPending()}catch{}}},2000);
+   autoTimer=setTimeout(async()=>{autoTimer=null;try{guard();const result=await tx.recover(edit.intentId,{guard,operationId});guard();if(!result?.committed)return;edit.done=true;if(ownsForm()){$('#'+prefix+'TxStatus').textContent='已保存，已自动核实云端结果。';const posterOK=prefix!=='w'||await POSTERS.commitDraft('work',edit.id,POSTERS.captureDraft('work'));if(!ownsForm())return;if(posterOK)closeOv()}toast('已保存，已自动核实，没有重复提交。');await refreshPending()}catch(e){try{guard();if(ownsForm())$('#'+prefix+'TxStatus').textContent=message(e);await refreshPending()}catch{}}},2000);
   }catch{}
  }
  async function openWork(id){
@@ -1369,8 +1369,8 @@ function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,to
   return request;
  }
  async function saveWork(e){e.preventDefault();if(!writable())return toast('还连不上账本，暂时不能保存');if(!work||work.busy||work.done)return;
-  const edit=work,generation=opening,ownsForm=()=>work===edit&&opening===generation&&!$('#workOv').hidden;
-  try{const request=edit.payload||requestFromWork();formDisable('#workForm',true);await getDb().transactions().save(edit,request);if(ownsForm())closeOv();toast(request.mode==='save'?'作品资料和字幕已一起保存，未新增交付':'作品、字幕和交付信息已同步保存');}
+  const edit=work,posterDraft=POSTERS.captureDraft('work'),generation=opening,ownsForm=()=>work===edit&&opening===generation&&!$('#workOv').hidden;
+  try{const request=edit.payload||requestFromWork();formDisable('#workForm',true);await getDb().transactions().save(edit,request);if(ownsForm()){const posterOK=await POSTERS.commitDraft('work',edit.id,posterDraft);if(!ownsForm())return;if(posterOK)closeOv();else $('#wTxStatus').textContent='作品已保存，海报未全部上传，请在海报区重试。'}toast(request.mode==='save'?'作品资料和字幕已一起保存，未新增交付':'作品、字幕和交付信息已同步保存');}
   catch(e){if(ownsForm()){$('#wTxStatus').textContent=message(e);if(!edit.payload)formDisable('#workForm',false);else $('#workForm button[type="submit"]').disabled=false;try{await markRejected(edit,'w')}catch{}}await scheduleCheck(edit,generation,ownsForm,'w');toast(message(e))}finally{await refreshPending()}
  }
 
@@ -1527,7 +1527,7 @@ function createNoticeUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalT
 
 return {createNoticeUI};})();
 import {createActivityUI} from './activity.js?v=20261107-chart2';
-import {createPosterUI} from './posters.js?v=20261108-posters-safe1';
+import {createPosterUI} from './posters.js?v=20261108-posters-create1';
 import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261107-picks-validation1';
 const SHARED_ONLY=false;
 
@@ -1618,7 +1618,7 @@ function armed(btn,label,fn){
   btn._h=setTimeout(()=>{btn.classList.remove('armed');btn.textContent=btn._old},3000);
 }
 function openOv(id){txForms?.navigated();document.querySelectorAll('.ov').forEach(o=>o.hidden=o.id!==id)}
-function closeOv(){if(!pkCloseGuard())return;txForms?.navigated();document.querySelectorAll('.ov').forEach(o=>o.hidden=true)}
+function closeOv(){if(POSTERS.isBusy())return toast('海报正在上传，请稍候');if(!pkCloseGuard())return;txForms?.navigated();document.querySelectorAll('.ov').forEach(o=>o.hidden=true)}
 
 /* ---------- derived numbers ---------- */
 function uniqueDeliveryLogs(logs){
@@ -2073,7 +2073,7 @@ function populateWork(id,snapshot){
   openOv('workOv');
   // Exact work/subtitle snapshots are loaded together by the transaction form.
 }
-function openWork(id){POSTERS.mountEditor('work',id&&S.works.has(id)?id:null,$('#wPosters'));return txForms.openWork(id)}
+function openWork(id){if(POSTERS.isBusy())return toast('海报正在上传，请稍候');POSTERS.mountEditor('work',id&&S.works.has(id)?id:null,$('#wPosters'));return txForms.openWork(id)}
 function saveWork(e){return txForms.saveWork(e)}
 function saveLog(e){return txForms.saveLog(e)}
 
@@ -2464,7 +2464,7 @@ function pkRenderCalendar(){
 }
 function pkReadDraft(){return{zh:normName($('#kZh').value),en:$('#kEn').value.trim(),link:$('#kLink').value.trim(),genre:$('#kGenre').value.trim(),duration:$('#kDuration').value.trim(),note:$('#kNote').value.trim(),status:S.pkFormStatus||'待看',airing:S.pkAir||'',official:S.pkOff||'',epsDone:Number($('#kEpsDone').value||0),epsTotal:Number($('#kEpsTotal').value||0),issues:pkReadIssues().filter(x=>x.ep||x.note).map(x=>({id:x.id||crypto.randomUUID(),ep:Number(x.ep||0),kind:x.kind,action:x.action,note:x.note,done:!!x.done})),pubLink:$('#kPub').value.trim(),watchDate:$('#kWatchDate').value||null}}
 function openPick(id){
- if(!PK_CONNECTED)return toast('先用原钥匙打开账本');if(!PK_ACTOR.name){toast('先写一个协作署名');return pkAskMe()}if(PK_EDIT?.saving)return;
+ if(!PK_CONNECTED)return toast('先用原钥匙打开账本');if(!PK_ACTOR.name){toast('先写一个协作署名');return pkAskMe()}if(PK_EDIT?.saving||POSTERS.isBusy())return;
  const r=id?PK_ROWS.rows.get(id):null;if(id&&(!r||r.deleted))return toast('这部剧已删除');
  const p=pkEditable(r);if(!id)p.watchDate=PK_DATE;
  PK_EDIT={id:id||crypto.randomUUID(),isNew:!id,revision:r?.revision,original:structuredClone(p),saving:false};
@@ -2480,8 +2480,8 @@ async function savePick(e){
  // Stable IDs for newly added issues survive retry and change detection.
  S.pkIssues=structuredClone(draft.issues);pkIssueRows();const patch=pkPatchBetween(edit.original,draft);
  if(!edit.isNew&&!Object.keys(patch).length){PK_EDIT=null;closeOv();return}
- edit.saving=true;pkSetBusy(true);const session=PK_SESSION;
- try{const row=await PK_CLIENT.rpc(edit.isNew?'ledger_picks_create':'ledger_picks_update',edit.isNew?{p_id:edit.id,p_data:draft}:{p_id:edit.id,p_revision:edit.revision,p_patch:patch});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_NOTICE.sync();PK_ACTIVITY.sync();PK_EDIT=null;closeOv();pkPublish();toast(row.deleted?'这部剧已被删除，未重新创建':'存好了，两个人都能看到')}
+ edit.saving=true;pkSetBusy(true);const session=PK_SESSION,posterDraft=POSTERS.captureDraft('pick');
+ try{const row=await PK_CLIENT.rpc(edit.isNew?'ledger_picks_create':'ledger_picks_update',edit.isNew?{p_id:edit.id,p_data:draft}:{p_id:edit.id,p_revision:edit.revision,p_patch:patch});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_NOTICE.sync();PK_ACTIVITY.sync();const posterOK=row.deleted||await POSTERS.commitDraft('pick',row.id,posterDraft);if(session!==PK_SESSION)return;edit.isNew=false;edit.revision=row.revision;edit.original=structuredClone(pkEditable(row));if(posterOK){PK_EDIT=null;closeOv()}pkPublish();toast(!posterOK?'剧已保存，海报未全部上传，请在海报区重试':row.deleted?'这部剧已被删除，未重新创建':'存好了，两个人都能看到')}
  catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION){edit.saving=false;pkSetBusy(false)}}
 }
 async function pkPatch(id,patch,msg){

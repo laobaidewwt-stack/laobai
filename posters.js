@@ -146,9 +146,10 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
   const k = (kind, id) => kind + ':' + id;
   const setOf = (kind, id) => sets.get(k(kind, id)) || { ids: [], version: 0 };
 
-  async function rpc(name, args, timeoutMs = 20000) {
+  async function rpc(name, args, timeoutMs = 20000, expectedKey = null) {
     if (!RPC.test(name)) throw new PosterError('forbidden', '不允许访问此接口');
     const cloud = getCloud(), key = cloud?.key;
+    if (expectedKey !== null && key !== expectedKey) throw new PosterError('cancelled', '钥匙已变化，未上传原草稿');
     if (!key) throw new PosterError('bad_key', '请先输入原账本钥匙');
     const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), timeoutMs);
     let r;
@@ -169,7 +170,7 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
 
   function resetIfKeyChanged() {
     const key = getCloud()?.key || '';
-    if (key !== stateKey) { stateKey = key; sets.clear(); etag = null; }
+    if (key !== stateKey) { releaseDraft(editor); editor = null; stateKey = key; sets.clear(); etag = null; }
   }
 
   // 安全候选不发起自动永久清理。删除作品后保留云端海报，后续另行人工核对。
@@ -322,7 +323,8 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
   function mountEditor(kind, id, host) {
     if (!host) return;
     resetIfKeyChanged(); start();
-    editor = { kind, id: id && ID_RE.test(id) ? id : null, host, sel: 0, busy: false, armDelete: false, msg: '' };
+    releaseDraft(editor);
+    editor = { key: stateKey, pending: [], kind, id: id && ID_RE.test(id) ? id : null, host, sel: 0, busy: false, armDelete: false, msg: '' };
     host.hidden = false; renderEditor(); void refresh();
   }
   function renderEditor() {
@@ -331,8 +333,9 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
       h.innerHTML = '<div class="pst-ed-head"><span class="pst-ed-name">海报</span><span class="pst-ed-note">云端还没开通海报功能，其他照常使用</span></div>';
       return;
     }
-    if (!ed.id) {
-      h.innerHTML = '<div class="pst-ed-head"><span class="pst-ed-name">海报</span><span class="pst-ed-note">先保存，再回来加海报</span></div>';
+    if (!ed.id || ed.pending.length) {
+      const items = ed.pending.map((x,i) => '<div class="pst-thumb pst-draft ready"><span class="pst-mount"><img alt="待上传海报" src="'+x.url+'"></span><button type="button" class="chip" data-pst-ed="draft-remove" data-i="'+i+'" '+(ed.busy?'disabled':'')+'>移除</button></div>').join('');
+      h.innerHTML = '<div class="pst-ed-head"><span class="pst-ed-name">海报 · 选填</span><span class="pst-ed-note">'+(ed.id?'剧已保存；未上传的海报可重试，不会重复创建剧':'可以不加；选好后点下方保存，先存剧再上传海报')+'</span></div><div class="pst-strip">'+items+(writable&&ed.pending.length<MAX_PER_TARGET?'<label class="pst-add"><input type="file" accept="image/*" multiple data-pst-ed="file" '+(ed.busy?'disabled':'')+'><span>＋</span><small>加海报</small></label>':'')+'</div>'+(ed.id&&writable?'<button type="button" class="chip" data-pst-ed="retry" '+(ed.busy?'disabled':'')+'>重试未上传海报</button>':'')+'<p class="pst-ed-note">海报不含在账本备份中，请保留原图。</p><p class="pst-msg" role="status">'+esc(ed.msg)+'</p>';
       return;
     }
     const s = setOf(ed.kind, ed.id); ed.sel = Math.min(ed.sel, Math.max(0, s.ids.length - 1));
@@ -351,29 +354,52 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
   }
   function say(msg) { if (!editor) return; editor.msg = msg; const p = editor.host.querySelector('.pst-msg'); if (p) p.textContent = msg; }
 
-  async function upload(files) {
-    const ed = editor; if (!ed?.id || ed.busy) return;
+  function releaseDraft(ed) { if (ed) for (const x of ed.pending) URL.revokeObjectURL(x.url); }
+  function stage(files, ed = editor) {
+    if (!ed || ed.busy || !canWrite()) return;
+    const room = Math.max(0, MAX_PER_TARGET - setOf(ed.kind, ed.id).ids.length - ed.pending.length);
+    for (const file of [...files].slice(0,room)) {
+      if (file.size > 40*1024*1024) { toast('原图超过 40MB，请换一张'); continue; }
+      ed.pending.push({id:crypto.randomUUID(),file,url:URL.createObjectURL(file)});
+    }
+    if (files.length>room) toast('每部最多 12 张');
+    renderEditor();
+  }
+  async function commitDraft(kind, id, ticket) {
+    if (!ticket || ticket !== editor || ticket.kind !== kind) return true;
+    if (ticket.busy) return false;
+    if (ticket.key !== getCloud()?.key) return false;
+    ticket.id = id;
+    return ticket.pending.length ? upload([], ticket) : true;
+  }
+  async function upload(files = [], target = editor) {
+    const ed = target; if (!ed?.id || ed.busy || ed.key !== getCloud()?.key) return false;
     if (!canWrite()) return toast(MESSAGES.read_only);
-    const { kind, id } = ed; const list = [...files].filter(Boolean); let lastUsage = null;
+    const { kind, id } = ed;
+    const confirmed = new Set(setOf(kind, id).ids);
+    ed.pending = ed.pending.filter(item => { if (!confirmed.has(item.id)) return true; URL.revokeObjectURL(item.url); return false; });
+    stage(files, ed); const list = ed.pending.slice(); let lastUsage = null;
     const room = MAX_PER_TARGET - setOf(kind, id).ids.length;
     if (list.length > room) toast('每部最多 12 张，这次只加前 ' + Math.max(0, room) + ' 张');
     ed.busy = true; ed.armDelete = false; renderEditor();
     let added = 0, skipped = '';
     try {
-      for (const [n, file] of list.slice(0, Math.max(0, room)).entries()) {
+      for (const [n, item] of list.slice(0, Math.max(0, room)).entries()) {
         say('正在处理第 ' + (n + 1) + ' / ' + Math.min(list.length, room) + ' 张…');
         let prepared;
-        try { prepared = await preparePoster(file); } catch (e) { skipped = e.message || '这张图片读不出来，请换一张'; toast(skipped); continue; }
-        const pid = crypto.randomUUID();
+        try { prepared = item.prepared ||= await preparePoster(item.file); } catch (e) { skipped = e.message || '这张图片读不出来，请换一张'; toast(skipped); continue; }
+        const pid = item.id;
         const args = { p_kind: kind, p_owner_id: id, p_id: pid, p_mime: prepared.mime, p_width: prepared.width, p_height: prepared.height, p_thumb: await b64(prepared.thumb), p_full: await b64(prepared.full) };
         // 同一编号重发是安全的：服务器认出内容相同就原样返回，不会多加一张。
         let r = null, lastErr = null;
         for (let attempt = 0; attempt < 3; attempt++) {
-          try { r = await rpc('ledger_poster_add', args, 45000); break; }
+          try { r = await rpc('ledger_poster_add', args, 45000, ed.key); break; }
           catch (e) { lastErr = e; if (!e.uncertain) break; await sleep(800 * (attempt + 1)); }
         }
         if (!r && lastErr?.uncertain) { await refresh(); if (setOf(kind, id).ids.includes(pid)) r = { set: null }; }
         if (!r) throw lastErr;
+        if (ed.key !== getCloud()?.key) return false;
+        ed.pending = ed.pending.filter(x => x !== item); URL.revokeObjectURL(item.url);
         remember(pid, 'thumb', prepared.thumb); remember(pid, 'full', prepared.full);
         if (r.set) applyOne(r.set); added++;
         if (r.usage?.maxBytes) lastUsage = r.usage;
@@ -385,6 +411,7 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
     } catch (e) {
       say(e.message); toast(e.message); void refresh();
     } finally { ed.busy = false; if (editor === ed) renderEditor(); redraw(); }
+    return ed.pending.length === 0;
   }
 
   async function arrange(next, done) {
@@ -410,9 +437,12 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
     const b = e.target.closest('[data-pst-ed]'); if (!b || !editor || !editor.host.contains(b)) return;
     const ed = editor, s = setOf(ed.kind, ed.id), ids = s.ids.slice(), i = ed.sel, act = b.dataset.pstEd;
     if (act === 'file') return;
+    if (ed.busy) return;
     e.preventDefault();
     if (act !== 'del') ed.armDelete = false;
-    if (act === 'pick') { ed.sel = +b.dataset.i; renderEditor(); }
+    if (act === 'draft-remove') { const x=ed.pending.splice(+b.dataset.i,1)[0]; if(x)URL.revokeObjectURL(x.url);renderEditor(); }
+    else if (act === 'retry') void upload();
+    else if (act === 'pick') { ed.sel = +b.dataset.i; renderEditor(); }
     else if (act === 'view') openViewer(ed.kind, ed.id, i);
     else if (act === 'cover' && i > 0) { ids.unshift(ids.splice(i, 1)[0]); ed.sel = 0; void arrange(ids, '已换成封面'); }
     else if (act === 'left' && i > 0) { [ids[i - 1], ids[i]] = [ids[i], ids[i - 1]]; ed.sel = i - 1; void arrange(ids, i - 1 === 0 ? '已换成封面' : '已调整顺序'); }
@@ -424,13 +454,15 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
   });
   document.addEventListener('change', e => {
     const input = e.target.closest?.('[data-pst-ed="file"]'); if (!input || !editor?.host.contains(input)) return;
-    const files = [...(input.files || [])]; input.value = ''; if (files.length) void upload(files);
+    const files = [...(input.files || [])]; input.value = ''; if (files.length) { if (!editor.id) stage(files); else void upload(files); }
   });
 
   return {
-    decorate, mountEditor, refresh, openViewer,
-    unmountEditor() { if (editor) { editor.host.hidden = true; editor.host.innerHTML = ''; editor = null; } },
-    clear() { stop(); sets.clear(); etag = null; stateKey = ''; closeViewer(); for (const url of urls.values()) URL.revokeObjectURL(url); urls.clear(); for (const r of roots.values()) r?.querySelectorAll?.('.pst-cover').forEach(n => n.remove()); },
+    decorate, mountEditor, refresh, openViewer, commitDraft,
+    captureDraft(kind) { return editor?.kind === kind ? editor : null; },
+    isBusy() { return !!editor?.busy; },
+    unmountEditor() { if (editor) { releaseDraft(editor); editor.host.hidden = true; editor.host.innerHTML = ''; editor = null; } },
+    clear() { releaseDraft(editor); editor=null; stop(); sets.clear(); etag = null; stateKey = ''; closeViewer(); for (const url of urls.values()) URL.revokeObjectURL(url); urls.clear(); for (const r of roots.values()) r?.querySelectorAll?.('.pst-cover').forEach(n => n.remove()); },
     _state: () => ({ sets: [...sets.entries()], etag }),
   };
 }

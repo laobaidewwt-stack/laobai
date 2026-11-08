@@ -64,3 +64,7 @@ html.pst-viewing,html.pst-viewing body{overflow:hidden}
 .pst-tools .pst-del.armed{border-color:#b4442c;color:#b4442c;font-weight:600}
 .pst-msg{margin:0;min-height:1em;font-size:12px;color:var(--p-ink2)}
 @media (prefers-reduced-motion:reduce){.pst-cover,.pst-viewer,.pst-mount img,.pst-v-mat img{transition:none;animation:none}}
+
+/* New-record previews: keep removal reachable above the image. */
+.pst-draft .pst-mount{bottom:30px}
+.pst-draft>[data-pst-ed="draft-remove"]{position:absolute;z-index:2;bottom:0;left:0;right:0;min-height:30px;padding:3px 2px;font-size:11px}
