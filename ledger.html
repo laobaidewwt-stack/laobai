@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-NY7kfo6NSM9bJ1/yzr4TUg8UXAsQ8cCv0s0kUnSD9xk='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-f84AzZ0mVsu07uRBKoMKMnZpUolEPW0ChOZhwEKaHRM='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2055,8 +2055,8 @@ async function saveDay(patch,msg){
 function populateWork(id,snapshot){
   const w=snapshot||(id?S.works.get(id):null);S.editId=id||null;
   $('#wfTitle').textContent=w?'编辑作品':'新作品';
-  $('#wKind').innerHTML=[...new Set(KINDS.concat(w&&w.kind?[w.kind]:[]))].map(k=>'<option>'+esc(k)+'</option>').join('');
-  $('#wStatus').innerHTML=[...new Set(STATUS.concat(w&&w.status?[w.status]:[]))].map(k=>'<option>'+esc(k)+'</option>').join('');
+  $('#wKind').innerHTML=[...new Set(KINDS.concat(w&&w.kind?[w.kind]:[]))].map(k=>'<option value="'+esc(k)+'">'+esc(k)+'</option>').join('');
+  $('#wStatus').innerHTML=[...new Set(STATUS.concat(w&&w.status?[w.status]:[]))].map(k=>'<option value="'+esc(k)+'">'+esc(k)+'</option>').join('');
   $('#wZh').value=w?w.zh||'':'';$('#wEn').value=w?w.en||'':'';$('#wKind').value=w?w.kind||'完整剧':'完整剧';$('#wStatus').value=w?w.status||'翻译中':'翻译中';
   $('#wSub').value=w?w.subLink||'':'';$('#wTitle').value=w?w.title||'':'';$('#wCopy').value=w?w.copy||'':'';$('#wPub').value=w?w.pubLink||'':'';$('#wNotes').value=w?w.notes||'':'';
   $('#wHook').value=w?w.hook||'':'';$('#wGenre').value=w?w.genre||'':'';$('#wState').value=w?w.state||'':'';$('#wCp').value=w?w.cp||'':'';$('#wRec').value=w?w.rec||'':'';$('#wPaste').value='';
@@ -2384,7 +2384,7 @@ function pkAirChips(){
 }
 function pkReadIssues(){return [...document.querySelectorAll('#kIssues .pk-irow')].map(r=>{const i=+r.dataset.i,o=S.pkIssues[i]||{};return Object.assign({},o,{ep:r.querySelector('.pk-ep').value.trim(),kind:r.querySelector('.pk-kind').value,action:r.querySelector('.pk-act').value,note:r.querySelector('.pk-inote').value.trim(),done:r.querySelector('.pk-idone').checked})})}
 function pkIssueRows(){
-  const opt=(arr,v)=>arr.map(s=>'<option'+(s===v?' selected':'')+'>'+s+'</option>').join('');
+  const opt=(arr,v)=>arr.map(s=>'<option value="'+esc(s)+'"'+(s===v?' selected':'')+'>'+esc(s)+'</option>').join('');
   $('#kIssues').innerHTML=S.pkIssues.length?S.pkIssues.map((x,i)=>'<div class="pk-irow" data-i="'+i+'">'+
     '<input class="in pk-ep" inputmode="numeric" placeholder="第几集" value="'+esc(x.ep||'')+'">'+
     '<select class="in pk-kind">'+opt(PK_KIND,x.kind||'缺集')+'</select>'+
@@ -2800,5 +2800,6 @@ async function offerFile(name,data,mime){
 
 </body>
 </html>
+
 
 
