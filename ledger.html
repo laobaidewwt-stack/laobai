@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vBxIsLq5ZwXSnGLUNXW67Nq/FxIoi5JW6UgthzW8234='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Qv54HEf2y4cj9nkHF5nsJ/lU99BhmMu6hKNDwYIwUZg='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1342,7 +1342,7 @@ class LedgerTransactions {
  async close(){this.dead=true;await this.adapter.close()}
 }
 
-function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,toast,findWork,normName,ymd,legacyLog,writable}){
+function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,toast,findWork,normName,ymd,legacyLog,writable,posters}){
  const $=s=>document.querySelector(s),uuid=()=>crypto.randomUUID();let work=null,log=null,opening=0,recoveryIntent=null,autoTimer=null;const autoAttempted=new Set();
  const fields={zh:'wZh',en:'wEn',kind:'wKind',status:'wStatus',subLink:'wSub',title:'wTitle',copy:'wCopy',pubLink:'wPub',notes:'wNotes',hook:'wHook',genre:'wGenre',state:'wState',cp:'wCp',rec:'wRec'};
  const message=error=>({read_only:'当前只读，未发送修改；云端记录仍会更新。',conflict:'另一台设备已修改这部作品。本次没有覆盖，请先查看草稿，再载入最新版本。',unsupported:'当前云端尚未启用同步保存。本次未写入，草稿已保留。',title_required:'请填写作品中文名。',loading:'正在读取作品，请稍候再保存。',subtitle_too_long:'字幕全文超过 240,000 字节，请缩短后再保存。',count_required:'请明确填写完成字幕条数：新翻译或官中来源至少一项大于 0。',recovery_scope_unverified:'未找到匹配的已提交回执，本次没有重发。请查看并复制原草稿，手动核对云端结果；不要直接重复记一次交付。',status_only:'这个状态需要交付信息。仅文案或无字幕作品暂不能用此表单新设完成状态；草稿已保留。',stale_key:'钥匙已变更，本次草稿不会在另一把钥匙下重试。',scope_unavailable:'本机无法持久保存恢复标记，本次未发送云端写入。请允许网站保存数据后重新打开。',journal_unavailable:'本机无法安全保存恢复记录，未开始新的云端写入。',rejected_journal_pending:'云端已明确拒绝这次保存，但本机存储暂时无法归档。原草稿仍保留，请勿关闭页面；恢复存储后再点保存，只会先归档，不会重发被拒绝的操作。',coordination_unavailable:'此浏览器不支持安全保存锁，请换用最新浏览器。',incompatible_journal:'本机保存记录版本不兼容，已保留原记录，请勿清除网站数据。',pending_operation:'还有一次保存结果待核实，请先核实上一条结果。',rejected_work:'这部作品上次保存被拒绝，原草稿仍保留。请直接查看或放弃该草稿；其他作品可以照常保存。',rejected_operation:'这次保存已明确被拒绝，未覆盖云端。请直接查看或放弃原草稿；其他作品可以照常保存。',cancelled_recovery:'已取消自动核实，原草稿仍保留。'}[error?.code]||'保存结果尚未确认。请用“核实上次保存结果”；重载后未找到回执不会重发，原稿可复制并手动核对。');
@@ -1375,7 +1375,7 @@ function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,to
   guard();const pending=await tx.pending(edit.intentId);guard();if(pending?.record?.state!=='uncertain'||autoAttempted.has(edit.intentId))return;autoAttempted.add(edit.intentId);recoveryIntent=edit.intentId;cancelAuto();const operationId=pending.record.operationId;
    // Navigation changes the form ticket, not authorization to read the original
    // already-sent operation. Only the matching journal operation can be cleared.
-   autoTimer=setTimeout(async()=>{autoTimer=null;try{guard();const result=await tx.recover(edit.intentId,{guard,operationId});guard();if(!result?.committed)return;edit.done=true;if(ownsForm()){$('#'+prefix+'TxStatus').textContent='已保存，已自动核实云端结果。';const posterOK=prefix!=='w'||await POSTERS.commitDraft('work',edit.id,POSTERS.captureDraft('work'));if(!ownsForm())return;if(posterOK)closeOv()}toast('已保存，已自动核实，没有重复提交。');await refreshPending()}catch(e){try{guard();if(ownsForm())$('#'+prefix+'TxStatus').textContent=message(e);await refreshPending()}catch{}}},2000);
+   autoTimer=setTimeout(async()=>{autoTimer=null;try{guard();const result=await tx.recover(edit.intentId,{guard,operationId});guard();if(!result?.committed)return;edit.done=true;if(ownsForm()){$('#'+prefix+'TxStatus').textContent='已保存，已自动核实云端结果。';const posterOK=prefix!=='w'||await posters.commitDraft('work',edit.id,posters.captureDraft('work'));if(!ownsForm())return;if(posterOK)closeOv()}toast('已保存，已自动核实，没有重复提交。');await refreshPending()}catch(e){try{guard();if(ownsForm())$('#'+prefix+'TxStatus').textContent=message(e);await refreshPending()}catch{}}},2000);
   }catch{}
  }
  async function openWork(id){
@@ -1400,8 +1400,8 @@ function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,to
   return request;
  }
  async function saveWork(e){e.preventDefault();if(!writable())return toast('还连不上账本，暂时不能保存');if(!work||work.busy||work.done)return;
-  const edit=work,posterDraft=POSTERS.captureDraft('work'),generation=opening,ownsForm=()=>work===edit&&opening===generation&&!$('#workOv').hidden;
-  try{const request=edit.payload||requestFromWork();formDisable('#workForm',true);await getDb().transactions().save(edit,request);if(ownsForm()){const posterOK=await POSTERS.commitDraft('work',edit.id,posterDraft);if(!ownsForm())return;if(posterOK)closeOv();else $('#wTxStatus').textContent='作品已保存，海报未全部上传，请在海报区重试。'}toast(request.mode==='save'?'作品资料和字幕已一起保存，未新增交付':'作品、字幕和交付信息已同步保存');}
+  const edit=work,posterDraft=posters.captureDraft('work'),generation=opening,ownsForm=()=>work===edit&&opening===generation&&!$('#workOv').hidden;
+  try{const request=edit.payload||requestFromWork();formDisable('#workForm',true);await getDb().transactions().save(edit,request);if(ownsForm()){const posterOK=await posters.commitDraft('work',edit.id,posterDraft);if(!ownsForm())return;if(posterOK)closeOv();else $('#wTxStatus').textContent='作品已保存，海报未全部上传，请在海报区重试。'}toast(request.mode==='save'?'作品资料和字幕已一起保存，未新增交付':'作品、字幕和交付信息已同步保存');}
   catch(e){if(ownsForm()){$('#wTxStatus').textContent=message(e);if(!edit.payload)formDisable('#workForm',false);else $('#workForm button[type="submit"]').disabled=false;try{await markRejected(edit,'w')}catch{}}await scheduleCheck(edit,generation,ownsForm,'w');toast(message(e))}finally{await refreshPending()}
  }
 
@@ -2852,7 +2852,7 @@ async function offerFile(name,data,mime){
 (async()=>{
   // Every device uses the same cloud ledger, never an embedded preview database.
   db=supaDb();
-  txForms=createTransactionForms({document,getDb:()=>db,S,populateWork,openOv,closeOv,toast,findWork,normName,ymd,legacyLog:saveLegacyLog,writable:()=>writable});
+  txForms=createTransactionForms({document,getDb:()=>db,S,populateWork,openOv,closeOv,toast,findWork,normName,ymd,legacyLog:saveLegacyLog,writable:()=>writable,posters:POSTERS});
   writable=false;setStatus(CLOUD.key?'正在读取云端账本…':'请输入一次钥匙，打开这台设备上的账本。');
   if(!CLOUD.key)showLedgerAccess();
   const timer=setTimeout(()=>{if(CLOUD.key&&S.ready<3)setStatus('暂时连不上账本，显示的可能不是最新内容。')},10000);
