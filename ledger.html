@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Qv54HEf2y4cj9nkHF5nsJ/lU99BhmMu6hKNDwYIwUZg='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-a5d0YlqfT7jybjfAKlzIgZ7uw/MArCmKeTLK+TeM54g='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -572,7 +572,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
 }
 
 .pk-tragedy-option{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:44px;color:var(--ink);font-size:14px}.pk-tragedy-option input{width:18px;height:18px;accent-color:#976a59}.pk-tragedy-option small{font-size:12px;opacity:.65}.pk-tragedy-tag{display:inline-block;margin:6px 0;padding:3px 9px;border:1px solid currentColor;border-radius:3px;color:var(--ink);font-size:12px;font-weight:600;letter-spacing:.12em;opacity:.85}
-.pk-topic-filter{margin-top:12px;color:var(--ink);font-size:13px}.pk-topic-filter summary{cursor:pointer;padding:10px 0}.pk-topic-filter .chips{max-height:170px;overflow:auto;padding-bottom:6px}.pk-topic-tags{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}.pk-topic-tags .chip{font-size:12px;min-height:36px;padding:4px 9px}#kTopicChoices{max-height:180px;overflow:auto}#kTopicChoices .chip{min-height:44px}#pkTopicChips .chip{min-height:44px}
+.pk-topic-filter{margin-top:12px;color:var(--ink);font-size:13px}.pk-topic-filter summary{cursor:pointer;padding:10px 0}.pk-topic-filter .chips{max-height:170px;overflow:auto;padding-bottom:6px}.pk-topic-tags{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}.pk-topic-tags .chip{font-size:12px;min-height:36px;padding:4px 9px}#kTopicChoices{max-height:300px;overflow:auto}#kTopicChoices .pk-topic-row,#pkTopicChips .pk-topic-row{display:block;margin:10px 0}#kTopicChoices .pk-topic-row>span,#pkTopicChips .pk-topic-row>span{display:block;font-size:12px;margin-bottom:6px}#kTopicSuggestions{margin-bottom:10px}#pkTopicChips .pk-topic-row .chips{max-height:none}#kTopicChoices .chip{min-height:44px}#pkTopicChips .chip{min-height:44px}
 
 /* Desktop drama index: a poster-led header, not a stretched mobile card.
    Scope all changes above 900px; the established phone layout is untouched. */
@@ -597,6 +597,27 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
   #v-picks .pk-links{flex-wrap:wrap}
   #v-picks .pk-acts{margin-top:18px;padding-top:13px;flex-wrap:wrap}
   #v-picks .pk-acts>div{gap:16px}
+}
+
+/* Shared poster-led card header. Keep the established paper/sky theme. */
+@media (min-width:900px){
+  #v-picks .paper.pk.has-cover>.pk-head{grid-column:1/-1;grid-row:1;margin-bottom:8px}
+  #v-picks .paper.pk.has-cover>.pst-cover{grid-row:2/6;margin-top:4px}
+  #v-picks .paper.pk.has-cover>.pk-title{grid-row:2;margin-top:0}
+  #v-picks .paper.pk.has-cover>.pk-en{grid-row:3}
+  #v-picks .paper.pk.has-cover>.pk-topic-tags{grid-row:4}
+  #v-picks .paper.pk.has-cover>.pk-meta{grid-row:5}
+}
+@media (max-width:899.98px){
+  #kTopicChoices{max-height:none;overflow:visible}
+  #v-picks .paper.pk.has-cover{display:grid;grid-template-columns:clamp(84px,26vw,112px) minmax(0,1fr);column-gap:16px;align-content:start}
+  #v-picks .paper.pk.has-cover>*{grid-column:1/-1;min-width:0;clear:none}
+  #v-picks .paper.pk.has-cover>.pk-head{grid-row:1}
+  #v-picks .paper.pk.has-cover>.pst-cover{grid-column:1;grid-row:2/6;float:none;width:100%;margin:12px 0 0;align-self:start;transform:rotate(-1.4deg)}
+  #v-picks .paper.pk.has-cover>.pk-title{grid-column:2;grid-row:2;line-height:1.45;overflow-wrap:anywhere}
+  #v-picks .paper.pk.has-cover>.pk-en{grid-column:2;grid-row:3;overflow-wrap:anywhere}
+  #v-picks .paper.pk.has-cover>.pk-topic-tags{grid-column:2;grid-row:4;align-self:start}
+  #v-picks .paper.pk.has-cover>.pk-meta{grid-column:2;grid-row:5;align-self:start;line-height:1.6;overflow-wrap:anywhere}
 }
 
 </style>
@@ -762,7 +783,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
     </dialog>
 
     <div class="chips sky-chips pk-filter" id="pkStatusChips"></div>
-    <details class="pk-topic-filter" id="pkTopicFilter"><summary id="pkTopicSummary">按题材筛选</summary><div class="chips sky-chips" id="pkTopicChips" aria-label="题材筛选"></div></details>
+    <details class="pk-topic-filter" id="pkTopicFilter"><summary id="pkTopicSummary">按题材筛选</summary><div class="sky-chips" id="pkTopicChips" aria-label="题材筛选"></div></details>
     <div class="stack" id="pkList" style="margin-top:14px"></div>
     <div class="pk-me-row"><div class="pk-me" id="pkWho"></div><button id="pkPushEntry" type="button" class="linkbtn" hidden>通知</button></div>
   </section>
@@ -813,7 +834,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
       <label class="f">英文名<input class="in" id="kEn"></label>
     </div>
     <label class="f">在哪看到的（链接）<input class="in" id="kLink" inputmode="url" placeholder="https://"></label>
-    <div class="f"><span>类型 / 题材标签 · 可多选</span><div class="chips" id="kTopicChoices" aria-label="选择题材标签"></div><label for="kGenre" class="muted">也可自行添加，用顿号或逗号分隔；保存后下次可直接选。</label><input class="in" id="kGenre" aria-label="类型或题材标签" placeholder="欧美AI、重生、双强……"><small id="kTopicHint" class="muted"></small></div>
+    <div class="f"><span>类型 / 题材标签 · 可多选</span><div id="kTopicSuggestions" class="chips" aria-label="建议题材"></div><div id="kTopicChoices" aria-label="选择题材标签"></div><label for="kGenre" class="muted">也可输入别名，用顿号或逗号分隔；主动修改标签并保存时统一名称。</label><input class="in" id="kGenre" aria-label="类型或题材标签" placeholder="欧美AI、重生、双强……"><small id="kTopicHint" class="muted"></small></div>
     <label class="pk-tragedy-option"><input type="checkbox" id="kTragedy"> <span>标记为悲剧</span><small>选填，可随时取消</small></label>
     <label class="f">时长（选填 · 时:分:秒）<input class="in" id="kDuration" maxlength="80" inputmode="numeric" aria-describedby="kDurationHelp" placeholder="00:00:00"><small id="kDurationHelp">连续输入时分秒，例如 013020 → 01:30:20；原有文字说明仍保留。</small></label>
     <label class="f">为什么推荐<textarea class="in" id="kNote" rows="2" placeholder="一句话就行"></textarea></label>
@@ -2003,7 +2024,7 @@ function searchText(value){
 }
 function searchMatches(values,query){return searchText(values.filter(v=>v!=null).join('\n')).includes(searchText(query).trim())}
 function searchWorks(query){if(SHARED_ONLY)return [];return [...S.works.values()].filter(w=>searchMatches([w.zh,w.en,w.title,w.notes,...copyVersions(w).flatMap(v=>[v.title,v.text])],query)||(S.subOn&&S.subs&&searchMatches([S.subs.get(w.id)],query)))}
-function searchPicks(query){return [...S.picks.values()].filter(p=>searchMatches([p.zh,p.en,p.note,p.genre,p.by,p.claim,p.status],query))}
+function searchPicks(query){return [...S.picks.values()].filter(p=>searchMatches([p.zh,p.en,p.note,p.genre,p.by,p.claim,p.status],query)||pkTopicSearchMatch(p.genre,query))}
 function openSearchResult(id,pick){
   if(!(pick?S.picks:S.works).has(id))return toast('这条记录已变化，请重新搜索');
   searchReturn={query:S.wq,view:S.view,wf:S.wf,copyView:S.copyView,pkGroup:S.pkGroup,date:PK_DATE};
@@ -2355,19 +2376,38 @@ async function savePaste(){
 
 /* ---------- shared picks (剧单) ---------- */
 // Topic tags stay in the existing genre field: no migration or changes to old rows.
-const PK_TOPIC_DEFAULTS=['校园','职场','豪门','古装','悬疑','奇幻','重生','穿越','契约恋爱','先婚后爱','青梅竹马','双强'];
+const PK_TOPIC_FALLBACK={"hans":{"職場":"职场","現代":"现代","黑幫":"黑帮","豪門":"豪门","繼承人":"继承人","校園":"校园","大學":"大学","學姐":"学姐","古裝":"古装","古風":"古风","宮鬥":"宫斗","宅鬥":"宅斗","宮":"宫","將軍":"将军","仙俠玄幻":"仙侠玄幻","仙俠":"仙侠","修煉":"修炼","龍":"龙","喪屍":"丧尸","星際":"星际","靈異恐怖":"灵异恐怖","靈異":"灵异","驅鬼":"驱鬼","無限流":"无限流","恐怖遊戲":"恐怖游戏","驅魔":"驱魔","詛咒":"诅咒","懸疑":"悬疑","刑偵":"刑侦","兇手":"凶手","偵探":"侦探","失蹤":"失踪","僞骨科":"伪骨科","繼姐妹":"继姐妹","繼兄妹":"继兄妹","義姐":"义姐","養妹":"养妹","繼姐":"继姐","繼妹":"继妹","繼兄":"继兄","繼弟":"继弟","兒媳":"儿媳","準婆婆":"准婆婆","男友的媽媽":"男友的妈妈","男友的媽":"男友的妈","年齡差":"年龄差","繼母":"继母","小媽":"小妈","長輩":"长辈","師生上下級":"师生上下级","師生":"师生","上下級":"上下级","祕書":"秘书","保鏢":"保镖","老師":"老师","青梅竹馬":"青梅竹马","發小":"发小","竹馬":"竹马","初戀":"初恋","死對頭":"死对头","歡喜冤家":"欢喜冤家","宿敵":"宿敌","雙強":"双强","強強":"强强","霸總":"霸总","總裁":"总裁","霸道總裁":"霸道总裁","女總裁":"女总裁","系統任務":"系统任务","系統":"系统","任務":"任务","綁定":"绑定","重來":"重来","回到過去":"回到过去","穿書":"穿书","穿進":"穿进","契約戀愛":"契约恋爱","假扮情侶":"假扮情侣","協議戀愛":"协议恋爱","契約":"契约","先婚後愛":"先婚后爱","閃婚":"闪婚","聯姻":"联姻","協議結婚":"协议结婚","追妻火葬場":"追妻火葬场","火葬場":"火葬场","離婚":"离婚","後悔":"后悔","復仇逆襲":"复仇逆袭","復仇":"复仇","逆襲":"逆袭","打臉":"打脸","報復":"报复","馬甲身份":"马甲身份","馬甲":"马甲","隱藏身份":"隐藏身份","隱藏":"隐藏","萌寶":"萌宝","帶球跑":"带球跑","寶寶":"宝宝","懷孕":"怀孕","甜寵":"甜宠","寵溺":"宠溺","寵":"宠","虐戀":"虐恋","悲劇":"悲剧","悲劇結局":"悲剧结局","歐美AI":"欧美AI","偽骨科":"伪骨科","歐美":"欧美","歐美 AI":"欧美 AI","異世界":"异世界"},"hant":{"职场":"職場","现代":"現代","黑帮":"黑幫","豪门":"豪門","继承人":"繼承人","校园":"校園","大学":"大學","学姐":"學姐","古装":"古裝","古风":"古風","宫斗":"宮鬥","宅斗":"宅鬥","宫":"宮","将军":"將軍","仙侠玄幻":"仙俠玄幻","仙侠":"仙俠","修炼":"修煉","龙":"龍","丧尸":"喪屍","星际":"星際","灵异恐怖":"靈異恐怖","灵异":"靈異","驱鬼":"驅鬼","无限流":"無限流","恐怖游戏":"恐怖遊戲","驱魔":"驅魔","诅咒":"詛咒","悬疑":"懸疑","刑侦":"刑偵","凶手":"兇手","侦探":"偵探","失踪":"失蹤","伪骨科":"僞骨科","继姐妹":"繼姐妹","继兄妹":"繼兄妹","义姐":"義姐","养妹":"養妹","继姐":"繼姐","继妹":"繼妹","继兄":"繼兄","继弟":"繼弟","儿媳":"兒媳","准婆婆":"準婆婆","男友的妈妈":"男友的媽媽","男友的妈":"男友的媽","年龄差":"年齡差","继母":"繼母","小妈":"小媽","长辈":"長輩","师生上下级":"師生上下級","师生":"師生","上下级":"上下級","秘书":"祕書","保镖":"保鏢","老师":"老師","青梅竹马":"青梅竹馬","发小":"發小","竹马":"竹馬","初恋":"初戀","死对头":"死對頭","欢喜冤家":"歡喜冤家","宿敌":"宿敵","双强":"雙強","强强":"強強","霸总":"霸總","总裁":"總裁","霸道总裁":"霸道總裁","女总裁":"女總裁","系统任务":"系統任務","系统":"系統","任务":"任務","绑定":"綁定","重来":"重來","回到过去":"回到過去","穿书":"穿書","穿进":"穿進","契约恋爱":"契約戀愛","假扮情侣":"假扮情侶","协议恋爱":"協議戀愛","契约":"契約","先婚后爱":"先婚後愛","闪婚":"閃婚","联姻":"聯姻","协议结婚":"協議結婚","追妻火葬场":"追妻火葬場","火葬场":"火葬場","离婚":"離婚","后悔":"後悔","复仇逆袭":"復仇逆襲","复仇":"復仇","逆袭":"逆襲","打脸":"打臉","报复":"報復","马甲身份":"馬甲身份","马甲":"馬甲","隐藏身份":"隱藏身份","隐藏":"隱藏","萌宝":"萌寶","带球跑":"帶球跑","宝宝":"寶寶","怀孕":"懷孕","甜宠":"甜寵","宠溺":"寵溺","宠":"寵","虐恋":"虐戀","悲剧":"悲劇","悲剧结局":"悲劇結局","欧美AI":"歐美AI","欧美":"歐美","欧美 AI":"歐美 AI","异世界":"異世界"}};
+const PK_TOPIC_DATA={"version":1,"note":"标准标签 30 个。aliases：输入或搜索时都当作这个标签。keywords：只用于「可能是」建议，点了才加。source 标签（如 欧美AI）不在此列，照旧保留。","limits":{"total":5,"background":[1,1],"relation":[0,2],"trope":[0,2],"tone":[0,1]},"sourceTags":["欧美AI"],"legacyMap":{"职场":"都市","歐美AI":"欧美AI","偽骨科":"伪骨科","系統任務":"系统任务","鬼怪":"灵异恐怖","黑道女王":"霸总","欧美":"欧美AI","歐美":"欧美AI"},"pendingLegacy":{"異世界":"待用户定：穿越 或 奇幻","小孩不宜":"不归类：不是题材，是内容提醒；建议和来源标签一样单独保留，不计入 5 个"},"groups":[{"key":"background","name":"背景","tags":[{"tag":"都市","when":"现代城市、职场、日常","aliases":["职场","现代","黑帮","黑道"],"keywords":["公司","黑帮","Office","Mafia","Mob"]},{"tag":"豪门","when":"有钱人家、家族争产、继承","aliases":["世家","富家","千金"],"keywords":["豪门","千金","继承人","Heiress","Heir","Billionaire Family"]},{"tag":"校园","when":"学校、大学、宿舍","aliases":["青春","大学","高中"],"keywords":["校园","学姐","室友","College","Campus","High School","Roommate"]},{"tag":"古装","when":"古代、宫廷、江湖","aliases":["古风","宫斗","宅斗"],"keywords":["宫","公主","王妃","将军","Empress","Emperor","Concubine"]},{"tag":"仙侠玄幻","when":"修仙、东方神话","aliases":["修仙","玄幻","仙侠"],"keywords":["仙","修炼","魔尊","Immortal","Cultivation"]},{"tag":"奇幻","when":"西方魔法、吸血鬼、狼人、龙","aliases":["西幻","吸血鬼","狼人","魔法"],"keywords":["吸血鬼","狼人","女巫","龙","Vampire","Werewolf","Lycan","Alpha","Luna","Witch","Dragon","Mermaid"]},{"tag":"科幻末世","when":"未来、末日、丧尸、星际","aliases":["末世","末日","丧尸","星际"],"keywords":["末世","丧尸","星际","Apocalypse","Zombie","Doomsday","Galaxy","Android"]},{"tag":"灵异恐怖","when":"鬼怪、驱魔、恐怖游戏、无限流","aliases":["恐怖","灵异","驱鬼","鬼怪","无限流","恐怖游戏"],"keywords":["鬼","驱魔","诅咒","恐怖","Ghost","Haunted","Horror","Exorcist","Demon","Curse"]},{"tag":"悬疑","when":"破案、谜团、犯罪","aliases":["推理","刑侦","犯罪"],"keywords":["凶手","侦探","失踪","Murder","Detective","Killer","Mystery"]}]},{"key":"relation","name":"关系","tags":[{"tag":"伪骨科","when":"没有血缘的兄妹、姐妹、姐弟（继、义、养）","aliases":["骨科","继姐妹","继兄妹","义姐","养妹"],"keywords":["继姐","继妹","继兄","继弟","义姐","养妹","Stepsister","Stepbrother","Stepsibling"]},{"tag":"婆媳","when":"婆婆和儿媳，或者恋上伴侣的母亲","aliases":["婆婆","儿媳","准婆婆","男友的妈妈"],"keywords":["婆婆","儿媳","男友的妈","Mother-in-law","Boyfriend's Mom","Fiancé's Mother","Son's Wife"]},{"tag":"年龄差","when":"年上年下、长辈、继母、朋友的妈妈","aliases":["年上","年下","继母","小妈","长辈"],"keywords":["继母","阿姨","教母","Stepmom","Older Woman","Godmother","Best Friend's Mom"]},{"tag":"师生上下级","when":"老师和学生、上司和下属、雇主和保镖","aliases":["师生","上下级","秘书","保镖"],"keywords":["老师","教授","秘书","保镖","Professor","Teacher","Secretary","Assistant","Bodyguard"]},{"tag":"青梅竹马","when":"从小认识","aliases":["发小","竹马","初恋"],"keywords":["青梅","竹马","发小","Childhood","First Love"]},{"tag":"死对头","when":"从敌人到恋人","aliases":["欢喜冤家","宿敌","仇人"],"keywords":["死对头","宿敌","仇人","Enemy","Rival","Nemesis"]},{"tag":"双强","when":"两个人都很强，势均力敌","aliases":["强强"],"keywords":[]},{"tag":"霸总","when":"一方是总裁、富豪、掌权的人","aliases":["总裁","霸道总裁","女总裁","黑道女王"],"keywords":["总裁","首富","CEO","Billionaire","Tycoon","Boss"]}]},{"key":"trope","name":"情节梗","tags":[{"tag":"系统任务","when":"被系统绑定、做任务、攻略角色","aliases":["系统","任务","攻略","绑定"],"keywords":["系统","任务","攻略","System","Mission","Quest","Level Up","Game"]},{"tag":"重生","when":"死后回到过去重来","aliases":["重来","回到过去"],"keywords":["重生","回到","Reborn","Rebirth","Second Chance"]},{"tag":"穿越","when":"穿到别的时代、世界或书里","aliases":["穿书","穿成","穿进"],"keywords":["穿越","穿书","穿成","Transmigrated","Isekai","Another World"]},{"tag":"替身","when":"被当成别人的影子","aliases":["白月光替身"],"keywords":["替身","白月光","Substitute","Stand-in","Replacement"]},{"tag":"契约恋爱","when":"假扮情侣、约定好的恋爱","aliases":["假扮情侣","协议恋爱"],"keywords":["契约","假扮","Contract","Fake Girlfriend","Fake Dating","Pretend"]},{"tag":"先婚后爱","when":"先结婚再相爱、闪婚、联姻","aliases":["闪婚","联姻","协议结婚"],"keywords":["闪婚","联姻","Arranged Marriage","Married a Stranger","Bride"]},{"tag":"追妻火葬场","when":"伤害对方后拼命追回","aliases":["火葬场","追妻"],"keywords":["前妻","离婚","后悔","Ex-wife","Divorce","Regret","Too Late"]},{"tag":"复仇逆袭","when":"被害以后反击、打脸","aliases":["复仇","逆袭","打脸","爽文"],"keywords":["复仇","报复","打脸","Revenge","Payback"]},{"tag":"马甲身份","when":"隐藏身份、真假千金","aliases":["马甲","真假千金","隐藏身份"],"keywords":["真千金","假千金","隐藏","Hidden Identity","Secret Heiress","In Disguise"]},{"tag":"萌宝","when":"孩子推动剧情、带球跑","aliases":["带球跑","萌娃"],"keywords":["萌宝","宝宝","怀孕","Baby","Pregnant","Twins"]}]},{"key":"tone","name":"基调","tags":[{"tag":"甜宠","when":"从头甜到尾","aliases":["甜","宠溺","甜文"],"keywords":["宠","甜","Sweet","Spoiled"]},{"tag":"虐恋","when":"过程很虐，结局不一定悲","aliases":["虐","虐心"],"keywords":["虐","Heartbreak"]},{"tag":"悲剧","when":"结局是悲剧（现在已有「悲剧」勾选）","aliases":["BE","悲剧结局"],"keywords":[]}]}]};
 let PK_TOPIC='';
 let pkTopicToHans,pkTopicToHant;
-function pkTopicConvert(v,mode='hans'){const t=String(v||'');if(!window.OpenCC)return t;if(!pkTopicToHans){pkTopicToHans=window.OpenCC.ConverterFactory(window.OpenCC.Locale.to.cn);pkTopicToHant=window.OpenCC.ConverterFactory(window.OpenCC.Locale.from.cn)}return (mode==='hant'?pkTopicToHant:pkTopicToHans)(t)}
-function pkTopicLabel(v){const t=pkTopicConvert(v).trim();return /^欧美(?:\s*ai)?$/i.test(t)?'欧美AI':t}
+function pkTopicConvert(v,mode='hans'){const t=String(v||'');if(!window.OpenCC){const map=PK_TOPIC_FALLBACK[mode==='hant'?'hant':'hans'];const keys=Object.keys(map).sort((a,b)=>b.length-a.length);const pattern=keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');return pattern?t.replace(new RegExp(pattern,'g'),k=>map[k]):t;}if(!pkTopicToHans){pkTopicToHans=window.OpenCC.ConverterFactory(window.OpenCC.Locale.to.cn);pkTopicToHant=window.OpenCC.ConverterFactory(window.OpenCC.Locale.from.cn)}return (mode==='hant'?pkTopicToHant:pkTopicToHans)(t)}
+function pkTopicFold(v){return pkTopicConvert(v).normalize('NFKC').trim().toLocaleLowerCase()}
+function pkTopicDefinition(v){const key=pkTopicFold(v);for(const g of PK_TOPIC_DATA.groups)for(const t of g.tags)if([t.tag,...t.aliases].some(a=>pkTopicFold(a)===key))return {group:g,tag:t};return null}
+function pkTopicLabel(v){const raw=String(v||'').trim(),key=pkTopicFold(raw);if(/^欧美(?:\s*ai)?$/i.test(key))return '欧美AI';const legacy=Object.entries(PK_TOPIC_DATA.legacyMap).find(([a])=>pkTopicFold(a)===key);if(legacy)return legacy[1];return pkTopicDefinition(raw)?.tag.tag||pkTopicConvert(raw)}
 function pkTopicInput(v){return pkTopicConvert(v,window.LedgerScript?.mode||'hans')}
-function pkTopicKey(v){return pkTopicLabel(v).toLocaleLowerCase()}
-function pkTopics(v){const seen=new Set();return String(v||'').replace(/(^|[、,，;；/|\s])悲[剧劇](?=$|[、,，;；/|\s])/g,'$1、悲剧、').split(/[、,，;；/|\n]+/).map(pkTopicLabel).filter(x=>{const k=pkTopicKey(x);if(!k||seen.has(k))return false;seen.add(k);return true})}
-function pkTopicMatch(p,tag){return !tag||pkTopics(p.genre).some(x=>pkTopicKey(x)===pkTopicKey(tag))}
-function pkKnownTopics(){return pkTopics([...PK_TOPIC_DEFAULTS,...[...S.picks.values()].flatMap(p=>pkTopics(p.genre)),$('#kGenre').value].join('、'))}
-function pkRenderTopicChoices(){const selected=pkTopics($('#kGenre').value);$('#kTopicChoices').innerHTML=pkKnownTopics().map(t=>'<button type="button" class="chip" data-act="pk-topic-toggle" data-v="'+esc(t)+'" aria-pressed="'+selected.some(x=>pkTopicKey(x)===pkTopicKey(t))+'">'+esc(t)+'</button>').join('');$('#kTopicHint').textContent=selected.length?'已选 '+selected.length+' 个标签；再点一次可取消。':'标签选填，可以不选。'}
-function pkToggleTopic(tag){const list=pkTopics($('#kGenre').value),key=pkTopicKey(tag),has=list.some(x=>pkTopicKey(x)===key);$('#kGenre').value=pkTopicInput((has?list.filter(x=>pkTopicKey(x)!==key):[...list,tag]).join('、'));$('#kTragedy').checked=pkIsTragedy($('#kGenre').value);pkRenderTopicChoices()}
-function pkRenderTopicFilter(all){const counts=new Map();for(const p of all)for(const t of pkTopics(p.genre)){const key=pkTopicKey(t),old=counts.get(key);counts.set(key,{tag:old?.tag||t,count:(old?.count||0)+1})}const tags=[...counts.values()].sort((a,b)=>b.count-a.count||a.tag.localeCompare(b.tag,'zh'));if(PK_TOPIC&&!counts.has(pkTopicKey(PK_TOPIC)))PK_TOPIC='';$('#pkTopicSummary').textContent=PK_TOPIC?'题材：'+PK_TOPIC+' · 点开可切换':'按题材筛选';$('#pkTopicChips').innerHTML='<button type="button" class="chip" data-act="pk-topic-filter" data-v="" aria-pressed="'+!PK_TOPIC+'">全部题材</button>'+tags.map(({tag,count})=>'<button type="button" class="chip" data-act="pk-topic-filter" data-v="'+esc(tag)+'" aria-pressed="'+(pkTopicKey(PK_TOPIC)===pkTopicKey(tag))+'">'+esc(tag)+'<sup>'+count+'</sup></button>').join('')}
+function pkTopicKey(v){return pkTopicFold(pkTopicLabel(v))}
+function pkRawTopics(v){return String(v||'').replace(/(^|[、,，;；/|\s])悲[剧劇](?=$|[、,，;；/|\s])/g,'$1、悲剧、').split(/[、,，;；/|\n]+/).map(t=>t.trim()).filter(Boolean)}
+function pkTopics(v){const seen=new Set();return pkRawTopics(v).map(pkTopicLabel).filter(t=>{const k=pkTopicKey(t);if(seen.has(k))return false;seen.add(k);return true})}
+function pkSaveGenre(v){const seen=new Set();return pkRawTopics(v).map(t=>{const label=pkTopicLabel(t);return pkTopicDefinition(label)||label==='欧美AI'?label:t}).filter(t=>{const k=pkTopicKey(t);if(seen.has(k))return false;seen.add(k);return true}).join('、')}
+function pkTopicMatch(p,tag){return !tag||pkTopics(p.genre).some(t=>pkTopicKey(t)===pkTopicKey(tag))}
+function pkKnownTopics(){return PK_TOPIC_DATA.groups.flatMap(g=>g.tags.map(t=>t.tag))}
+function pkTopicKeywordMatch(text,keyword){const hay=pkTopicFold(text),needle=pkTopicFold(keyword);if(!needle)return false;if(/[a-z]/i.test(needle)){const escaped=needle.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return new RegExp('(^|[^a-z0-9_])'+escaped+'(?=$|[^a-z0-9_])','i').test(hay)}return hay.includes(needle)}
+function pkTopicSuggestions(){const text=[$('#kZh').value,$('#kEn').value,$('#kNote').value].join('\n'),selected=pkTopics($('#kGenre').value);return PK_TOPIC_DATA.groups.flatMap(g=>g.tags).filter(t=>!selected.includes(t.tag)&&t.keywords.some(k=>pkTopicKeywordMatch(text,k))).map(t=>t.tag)}
+function pkTopicButton(t,selected,act='pk-topic-toggle',count=null){return '<button type="button" class="chip" data-act="'+act+'" data-v="'+esc(t)+'" aria-pressed="'+selected+'">'+esc(pkTopicInput(t))+(count===null?'':'<sup>'+count+'</sup>')+'</button>'}
+function pkRenderTopicChoices(){const selected=pkTopics($('#kGenre').value),known=selected.filter(t=>pkTopicDefinition(t)),suggested=pkTopicSuggestions();$('#kTopicSuggestions').innerHTML=suggested.length?'<span>可能是：</span>'+suggested.map(t=>pkTopicButton(t,false)).join(''):'';
+ $('#kTopicChoices').innerHTML=PK_TOPIC_DATA.groups.map(g=>'<div class="pk-topic-row"><span>'+esc(g.name)+' · '+(g.key==='background'?'建议 1':'建议最多 '+PK_TOPIC_DATA.limits[g.key][1])+'</span><div class="chips">'+g.tags.map(t=>pkTopicButton(t.tag,selected.includes(t.tag))).join('')+'</div></div>').join('');
+ const warnings=[];for(const g of PK_TOPIC_DATA.groups){const n=known.filter(t=>g.tags.some(x=>x.tag===t)).length,[min,max]=PK_TOPIC_DATA.limits[g.key];if(n<min)warnings.push(g.name+'建议选 '+min+' 个');if(n>max)warnings.push(g.name+'超过 '+max+' 个')}
+ if(known.length>PK_TOPIC_DATA.limits.total)warnings.push('建议最多 5 个题材，当前仍可保存');
+ $('#kTopicHint').textContent='已选 '+known.length+' 个标准题材；来源和未归类旧标签不计入。'+warnings.join('；');
+}
+function pkToggleTopic(tag){const label=pkTopicLabel(tag),key=pkTopicKey(label);let raw=pkRawTopics($('#kGenre').value);const has=raw.some(t=>pkTopicKey(t)===key),def=pkTopicDefinition(label);if(has)raw=raw.filter(t=>pkTopicKey(t)!==key);else{raw.push(pkTopicInput(label))}$('#kGenre').value=raw.map(t=>{const label=pkTopicLabel(t);return pkTopicDefinition(label)||label==='欧美AI'?pkTopicInput(label):t}).join('、');$('#kTragedy').checked=pkTopics($('#kGenre').value).includes('悲剧');pkRenderTopicChoices()}
+function pkTopicSearchTerms(v){return pkTopics(v).flatMap(label=>{const d=pkTopicDefinition(label);return [label,...(d?.tag.aliases||[]),...(d?.tag.keywords||[]),...Object.entries(PK_TOPIC_DATA.legacyMap).filter(([,to])=>pkTopicKey(to)===pkTopicKey(label)).map(([from])=>from)]})}
+function pkRenderTopicFilter(all){const counts=new Map();for(const p of all)for(const t of pkTopics(p.genre)){const k=pkTopicKey(t),old=counts.get(k);counts.set(k,{tag:old?.tag||t,count:(old?.count||0)+1})}if(PK_TOPIC&&!counts.has(pkTopicKey(PK_TOPIC)))PK_TOPIC='';$('#pkTopicSummary').textContent=PK_TOPIC?'题材：'+pkTopicInput(PK_TOPIC)+' · 点开可切换':'按题材筛选';const button=t=>{const c=counts.get(pkTopicKey(t));return c?pkTopicButton(c.tag,pkTopicKey(PK_TOPIC)===pkTopicKey(c.tag),'pk-topic-filter',c.count):''};const extras=[...counts.values()].filter(x=>!pkTopicDefinition(x.tag)).sort((a,b)=>b.count-a.count);$('#pkTopicChips').innerHTML=pkTopicButton('',!PK_TOPIC,'pk-topic-filter').replace('></button>','>全部题材</button>')+PK_TOPIC_DATA.groups.map(g=>'<div class="pk-topic-row"><span>'+esc(g.name)+'</span><div class="chips">'+g.tags.map(t=>button(t.tag)).join('')+'</div></div>').join('')+(extras.length?'<div class="pk-topic-row"><span>来源 / 保留标签</span><div class="chips">'+extras.map(x=>button(x.tag)).join('')+'</div></div>':'')}
+
+function pkTopicSearchMatch(v,query){const q=pkTopicFold(query);return !!q&&(/[a-z]/i.test(q)||[...q].length>=2)&&pkTopicSearchTerms(v).some(t=>{if(t==='BE'&&String(query).trim()!=='BE')return false;return /[a-z]/i.test(q)?pkTopicFold(t)===q:pkTopicFold(t).includes(q)})}
+
+function pkSameTopics(a,b){return JSON.stringify(pkTopics(a).map(pkTopicKey).sort())===JSON.stringify(pkTopics(b).map(pkTopicKey).sort())}
+function pkPreserveUnchangedTopics(draft,edit){if(edit&&!edit.isNew&&pkSameTopics(draft.genre,edit.original.genre))draft.genre=edit.original.genre;return draft}
 const PK_STATUS=['待看','想做','不做','翻译中','已翻完','已上传','已发微博'];
 const PK_NEXT={'待看':['想做','不做'],'想做':['翻译中','不做'],'翻译中':['已翻完'],'已翻完':['已上传'],'已上传':['已发微博'],'已发微博':[],'不做':['待看']};
 const PK_AIR=['未完结','已完结'],PK_OFF=['还没出官中','已出官中'],PK_KIND=['缺集','字幕有误','画质差','音画不同步','其他'],PK_ACT=['补齐','汰换','修正','待定'];
@@ -2524,14 +2564,14 @@ function openPick(id){
  const p=pkEditable(r);if(!id){p.watchDate=PK_DATE||ymd(new Date());p.genre='欧美AI';}
  PK_EDIT={id:id||crypto.randomUUID(),isNew:!id,revision:r?.revision,original:structuredClone(p),saving:false};
  S.pkEdit=id||null;S.pkFormStatus=p.status;S.pkAir=p.airing;S.pkOff=p.official;S.pkIssues=structuredClone(p.issues);
- $('#kTitle').textContent=id?'改一下这部剧':'放一部剧';$('#kZh').value=p.zh;$('#kEn').value=p.en;$('#kLink').value=p.link;$('#kGenre').value=p.genre;$('#kTragedy').checked=pkIsTragedy(p.genre);$('#kDuration').value=p.duration;$('#kDuration').setCustomValidity('');$('#kNote').value=p.note;$('#kPub').value=p.pubLink;$('#kWatchDate').value=p.watchDate||'';$('#kEpsDone').value=p.epsDone;$('#kEpsTotal').value=p.epsTotal;
+ $('#kTitle').textContent=id?'改一下这部剧':'放一部剧';$('#kZh').value=p.zh;$('#kEn').value=p.en;$('#kLink').value=p.link;$('#kGenre').value=p.genre;$('#kTragedy').checked=pkTopics(p.genre).includes('悲剧');$('#kDuration').value=p.duration;$('#kDuration').setCustomValidity('');$('#kNote').value=p.note;$('#kPub').value=p.pubLink;$('#kWatchDate').value=p.watchDate||'';$('#kEpsDone').value=p.epsDone;$('#kEpsTotal').value=p.epsTotal;
  pkRenderTopicChoices();$('#kMeWrap').hidden=true;$('#kConflict').hidden=true;$('#kDel').hidden=!id;pkStatusChips();pkAirChips();pkIssueRows();pkFillClaim(r?.claim||'');$('#kClaim').disabled=true;$('#kClaim').title='认领在剧单卡片上操作';pkSetBusy(false);openOv('pkOv');POSTERS.mountEditor('pick',id||null,$('#kPosters'));
 }
 function pkSetBusy(busy){document.querySelectorAll('#pkForm button,#pkForm input,#pkForm textarea,#pkForm select').forEach(n=>n.disabled=busy);$('#kClaim').disabled=true}
-function pkCloseGuard(){if(!PK_EDIT||$('#pkOv').hidden)return true;if(PK_EDIT.saving)return false;const changed=Object.keys(pkPatchBetween(PK_EDIT.original,pkReadDraft())).length;if(changed&&!confirm('放下这次未保存的修改？'))return false;PK_EDIT=null;return true}
+function pkCloseGuard(){if(!PK_EDIT||$('#pkOv').hidden)return true;if(PK_EDIT.saving)return false;const changed=Object.keys(pkPatchBetween(PK_EDIT.original,pkPreserveUnchangedTopics(pkReadDraft(),PK_EDIT))).length;if(changed&&!confirm('放下这次未保存的修改？'))return false;PK_EDIT=null;return true}
 async function savePick(e){
  e.preventDefault();const edit=PK_EDIT;if(!PK_CONNECTED||!edit||edit.saving)return;
- let draft;try{draft=pkValidateDraft(pkReadDraft())}catch(e){return toast(e.message)}
+ let draft;try{const raw=pkReadDraft();if(edit.isNew||!pkSameTopics(raw.genre,edit.original.genre))raw.genre=pkSaveGenre(raw.genre);else raw.genre=edit.original.genre;draft=pkValidateDraft(raw)}catch(e){return toast(e.message)}
  // Stable IDs for newly added issues survive retry and change detection.
  S.pkIssues=structuredClone(draft.issues);pkIssueRows();const patch=pkPatchBetween(edit.original,draft);
  if(!edit.isNew&&!Object.keys(patch).length){PK_EDIT=null;closeOv();return}
@@ -2668,8 +2708,9 @@ document.addEventListener('click',e=>{
 document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===e.currentTarget||e.target.classList.contains('sheet-wrap'))closeOv()}));
 $('#logForm').addEventListener('submit',saveLog);
 $('#workForm').addEventListener('submit',saveWork);
-$('#kTragedy').addEventListener('change',()=>{$('#kGenre').value=pkTopicInput(pkToggleTragedy($('#kGenre').value,$('#kTragedy').checked));pkRenderTopicChoices()});
-$('#kGenre').addEventListener('input',()=>{$('#kTragedy').checked=pkIsTragedy($('#kGenre').value);pkRenderTopicChoices()});
+$('#kTragedy').addEventListener('change',()=>{const on=$('#kTragedy').checked;if(on!==pkTopics($('#kGenre').value).includes('悲剧'))pkToggleTopic('悲剧');else pkRenderTopicChoices()});
+for(const id of ['kZh','kEn','kNote'])$('#'+id).addEventListener('input',pkRenderTopicChoices);
+$('#kGenre').addEventListener('input',()=>{$('#kTragedy').checked=pkTopics($('#kGenre').value).includes('悲剧');pkRenderTopicChoices()});
 $('#kDuration').addEventListener('beforeinput',pkDurationDelete);
 $('#kDuration').addEventListener('input',pkDurationInput);
 $('#kDuration').addEventListener('blur',pkDurationBlur);
