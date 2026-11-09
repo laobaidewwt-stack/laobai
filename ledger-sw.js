@@ -1,7 +1,7 @@
 /* A network-first static shell. No record cache, background sync, or write queue. */
 'use strict';
 const CACHE_PREFIX = 'laobai-notes-shell-';
-const CACHE_NAME = CACHE_PREFIX + '2026-11-09-topic-tags-v1';
+const CACHE_NAME = CACHE_PREFIX + '2026-11-09-desktop-cards-v1';
 const BASE = new URL('./', self.location.href);
 const SHELL = ['ledger.html', 'ledger-script.js', 'vendor/opencc-1.0.5.js', 'fonts/fonts.css', 'bg/bg-day.webp', 'bg/bg-night.webp', 'bg/bg-dusk.webp', 'bg/bg-dream.webp', 'ledger-app.css', 'ledger-app.js', 'ledger.webmanifest', 'core.js', 'reactions.js', 'reactions.css', 'activity.js', 'activity.css', 'posters.js', 'posters.css',
   'icons/laobai.svg', 'icons/laobai-180.png', 'icons/laobai-192.png',
@@ -82,5 +82,6 @@ self.addEventListener('notificationclick',event=>{
   if(self.clients.openWindow)await self.clients.openWindow(target);
  })());
 });
+
 
 

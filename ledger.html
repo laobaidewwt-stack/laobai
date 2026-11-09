@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-KfE11UItFPIgi7EFQeqQhSV8JM6LuKUQj5wG69GXIjI='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-vBxIsLq5ZwXSnGLUNXW67Nq/FxIoi5JW6UgthzW8234='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -573,6 +573,32 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
 
 .pk-tragedy-option{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:44px;color:var(--ink);font-size:14px}.pk-tragedy-option input{width:18px;height:18px;accent-color:#976a59}.pk-tragedy-option small{font-size:12px;opacity:.65}.pk-tragedy-tag{display:inline-block;margin:6px 0;padding:3px 9px;border:1px solid currentColor;border-radius:3px;color:var(--ink);font-size:12px;font-weight:600;letter-spacing:.12em;opacity:.85}
 .pk-topic-filter{margin-top:12px;color:var(--ink);font-size:13px}.pk-topic-filter summary{cursor:pointer;padding:10px 0}.pk-topic-filter .chips{max-height:170px;overflow:auto;padding-bottom:6px}.pk-topic-tags{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}.pk-topic-tags .chip{font-size:12px;min-height:36px;padding:4px 9px}#kTopicChoices{max-height:180px;overflow:auto}#kTopicChoices .chip{min-height:44px}#pkTopicChips .chip{min-height:44px}
+
+/* Desktop drama index: a poster-led header, not a stretched mobile card.
+   Scope all changes above 900px; the established phone layout is untouched. */
+@media (min-width:900px){
+  .app:has(#v-picks:not([hidden])){max-width:900px;padding-inline:28px}
+  #v-picks #pkList{gap:22px}
+  #v-picks .paper.pk{padding:26px 30px 24px;display:flow-root}
+  #v-picks .paper.pk.has-cover{display:grid;grid-template-columns:124px minmax(0,1fr);column-gap:26px;grid-template-rows:auto auto auto auto auto;align-content:start}
+  #v-picks .paper.pk.has-cover>*{grid-column:1/-1;min-width:0;clear:none}
+  #v-picks .paper.pk.has-cover>.pst-cover{grid-column:1;grid-row:1/6;float:none;width:124px;margin:4px 0 0;align-self:start;transform:rotate(-1deg)}
+  #v-picks .paper.pk.has-cover>.pk-head{grid-column:2;grid-row:1}
+  #v-picks .paper.pk.has-cover>.pk-title{grid-column:2;grid-row:2}
+  #v-picks .paper.pk.has-cover>.pk-en{grid-column:2;grid-row:3}
+  #v-picks .paper.pk.has-cover>.pk-topic-tags{grid-column:2;grid-row:4}
+  #v-picks .paper.pk.has-cover>.pk-meta{grid-column:2;grid-row:5}
+  #v-picks .pk-head{min-height:28px;align-items:center}
+  #v-picks .pk-title{margin-top:8px;font-size:23px;line-height:1.45;letter-spacing:.025em}
+  #v-picks .pk-en{font-size:17px;line-height:1.55;margin-top:3px}
+  #v-picks .pk-topic-tags{margin-top:10px;align-self:start}
+  #v-picks .pk-meta{margin-top:8px;font-size:13px;line-height:1.7;letter-spacing:.04em;align-self:start}
+  #v-picks .pk-note{margin-top:22px;padding:15px 0 0;border-left:0;border-top:1px solid var(--p-rule);font-size:15px;line-height:1.85;overflow-wrap:anywhere}
+  #v-picks .pk-links{flex-wrap:wrap}
+  #v-picks .pk-acts{margin-top:18px;padding-top:13px;flex-wrap:wrap}
+  #v-picks .pk-acts>div{gap:16px}
+}
+
 </style>
 </head>
 <body>
@@ -2331,12 +2357,16 @@ async function savePaste(){
 // Topic tags stay in the existing genre field: no migration or changes to old rows.
 const PK_TOPIC_DEFAULTS=['校园','职场','豪门','古装','悬疑','奇幻','重生','穿越','契约恋爱','先婚后爱','青梅竹马','双强'];
 let PK_TOPIC='';
-function pkTopicKey(v){return String(v||'').trim().toLocaleLowerCase()}
-function pkTopics(v){const seen=new Set();return String(v||'').replace(/(^|[、,，;；/|\s])悲[剧劇](?=$|[、,，;；/|\s])/g,'$1、悲剧、').split(/[、,，;；/|\n]+/).map(x=>x.trim()).filter(x=>{const k=pkTopicKey(x);if(!k||seen.has(k))return false;seen.add(k);return true})}
+let pkTopicToHans,pkTopicToHant;
+function pkTopicConvert(v,mode='hans'){const t=String(v||'');if(!window.OpenCC)return t;if(!pkTopicToHans){pkTopicToHans=window.OpenCC.ConverterFactory(window.OpenCC.Locale.to.cn);pkTopicToHant=window.OpenCC.ConverterFactory(window.OpenCC.Locale.from.cn)}return (mode==='hant'?pkTopicToHant:pkTopicToHans)(t)}
+function pkTopicLabel(v){const t=pkTopicConvert(v).trim();return /^欧美(?:\s*ai)?$/i.test(t)?'欧美AI':t}
+function pkTopicInput(v){return pkTopicConvert(v,window.LedgerScript?.mode||'hans')}
+function pkTopicKey(v){return pkTopicLabel(v).toLocaleLowerCase()}
+function pkTopics(v){const seen=new Set();return String(v||'').replace(/(^|[、,，;；/|\s])悲[剧劇](?=$|[、,，;；/|\s])/g,'$1、悲剧、').split(/[、,，;；/|\n]+/).map(pkTopicLabel).filter(x=>{const k=pkTopicKey(x);if(!k||seen.has(k))return false;seen.add(k);return true})}
 function pkTopicMatch(p,tag){return !tag||pkTopics(p.genre).some(x=>pkTopicKey(x)===pkTopicKey(tag))}
 function pkKnownTopics(){return pkTopics([...PK_TOPIC_DEFAULTS,...[...S.picks.values()].flatMap(p=>pkTopics(p.genre)),$('#kGenre').value].join('、'))}
 function pkRenderTopicChoices(){const selected=pkTopics($('#kGenre').value);$('#kTopicChoices').innerHTML=pkKnownTopics().map(t=>'<button type="button" class="chip" data-act="pk-topic-toggle" data-v="'+esc(t)+'" aria-pressed="'+selected.some(x=>pkTopicKey(x)===pkTopicKey(t))+'">'+esc(t)+'</button>').join('');$('#kTopicHint').textContent=selected.length?'已选 '+selected.length+' 个标签；再点一次可取消。':'标签选填，可以不选。'}
-function pkToggleTopic(tag){const list=pkTopics($('#kGenre').value),key=pkTopicKey(tag),has=list.some(x=>pkTopicKey(x)===key);$('#kGenre').value=(has?list.filter(x=>pkTopicKey(x)!==key):[...list,tag]).join('、');$('#kTragedy').checked=pkIsTragedy($('#kGenre').value);pkRenderTopicChoices()}
+function pkToggleTopic(tag){const list=pkTopics($('#kGenre').value),key=pkTopicKey(tag),has=list.some(x=>pkTopicKey(x)===key);$('#kGenre').value=pkTopicInput((has?list.filter(x=>pkTopicKey(x)!==key):[...list,tag]).join('、'));$('#kTragedy').checked=pkIsTragedy($('#kGenre').value);pkRenderTopicChoices()}
 function pkRenderTopicFilter(all){const counts=new Map();for(const p of all)for(const t of pkTopics(p.genre)){const key=pkTopicKey(t),old=counts.get(key);counts.set(key,{tag:old?.tag||t,count:(old?.count||0)+1})}const tags=[...counts.values()].sort((a,b)=>b.count-a.count||a.tag.localeCompare(b.tag,'zh'));if(PK_TOPIC&&!counts.has(pkTopicKey(PK_TOPIC)))PK_TOPIC='';$('#pkTopicSummary').textContent=PK_TOPIC?'题材：'+PK_TOPIC+' · 点开可切换':'按题材筛选';$('#pkTopicChips').innerHTML='<button type="button" class="chip" data-act="pk-topic-filter" data-v="" aria-pressed="'+!PK_TOPIC+'">全部题材</button>'+tags.map(({tag,count})=>'<button type="button" class="chip" data-act="pk-topic-filter" data-v="'+esc(tag)+'" aria-pressed="'+(pkTopicKey(PK_TOPIC)===pkTopicKey(tag))+'">'+esc(tag)+'<sup>'+count+'</sup></button>').join('')}
 const PK_STATUS=['待看','想做','不做','翻译中','已翻完','已上传','已发微博'];
 const PK_NEXT={'待看':['想做','不做'],'想做':['翻译中','不做'],'翻译中':['已翻完'],'已翻完':['已上传'],'已上传':['已发微博'],'已发微博':[],'不做':['待看']};
@@ -2638,7 +2668,7 @@ document.addEventListener('click',e=>{
 document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===e.currentTarget||e.target.classList.contains('sheet-wrap'))closeOv()}));
 $('#logForm').addEventListener('submit',saveLog);
 $('#workForm').addEventListener('submit',saveWork);
-$('#kTragedy').addEventListener('change',()=>{$('#kGenre').value=pkToggleTragedy($('#kGenre').value,$('#kTragedy').checked);pkRenderTopicChoices()});
+$('#kTragedy').addEventListener('change',()=>{$('#kGenre').value=pkTopicInput(pkToggleTragedy($('#kGenre').value,$('#kTragedy').checked));pkRenderTopicChoices()});
 $('#kGenre').addEventListener('input',()=>{$('#kTragedy').checked=pkIsTragedy($('#kGenre').value);pkRenderTopicChoices()});
 $('#kDuration').addEventListener('beforeinput',pkDurationDelete);
 $('#kDuration').addEventListener('input',pkDurationInput);
@@ -2840,6 +2870,7 @@ async function offerFile(name,data,mime){
 
 </body>
 </html>
+
 
 
 
