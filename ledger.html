@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-CCYJ00oz3Hlm2eUJYHHzLFjTPvxM+7uOGRrqwYvnjz0='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-PEnqOAXgSNGNUQi3THgOrEwnJq6nbSuTQg6hDIpELsE='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1830,6 +1830,14 @@ function versionDisplayText(version,work){
   const en=savedCopyText(work.en).trim().toLowerCase();
   return en?text.split('\n').filter(line=>line.trim().toLowerCase()!==en).join('\n'):text;
 }
+function dailyCopyRecord(log){
+  if(!log||!String(log.copy||'').trim())return null;
+  return {...log,id:'daily-copy:'+log.id,zh:log.zh||log.work||'',en:log.en||'',copy:log.copy,title:log.publishLine||log.title||'',publishLine:log.publishLine||log.title||'',hook:log.hook||'',cp:log.cp||'',genre:log.genre||'',updatedAt:log.updatedAt||log.createdAt||0};
+}
+function copyRecordById(id){
+  if(String(id).startsWith('daily-copy:'))return dailyCopyRecord(S.logs.find(l=>l.id===id.slice(11)));
+  return S.works.get(id);
+}
 function renderCopyFilters(){
   S.copyView='all';
   $('#copyFiltersToday').hidden=true;$('#copyFiltersWorks').hidden=true;
@@ -1919,7 +1927,9 @@ function renderToday(ws,tot){
   $('#cues').innerHTML=L.length?L.map((l,i)=>'<div class="cue"><div class="ix">'+pad(i+1)+'</div><div class="t"><span class="tag t-'+esc(l.type)+'">'+esc(l.type)+'</span>'+esc(withoutResourceLinks(cueText(l)))+(copySourceUrl(l.link)?'<div class="muted"><a href="'+esc(copySourceUrl(l.link))+'" target="_blank" rel="noopener noreferrer" style="color:inherit">查看来源 ↗</a></div>':'')+'</div><button class="x" data-act="del-log" data-id="'+esc(l.id)+'" aria-label="删除这条">删</button></div>').join(''):'<div class="muted">点下面的星星记一条，这里会按顺序排好。</div>';
   const cids=new Set(L.map(l=>l.workId).filter(Boolean));
   for(const w of S.works.values())if(w.updatedAt&&ymd(new Date(w.updatedAt))===S.date)cids.add(w.id);
-  const cws=[...cids].map(id=>S.works.get(id)).filter(w=>w&&(visibleCopyVersions(w).length||(S.copyView!=='weibo'&&(w.hook||w.cp||w.genre)))).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  const dailyCopies=L.map(dailyCopyRecord).filter(Boolean);
+  const dailyNames=new Set(dailyCopies.map(w=>normName(w.zh).toLowerCase()));
+  const cws=[...dailyCopies,...[...cids].map(id=>S.works.get(id)).filter(w=>w&&!dailyNames.has(normName(w.zh).toLowerCase())&&(visibleCopyVersions(w).length||(S.copyView!=='weibo'&&(w.hook||w.cp||w.genre))))].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
   $('#copyToday').innerHTML=cws.length?cws.map((w,i)=>{const one=w.hook||w.cp||w.genre,id=esc(w.id);
     return (i?'<hr>':'')+'<div><div class="best" style="font-size:17px">《'+esc(workChineseTitle(w))+'》</div>'+(w.en?'<div class="muted">'+esc(w.en)+'</div>':'')+
       (one?'<div class="fan">'+esc(withoutResourceLinks(fanLine(w)))+'</div>':'')+(w.copy?'<div class="copybox" style="max-height:200px">'+esc(withoutResourceLinks(w.copy))+'</div>':'')+
@@ -2342,7 +2352,7 @@ function renderPastePreview(){
   if(!zi.dataset.touched)zi.value=p.zh;
   if(!$('#pText').value.trim()){$('#pPrev').innerHTML='';return}
   const w=p.zh&&findWork(p.zh);
-  $('#pPrev').innerHTML='<div>剧名：'+(p.zh?'《'+esc(p.zh)+'》'+(w?'（作品库里已有，会更新文案）':'（新作品）'):'没认出来，请在下面填')+'</div>'+
+  $('#pPrev').innerHTML='<div>剧名：'+(p.zh?'《'+esc(p.zh)+'》'+(w?'（保存到今日文案，作品库不变）':'（仅保存到今日文案）'):'没认出来，请在下面填')+'</div>'+
     '<div>英文名：'+(p.en?esc(p.en):'没有')+'</div>'+
     '<div>一句话文案：'+(p.fan?esc(p.last):'没认出来。最后一行要是「钩子！类型《剧名》……」这样的一句')+'</div>';
 }
@@ -2350,15 +2360,11 @@ async function importCopy(o){
   const generation=db.authGeneration(),assertImportSession=()=>{if(generation!==db.authGeneration())throw Object.assign(new Error('key changed'),{code:'stale_key'})};assertImportSession();
   const text=String(o.copy||'');if(!text.trim())throw new Error('empty copy');
   const p=parseCopy(text),fan=(o.line&&parseFan(o.line))||p.fan,zh=normName(o.zh||(fan&&fan.zh)||p.zh);if(!zh)throw new Error('missing title');
-  const en=(o.en||'').trim()||p.en,w=[...S.works.values()].find(w=>en&&String(w.en||'').trim().toLowerCase()===en.toLowerCase())||findWork(zh),now=Date.now(),patch={zh,copy:text,publishLine:String(o.line||''),updatedAt:now};
-  if(en&&!(w&&w.en))patch.en=en;
-  if(fan)Object.assign(patch,{hook:fan.hook,genre:fan.genre,state:fan.state,cp:fan.cp});
-  let id;
-  if(w){id=w.id;await db.doc('works/'+id).update(patch)}
-  else{const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode((en||zh).trim().toLowerCase()));assertImportSession();const stable='w-'+[...new Uint8Array(bytes)].map(x=>x.toString(16).padStart(2,'0')).join('');const ref=db.collection('works').doc(stable);await ref.set(Object.assign({zh,en:'',kind:'完整剧',status:'翻译中',subLink:'',title:'',copy:'',pubLink:'',pubDate:'',notes:'',hook:'',genre:'',state:'',cp:'',rec:'',score:{look:0,plot:0,spice:0},createdAt:now},patch));id=ref.id}
-  assertImportSession();const day=o.date||ymd(new Date());
-  if(!S.logs.some(l=>l.date===day&&l.type==='文案'&&l.workId===id))
-    await db.doc('logs/copy-'+day+'-'+id).set({date:day,type:'文案',workId:id,work:zh,lines:0,eps:0,text:w&&w.copy?'更新文案':'完成文案',link:'',createdAt:now});
+  const en=(o.en||'').trim()||p.en,now=Date.now(),day=o.date||ymd(new Date());
+  const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode((en||zh).trim().toLowerCase()));assertImportSession();
+  const id='daily-copy-'+day+'-'+[...new Uint8Array(bytes)].map(x=>x.toString(16).padStart(2,'0')).join('');
+  const previous=S.logs.find(l=>l.id===id),line=String(o.line||p.last||'');
+  await db.doc('logs/'+id).set({...previous,date:day,type:'文案',workId:'',work:zh,zh,en,copy:text,publishLine:line,title:line,hook:fan&&fan.hook||'',cp:fan&&fan.cp||'',genre:fan&&fan.genre||'',state:fan&&fan.state||'',lines:0,eps:0,completedWorks:0,text:'更新今日文案',link:'',createdAt:previous&&previous.createdAt||now,updatedAt:now});
   assertImportSession();return id;
 }
 async function savePaste(){
@@ -2637,8 +2643,8 @@ document.addEventListener('click',e=>{
     case 'copy-title':{const w=S.works.get(b.dataset.id);if(w)copyText(w.title);break}
     case 'copy-view':{if(['all','weibo','draft'].includes(v)){S.copyView=v;render()}break}
     case 'copy-version':{const w=S.works.get(b.dataset.id),version=copyVersions(w).find(item=>item.key===b.dataset.field);if(version){const text=versionDisplayText(version,w);text?copyText(text):toast('没有可复制的中文微博文案')}else toast('这份文案已变化，请刷新后重试');break}
-    case 'copy-copy':{const w=S.works.get(b.dataset.id),text=savedCopyText(w&&w.copy);text?copyText(text):toast('文案待补');break}
-    case 'copy-fan':{const w=S.works.get(b.dataset.id);if(w)copyText(fanLine(w));break}
+    case 'copy-copy':{const w=copyRecordById(b.dataset.id),text=savedCopyText(w&&w.copy);text?copyText(text):toast('文案待补');break}
+    case 'copy-fan':{const w=copyRecordById(b.dataset.id);if(w)copyText(fanLine(w));break}
     case 'score':{const k=b.dataset.d,n=+v;S.score[k]=S.score[k]===n?0:n;renderScoreInputs();break}
     case 'save-pick':{const w=findWork($('#fPick').value);if(!$('#fPick').value.trim()){saveDay({pick:null},'已清空今日最佳');break}if(!w){toast('作品库里没有这部，先记一条交付或新建作品');break}saveDay({pick:{workId:w.id,name:w.zh}},'定为今日最佳了');break}
     case 'open-export':renderExport();openOv('expOv');break;
@@ -2911,6 +2917,7 @@ async function offerFile(name,data,mime){
 
 </body>
 </html>
+
 
 
 
