@@ -14,7 +14,7 @@
 <link rel="icon" type="image/svg+xml" href="./icons/laobai.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/laobai-192.png">
 <link rel="stylesheet" href="./ledger-app.css">
-<link rel="stylesheet" href="./posters.css?v=20261108-posters-create1">
+<link rel="stylesheet" href="./posters.css?v=20261109-posters-order1">
 <script defer src="./ledger-app.js"></script>
 <script defer src="./vendor/opencc-1.0.5.js"></script>
 <script defer src="./ledger-script.js"></script>
@@ -1530,7 +1530,7 @@ function createNoticeUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalT
 
 return {createNoticeUI};})();
 import {createActivityUI} from './activity.js?v=20261107-chart2';
-import {createPosterUI} from './posters.js?v=20261108-posters-create1';
+import {createPosterUI} from './posters.js?v=20261109-posters-order1';
 import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261107-picks-validation1';
 const SHARED_ONLY=false;
 
@@ -2826,6 +2826,7 @@ async function offerFile(name,data,mime){
 
 </body>
 </html>
+
 
 
 

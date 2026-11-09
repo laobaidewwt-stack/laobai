@@ -324,7 +324,7 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
     if (!host) return;
     resetIfKeyChanged(); start();
     releaseDraft(editor);
-    editor = { key: stateKey, pending: [], kind, id: id && ID_RE.test(id) ? id : null, host, sel: 0, busy: false, armDelete: false, msg: '' };
+    editor = { key: stateKey, pending: [], draftSel: 0, kind, id: id && ID_RE.test(id) ? id : null, host, sel: 0, busy: false, armDelete: false, msg: '' };
     host.hidden = false; renderEditor(); void refresh();
   }
   function renderEditor() {
@@ -334,8 +334,17 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
       return;
     }
     if (!ed.id || ed.pending.length) {
-      const items = ed.pending.map((x,i) => '<div class="pst-thumb pst-draft ready"><span class="pst-mount"><img alt="待上传海报" src="'+x.url+'"></span><button type="button" class="chip" data-pst-ed="draft-remove" data-i="'+i+'" '+(ed.busy?'disabled':'')+'>移除</button></div>').join('');
-      h.innerHTML = '<div class="pst-ed-head"><span class="pst-ed-name">海报 · 选填</span><span class="pst-ed-note">'+(ed.id?'剧已保存；未上传的海报可重试，不会重复创建剧':'可以不加；选好后点下方保存，先存剧再上传海报')+'</span></div><div class="pst-strip">'+items+(writable&&ed.pending.length<MAX_PER_TARGET?'<label class="pst-add"><input type="file" accept="image/*" multiple data-pst-ed="file" '+(ed.busy?'disabled':'')+'><span>＋</span><small>加海报</small></label>':'')+'</div>'+(ed.id&&writable?'<button type="button" class="chip" data-pst-ed="retry" '+(ed.busy?'disabled':'')+'>重试未上传海报</button>':'')+'<p class="pst-ed-note">海报不含在账本备份中，请保留原图。</p><p class="pst-msg" role="status">'+esc(ed.msg)+'</p>';
+      const savedCount = setOf(ed.kind, ed.id).ids.length;
+      ed.draftSel = Math.min(ed.draftSel, Math.max(0, ed.pending.length - 1));
+      const firstIsCover = savedCount === 0;
+      const items = ed.pending.map((x,i) => '<button type="button" class="pst-thumb pst-draft ready'+(i===ed.draftSel?' on':'')+'" data-pst-ed="draft-pick" data-i="'+i+'" aria-label="待上传第 '+(i+1)+' 张'+(i===0&&firstIsCover?'（封面）':'')+'" aria-pressed="'+(i===ed.draftSel)+'" '+(ed.busy?'disabled':'')+'><span class="pst-mount"><img alt="待上传海报" draggable="false" src="'+x.url+'"></span>'+(i===0&&firstIsCover?'<span class="pst-ribbon">封面</span>':'')+'</button>').join('');
+      const draftTools = ed.pending.length && writable ? '<div class="pst-tools pst-draft-tools">'+
+        (firstIsCover?'<button type="button" class="chip" data-pst-ed="draft-cover" '+(ed.busy||ed.draftSel===0?'disabled':'')+'>设为封面</button>':'')+
+        '<button type="button" class="chip" data-pst-ed="draft-left" aria-label="往前移" '+(ed.busy||ed.draftSel===0?'disabled':'')+'>‹ 前移</button>'+
+        '<button type="button" class="chip" data-pst-ed="draft-right" aria-label="往后移" '+(ed.busy||ed.draftSel>=ed.pending.length-1?'disabled':'')+'>后移 ›</button>'+
+        '<button type="button" class="chip" data-pst-ed="draft-remove" '+(ed.busy?'disabled':'')+'>移除</button></div>' : '';
+      h.innerHTML = '<div class="pst-ed-head"><span class="pst-ed-name">海报 · 选填</span><span class="pst-ed-note">'+(ed.id?'剧已保存；未上传的海报可重试，不会重复创建剧':'可以不加；选好后点下方保存，先存剧再上传海报')+'</span></div><div class="pst-strip">'+items+(writable&&savedCount+ed.pending.length<MAX_PER_TARGET?'<label class="pst-add"><input type="file" accept="image/*" multiple data-pst-ed="file" '+(ed.busy?'disabled':'')+'><span>＋</span><small>加海报</small></label>':'')+'</div>'+draftTools+(ed.pending.length?'<p class="pst-ed-note">点选海报后可前移、后移'+(firstIsCover?'或设为封面，第一张为封面':'；待上传图片排在已保存海报后面')+'。保存时按此顺序上传。</p>':'')+(ed.id&&writable?'<button type="button" class="chip" data-pst-ed="retry" '+(ed.busy?'disabled':'')+'>重试未上传海报</button>':'')+'<p class="pst-ed-note">海报不含在账本备份中，请保留原图。</p><p class="pst-msg" role="status">'+esc(ed.msg)+'</p>';
+      h.querySelector('.pst-draft.on')?.scrollIntoView?.({block:'nearest',inline:'nearest'});
       return;
     }
     const s = setOf(ed.kind, ed.id); ed.sel = Math.min(ed.sel, Math.max(0, s.ids.length - 1));
@@ -440,7 +449,16 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
     if (ed.busy) return;
     e.preventDefault();
     if (act !== 'del') ed.armDelete = false;
-    if (act === 'draft-remove') { const x=ed.pending.splice(+b.dataset.i,1)[0]; if(x)URL.revokeObjectURL(x.url);renderEditor(); }
+    if (act === 'draft-pick') { ed.draftSel = +b.dataset.i; renderEditor(); }
+    else if (act.startsWith('draft-')) {
+      if (!canWrite()) return toast(MESSAGES.read_only);
+      const n = ed.draftSel, list = ed.pending;
+      if (act === 'draft-remove') { const x = list.splice(n,1)[0]; if(x) URL.revokeObjectURL(x.url); ed.draftSel = Math.max(0,n-1); }
+      else if (act === 'draft-left' && n > 0) { [list[n-1],list[n]]=[list[n],list[n-1]]; ed.draftSel=n-1; }
+      else if (act === 'draft-right' && n < list.length-1) { [list[n+1],list[n]]=[list[n],list[n+1]]; ed.draftSel=n+1; }
+      else if (act === 'draft-cover' && n > 0 && !s.ids.length) { list.unshift(list.splice(n,1)[0]); ed.draftSel=0; }
+      renderEditor();
+    }
     else if (act === 'retry') void upload();
     else if (act === 'pick') { ed.sel = +b.dataset.i; renderEditor(); }
     else if (act === 'view') openViewer(ed.kind, ed.id, i);
@@ -466,3 +484,4 @@ export function createPosterUI({ getCloud: rawCloud, fetcher = fetch, canWrite: 
     _state: () => ({ sets: [...sets.entries()], etag }),
   };
 }
+
