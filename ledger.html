@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-wCsROQpRLkAvRaf9hxLw194RLgNTyQIGBEEcQpSoUL0='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Br5dUz7sQ7mxHzRW3ImFH8ov8sEFji+aw5wu0kGViDo='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1748,6 +1748,14 @@ function noteDetail(work){
     !/[\r\n<>｜|。！？!?;；:]|\d+\s*(?:条|集)|字幕|校轴|听译|待确认|待核|未确认/.test(cp))return cp;
   return '';
 }
+function noteDisplayTitle(title,work,log){
+  for(const value of [work&&work.publishLine,work&&work.title,log.publishLine,log.title,log.copy]){
+    if(typeof value!=='string')continue;
+    const match=value.match(/(?:欧美|歐美)\s*AI\s*《([^》\r\n]+)》\s*((?:19|20)\d{2})?/i);
+    if(match&&noteTitle(match[1])===title)return '欧美 AI《'+title+'》'+(match[2]||'');
+  }
+  return '';
+}
 function dayNoteItems(date){
   const items=[],ids=new Map(),names=new Map();
   for(const log of logsOn(date)){
@@ -1758,18 +1766,19 @@ function dayNoteItems(date){
     const existing=(log.workId&&ids.get(log.workId))||names.get(key);
     if(existing){
       if(!existing.detail&&detail)existing.detail=detail;
+      if(!existing.displayTitle)existing.displayTitle=noteDisplayTitle(title,work,log);
       if(!existing.en)existing.en=noteTitle(work&&work.en)||noteTitle(log.en);
       if(log.workId)ids.set(log.workId,existing);
       names.set(key,existing);
       continue;
     }
-    const item={title,detail,en:noteTitle(work&&work.en)||noteTitle(log.en),chineseMissing:!noteTitle(work&&work.zh)&&!noteTitle(log.work)};items.push(item);names.set(key,item);
+    const item={title,detail,displayTitle:noteDisplayTitle(title,work,log),en:noteTitle(work&&work.en)||noteTitle(log.en),chineseMissing:!noteTitle(work&&work.zh)&&!noteTitle(log.work)};items.push(item);names.set(key,item);
     if(log.workId)ids.set(log.workId,item);
   }
   return items;
 }
 function dayNoteText(date){
-  return dayNoteItems(date).map((item,i)=>(i+1)+'. '+(item.chineseMissing?'中文名待补':'《'+item.title+'》')+(item.en&&(item.chineseMissing||item.en.toLowerCase()!==item.title.toLowerCase())?' / '+item.en:'')+(item.detail?' · '+item.detail:'')).join('\n');
+  return dayNoteItems(date).map((item,i)=>(i+1)+'. '+(item.chineseMissing?'中文名待补':item.displayTitle||'《'+item.title+'》')+(item.en&&(item.chineseMissing||item.en.toLowerCase()!==item.title.toLowerCase())?' / '+item.en:'')+(item.detail?' · '+item.detail:'')).join('\n');
 }
 
 /* Read-only copy versions. These helpers never merge or save version bodies. */
@@ -1923,7 +1932,7 @@ function renderToday(ws,tot){
   $('#noteTitle').innerHTML=esc(md(S.date)).replace(/\d+/g,'<span class="d">$&</span>')+'<span class="bar"></span>'+(isToday?'今日完成':'当日完成');
   const noteEl=$('#noteText');
   if(S.ready>=3&&noteItems.length){const list=noteItems.map((it,i)=>{
-    const zh=it.chineseMissing?'中文名待补':it.title;
+    const zh=it.chineseMissing?'中文名待补':it.displayTitle||it.title;
     const en=it.en&&(it.chineseMissing||it.en.toLowerCase()!==it.title.toLowerCase())?it.en:'';
     const st=/完结/.test(it.detail||'')?it.detail:'';
     return '<li class="'+(i%2?'dn-e':'dn-o')+'" style="--i:'+i+'">'+DN_STAR+(i<noteItems.length-1?dnRoute(i):'')+'<div class="dn-t"><b>'+esc(zh)+'</b>'+(en||st?'<div class="dn-m">'+(en?'<i lang="en">'+esc(en)+'</i>':'')+(st?'<span class="dn-s">'+esc(st)+'</span>':'')+'</div>':'')+'</div></li>'}).join('');
