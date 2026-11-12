@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-WREm4gwnLmb+8zB5QXk3l+XXdavJ+TnunKd69umKFe4='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-6w8EOvBWt0a5W8k132TGdr0nqEZTO5sypWJaGf3bgqA='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -257,6 +257,9 @@ button.pk-air:focus-visible{outline:3px solid currentColor;outline-offset:3px}
 .pk-airing-note:not([hidden]){display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:12px 0;padding:12px 14px;border:1px solid var(--ink3);border-radius:8px;font-size:13px;line-height:1.7}
 .pk-airing-note .linkbtn{min-height:44px;flex-shrink:0}
 .pk-airing-note small{display:block;opacity:.8}
+.pk-tracking-entry:not([hidden]){display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin:0 0 18px}
+.pk-tracking-entry small{font-size:12px;line-height:1.6;opacity:.8}
+.pk-tracking-entry .pk-air[aria-pressed="true"]{outline:2px solid currentColor;outline-offset:3px}
 @media(max-width:380px){.pk-air{padding:5px 10px;font-size:14px}}
 .pk-head .cap{color:var(--p-ink3);letter-spacing:.16em}
 .pk-stamp{flex:0 0 auto;font-family:var(--serif);font-size:12px;letter-spacing:.2em;text-indent:.2em;padding:3px 8px;border:1.5px solid currentColor;border-radius:3px;transform:rotate(-4deg);opacity:.88}
@@ -785,6 +788,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
   <section id="v-picks" hidden>
     <div class="sh row"><div><h2 class="seg"><button data-view="works">作品库</button><i class="seg-sep">✦</i><button data-view="picks">剧单</button></h2><span class="cap">Shared Picks · New Finds</span></div><button class="arrow" data-act="pk-new">放一部剧</button></div>
 
+    <div id="pkTrackingEntry" class="pk-tracking-entry" hidden><button type="button" class="pk-air" data-air="ongoing" data-act="pk-group" data-v="待续" aria-pressed="false">◷ 待续追踪 <span id="pkTrackingCount">0</span> 部</button><small>列出所有未完结的剧</small></div>
     <div class="pw"><div class="paper b"><div class="cap">Shared With The Same Key</div><p class="pk-auth-note">共用原钥匙：两人都能查看、修改和删除整个账本，包括作品、日志和字幕；这里不做个人权限隔离。</p><p id="pkNeedKey" class="pk-auth-note">先在上方输入原账本钥匙。无需新账号、新钥匙或独立网址。</p><div id="pkActorPanel"><form id="pkActorForm" class="row" style="gap:10px"><label class="f" style="flex:1">协作署名<input id="pkActorName" class="in" maxlength="80" placeholder="例如：老白" required></label><button class="btn" type="submit">记下署名</button></form><p class="pk-auth-note">署名和设备标记只帮助分工，不能验证个人身份。</p></div></div></div>
     <div id="pkCalendar" class="pk-calendar" hidden><div class="pk-calendar-bar"><button class="mini" data-act="pk-month-prev" aria-label="上个月">‹</button><b id="pkMonthLabel"></b><button class="mini" data-act="pk-month-next" aria-label="下个月">›</button></div><div class="pk-weekday" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div><div id="pkCalendarGrid" class="pk-calendar-grid" aria-label="追剧日期"></div><div class="pk-date-tools"><span id="pkDateLabel">全部日期</span><button class="linkbtn" data-act="pk-date-all">全部日期</button><button class="linkbtn" data-act="pk-date-today">今天</button></div></div>
     <div class="pk-sync-note" id="pkSyncNote" hidden></div>
@@ -2457,10 +2461,11 @@ function pkStampKind(s){return ['翻译中','已翻完'].includes(s)?'doing':['�
 function renderPicks(){
   if(PK_COMPOSING){PK_RESPONSE_REDRAW=true;return}
   const responseFocus=captureResponseFocus(document);
-  pkRenderCalendar();$('#pkAiringNote').hidden=true;$('#pkTopicFilter').hidden=false;if(!PK_CONNECTED){$('#pkList').innerHTML='';$('#pkWho').textContent='';$('#pkStatusChips').innerHTML='';$('#pkTopicChips').innerHTML='';return}
+  pkRenderCalendar();$('#pkTrackingEntry').hidden=!PK_CONNECTED;$('#pkAiringNote').hidden=true;$('#pkTopicFilter').hidden=false;if(!PK_CONNECTED){$('#pkList').innerHTML='';$('#pkWho').textContent='';$('#pkStatusChips').innerHTML='';$('#pkTopicChips').innerHTML='';return}
   if(S.pkSeenAt==null){S.pkSeenAt=+pkGet('ledger_picks_seen')||0}
   pkSet('ledger_picks_seen',String(Date.now()));
   const me=pkMe(),all=[...S.picks.values()];pkRenderTopicFilter(all);
+  $('#pkTrackingCount').textContent=String(all.filter(p=>p.airing==='未完结').length);$('#pkTrackingEntry button').setAttribute('aria-pressed',String(S.pkGroup==='待续'));
   const groups=PK_GROUPS.concat(me?[['我认领的',p=>p.claimId===PK_ACTOR.id],['我还没回应',p=>pkUnanswered(p,PK_ACTOR)]]:[]);
   if(!groups.some(g=>g[0]===S.pkGroup))S.pkGroup='全部';
   $('#pkStatusChips').innerHTML=groups.map(([n,g])=>{const c=all.filter(p=>pkInGroup(p,g)).length;return '<button class="chip" data-act="pk-group" data-v="'+n+'" aria-pressed="'+(S.pkGroup===n)+'">'+n+(c&&n!=='全部'?'<sup>'+c+'</sup>':'')+'</button>'}).join('');
