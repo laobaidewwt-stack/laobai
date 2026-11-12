@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-Br5dUz7sQ7mxHzRW3ImFH8ov8sEFji+aw5wu0kGViDo='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-n7+Padm++YjqImSeHF08aheSOf5KOh0AfBeA11JOGCA='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1752,7 +1752,7 @@ function noteDisplayTitle(title,work,log){
   for(const value of [work&&work.publishLine,work&&work.title,log.publishLine,log.title,log.copy]){
     if(typeof value!=='string')continue;
     const match=value.match(/(?:欧美|歐美)\s*AI\s*《([^》\r\n]+)》\s*((?:19|20)\d{2})?/i);
-    if(match&&noteTitle(match[1])===title)return '欧美 AI《'+title+'》'+(match[2]||'');
+    if(match&&noteTitle(match[1])===title)return '欧美 AI《'+title+'》';
   }
   return '';
 }
