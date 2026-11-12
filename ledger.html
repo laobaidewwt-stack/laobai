@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-PEnqOAXgSNGNUQi3THgOrEwnJq6nbSuTQg6hDIpELsE='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-8JKv8oEnOTlyCAWV2CQn/ssQMKYGunr1tvbHqk6y6XA='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -243,7 +243,15 @@ select.in{appearance:auto}
 .pk-filter::-webkit-scrollbar{display:none}
 .pk-filter .chip{flex:0 0 auto}
 .chip sup{font-family:var(--mono);font-size:9px;margin-left:3px;opacity:.75}
-.pk-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+/* Airing is a separate visual cue from the translation/workflow status. */
+.pk-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 12px}
+.pk-head>.pk-by{flex:0 0 100%;min-width:0;overflow-wrap:anywhere;font-size:11px;line-height:1.6}
+.pk-head>.pk-stamp{margin-left:auto}
+.pk-air{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:6px 12px;border-radius:4px;color:#fff;font-size:15px;font-weight:700;line-height:1.4;letter-spacing:.1em;box-shadow:0 2px 0 rgba(0,0,0,.12)}
+.pk-air[data-air="done"]{background:#28644f}
+.pk-air[data-air="ongoing"]{background:#83520b}
+.pk-air-icon{font-size:13px;letter-spacing:0}
+@media(max-width:380px){.pk-air{padding:5px 10px;font-size:14px}}
 .pk-head .cap{color:var(--p-ink3);letter-spacing:.16em}
 .pk-stamp{flex:0 0 auto;font-family:var(--serif);font-size:12px;letter-spacing:.2em;text-indent:.2em;padding:3px 8px;border:1.5px solid currentColor;border-radius:3px;transform:rotate(-4deg);opacity:.88}
 .pk-stamp[data-k="idea"]{color:var(--p-ink2)}
@@ -2433,6 +2441,11 @@ const pkSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 function pkFind(zh,en){const z=normName(zh).toLowerCase(),e=String(en||'').trim().toLowerCase();for(const p of S.picks.values()){if(z&&normName(p.zh).toLowerCase()===z)return p;if(e&&String(p.en||'').trim().toLowerCase()===e)return p}return null}
 function pkUnseen(){const seen=+pkGet('ledger_picks_seen')||0,me=pkMe();let n=0;for(const p of S.picks.values())if((p.createdAt||0)>seen&&p.by&&p.byId!==PK_ACTOR.id)n++;return n}
 function renderPkDot(){const n=S.view==='picks'?0:pkUnseen();document.querySelectorAll('.ni[data-view="lib"],.seg button[data-view="picks"]').forEach(t=>{let d=t.querySelector('.ni-dot');if(n){if(!d){d=document.createElement('i');d.className='ni-dot';t.appendChild(d)}d.textContent=n>9?'9+':n}else if(d)d.remove()})}
+function pkAiringBadge(p){
+  if(p.airing==='已完结')return '<span class="pk-air" data-air="done" aria-label="播出状态：已完结"><span class="pk-air-icon" aria-hidden="true">✓</span>完结</span>';
+  if(p.airing==='未完结')return '<span class="pk-air" data-air="ongoing" aria-label="播出状态：未完结，待续"><span class="pk-air-icon" aria-hidden="true">◷</span>待续</span>';
+  return '';
+}
 function pkStampKind(s){return ['翻译中','已翻完'].includes(s)?'doing':['已上传','已发微博'].includes(s)?'out':s==='不做'?'skip':'idea'}
 function renderPicks(){
   if(PK_COMPOSING){PK_RESPONSE_REDRAW=true;return}
@@ -2465,7 +2478,7 @@ function renderPicks(){
     const lnk=(u,t)=>pkSafeURL(u)?'<a href="'+esc(pkSafeURL(u))+'" target="_blank" rel="noopener noreferrer">'+t+'</a>':'';
     const links=(p.link||p.pubLink)?'<div class="pk-links">'+(p.link?lnk(p.link,'看原片'):'')+(p.pubLink?lnk(p.pubLink,'看发出去的'):'')+'</div>':'';
     return '<div class="pw" data-search-id="'+id+'"><div class="paper '+(i%2?'c':'b')+' pk">'+
-      '<div class="pk-head"><span class="cap">'+esc(p.by||'有人')+' · '+when+(p.updatedBy&&p.updatedBy!==p.by?' · '+esc(p.updatedBy)+' 改过':'')+'</span><span class="pk-stamp" data-k="'+pkStampKind(st)+'">'+esc(st)+'</span></div>'+
+      '<div class="pk-head">'+pkAiringBadge(p)+'<span class="pk-stamp" data-k="'+pkStampKind(st)+'">'+esc(st)+'</span><span class="cap pk-by">'+esc(p.by||'有人')+' · '+when+(p.updatedBy&&p.updatedBy!==p.by?' · '+esc(p.updatedBy)+' 改过':'')+'</span></div>'+
       '<div class="pk-title">'+(isNew?'<i class="pk-newdot" title="新放的"></i>':'')+'《'+esc(p.zh)+'》'+(inLib?'<span class="pk-inlib">已入库</span>':'')+'</div>'+
       (p.en?'<div class="pk-en">'+esc(p.en)+'</div>':'')+
       (pkTopics(p.genre).length?'<div class="pk-topic-tags">'+pkTopics(p.genre).map(t=>'<button type="button" class="chip'+(/^悲[剧劇]$/.test(t)?' pk-tragedy-tag':'')+'" data-act="pk-topic-filter" data-v="'+esc(t)+'" aria-label="筛选题材：'+esc(t)+'">'+esc(t)+'</button>').join('')+'</div>':'')+
