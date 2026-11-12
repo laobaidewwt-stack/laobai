@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-6w8EOvBWt0a5W8k132TGdr0nqEZTO5sypWJaGf3bgqA='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-wCsROQpRLkAvRaf9hxLw194RLgNTyQIGBEEcQpSoUL0='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1752,17 +1752,18 @@ function dayNoteItems(date){
   const items=[],ids=new Map(),names=new Map();
   for(const log of logsOn(date)){
     const work=log.workId&&S.works.get(log.workId);
-    const title=noteTitle(work&&work.zh)||noteTitle(log.work)||noteTitle(work&&work.en);
+    const title=noteTitle(work&&work.zh)||noteTitle(log.work)||noteTitle(work&&work.en)||noteTitle(log.en);
     if(!title)continue;
     const key=title.toLowerCase(),detail=noteDetail(work);
     const existing=(log.workId&&ids.get(log.workId))||names.get(key);
     if(existing){
       if(!existing.detail&&detail)existing.detail=detail;
+      if(!existing.en)existing.en=noteTitle(work&&work.en)||noteTitle(log.en);
       if(log.workId)ids.set(log.workId,existing);
       names.set(key,existing);
       continue;
     }
-    const item={title,detail,en:noteTitle(work&&work.en),chineseMissing:!noteTitle(work&&work.zh)&&!noteTitle(log.work)};items.push(item);names.set(key,item);
+    const item={title,detail,en:noteTitle(work&&work.en)||noteTitle(log.en),chineseMissing:!noteTitle(work&&work.zh)&&!noteTitle(log.work)};items.push(item);names.set(key,item);
     if(log.workId)ids.set(log.workId,item);
   }
   return items;
