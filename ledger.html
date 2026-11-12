@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-8JKv8oEnOTlyCAWV2CQn/ssQMKYGunr1tvbHqk6y6XA='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-WREm4gwnLmb+8zB5QXk3l+XXdavJ+TnunKd69umKFe4='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -251,6 +251,12 @@ select.in{appearance:auto}
 .pk-air[data-air="done"]{background:#28644f}
 .pk-air[data-air="ongoing"]{background:#83520b}
 .pk-air-icon{font-size:13px;letter-spacing:0}
+.pk-filter .chip{min-height:44px}
+button.pk-air{border:0;min-height:44px;cursor:pointer;font-family:inherit}
+button.pk-air:focus-visible{outline:3px solid currentColor;outline-offset:3px}
+.pk-airing-note:not([hidden]){display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:12px 0;padding:12px 14px;border:1px solid var(--ink3);border-radius:8px;font-size:13px;line-height:1.7}
+.pk-airing-note .linkbtn{min-height:44px;flex-shrink:0}
+.pk-airing-note small{display:block;opacity:.8}
 @media(max-width:380px){.pk-air{padding:5px 10px;font-size:14px}}
 .pk-head .cap{color:var(--p-ink3);letter-spacing:.16em}
 .pk-stamp{flex:0 0 auto;font-family:var(--serif);font-size:12px;letter-spacing:.2em;text-indent:.2em;padding:3px 8px;border:1.5px solid currentColor;border-radius:3px;transform:rotate(-4deg);opacity:.88}
@@ -791,6 +797,7 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
     </dialog>
 
     <div class="chips sky-chips pk-filter" id="pkStatusChips"></div>
+    <div id="pkAiringNote" class="pk-airing-note" role="status" hidden></div>
     <details class="pk-topic-filter" id="pkTopicFilter"><summary id="pkTopicSummary">按题材筛选</summary><div class="sky-chips" id="pkTopicChips" aria-label="题材筛选"></div></details>
     <div class="stack" id="pkList" style="margin-top:14px"></div>
     <div class="pk-me-row"><div class="pk-me" id="pkWho"></div><button id="pkPushEntry" type="button" class="linkbtn" hidden>通知</button></div>
@@ -2433,7 +2440,7 @@ function pkFollow(p){const t=[];
   if(p.official==='已出官中'&&PK_DONE_ST.includes(p.status))t.push('已出官中 · 看要不要汰换');
   const n=pkOpenIssues(p).length;if(n)t.push(n+' 处集数问题待处理');
   return t}
-const PK_GROUPS=[['全部',null],['要跟进',p=>pkFollow(p).length>0],['待定',['待看','想做']],['在做',['翻译中','已翻完']],['已发出',['已上传','已发微博']],['不做',['不做']]];
+const PK_GROUPS=[['全部',null],['待续',p=>p.airing==='未完结'],['要跟进',p=>pkFollow(p).length>0],['待定',['待看','想做']],['在做',['翻译中','已翻完']],['已发出',['已上传','已发微博']],['不做',['不做']]];
 const pkInGroup=(p,g)=>!g?true:(typeof g==='function'?g(p):g.includes(p.status));
 const pkGet=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
 const pkSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
@@ -2443,14 +2450,14 @@ function pkUnseen(){const seen=+pkGet('ledger_picks_seen')||0,me=pkMe();let n=0;
 function renderPkDot(){const n=S.view==='picks'?0:pkUnseen();document.querySelectorAll('.ni[data-view="lib"],.seg button[data-view="picks"]').forEach(t=>{let d=t.querySelector('.ni-dot');if(n){if(!d){d=document.createElement('i');d.className='ni-dot';t.appendChild(d)}d.textContent=n>9?'9+':n}else if(d)d.remove()})}
 function pkAiringBadge(p){
   if(p.airing==='已完结')return '<span class="pk-air" data-air="done" aria-label="播出状态：已完结"><span class="pk-air-icon" aria-hidden="true">✓</span>完结</span>';
-  if(p.airing==='未完结')return '<span class="pk-air" data-air="ongoing" aria-label="播出状态：未完结，待续"><span class="pk-air-icon" aria-hidden="true">◷</span>待续</span>';
+  if(p.airing==='未完结')return '<button type="button" class="pk-air" data-air="ongoing" data-act="pk-group" data-v="待续" aria-label="待续：查看所有未完结的剧" title="查看所有未完结的剧"><span class="pk-air-icon" aria-hidden="true">◷</span>待续</button>';
   return '';
 }
 function pkStampKind(s){return ['翻译中','已翻完'].includes(s)?'doing':['已上传','已发微博'].includes(s)?'out':s==='不做'?'skip':'idea'}
 function renderPicks(){
   if(PK_COMPOSING){PK_RESPONSE_REDRAW=true;return}
   const responseFocus=captureResponseFocus(document);
-  pkRenderCalendar();if(!PK_CONNECTED){$('#pkList').innerHTML='';$('#pkWho').textContent='';$('#pkStatusChips').innerHTML='';$('#pkTopicChips').innerHTML='';return}
+  pkRenderCalendar();$('#pkAiringNote').hidden=true;$('#pkTopicFilter').hidden=false;if(!PK_CONNECTED){$('#pkList').innerHTML='';$('#pkWho').textContent='';$('#pkStatusChips').innerHTML='';$('#pkTopicChips').innerHTML='';return}
   if(S.pkSeenAt==null){S.pkSeenAt=+pkGet('ledger_picks_seen')||0}
   pkSet('ledger_picks_seen',String(Date.now()));
   const me=pkMe(),all=[...S.picks.values()];pkRenderTopicFilter(all);
@@ -2459,8 +2466,12 @@ function renderPicks(){
   $('#pkStatusChips').innerHTML=groups.map(([n,g])=>{const c=all.filter(p=>pkInGroup(p,g)).length;return '<button class="chip" data-act="pk-group" data-v="'+n+'" aria-pressed="'+(S.pkGroup===n)+'">'+n+(c&&n!=='全部'?'<sup>'+c+'</sup>':'')+'</button>'}).join('');
   $('#pkWho').innerHTML=me?'记录身份 · '+esc(me)+'　<button class="linkbtn" data-act="pk-me">改署名</button>':'<button class="linkbtn" data-act="pk-me">先设置这台手机是谁在用</button>';
   const g=(groups.find(x=>x[0]===S.pkGroup)||groups[0])[1];
-  const list=all.filter(p=>pkInGroup(p,g)&&(!PK_DATE||p.watchDate===PK_DATE)&&pkTopicMatch(p,PK_TOPIC)).sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
-  if(!list.length){$('#pkList').innerHTML='<div class="pw"><div class="paper b"><div class="muted">'+(PK_TOPIC?'当前日期和状态下，没有「'+esc(PK_TOPIC)+'」题材的剧。 <button type="button" class="linkbtn" data-act="pk-topic-filter" data-v="">清除题材筛选</button>':all.length?'这一栏是空的。':'还没有剧。看到想做的新剧，点右上「放一部剧」，对方打开就能看到。')+'</div></div></div>';return}
+  const tracking=S.pkGroup==='待续';
+  $('#pkCalendar').hidden=tracking||$('#pkCalendar').hidden;$('#pkTopicFilter').hidden=tracking;
+  $('#pkAiringNote').hidden=!tracking;
+  if(tracking)$('#pkAiringNote').innerHTML='<div><strong>待续追踪 · '+all.filter(p=>p.airing==='未完结').length+' 部</strong><br>全部日期 · 所有未完结的剧<small>按已记录状态整理；点「看原片」查看更新，不自动检测新集。</small></div><button type="button" class="linkbtn" data-act="pk-group" data-v="全部">查看全部剧</button>';
+  const list=all.filter(p=>pkInGroup(p,g)&&(tracking||((!PK_DATE||p.watchDate===PK_DATE)&&pkTopicMatch(p,PK_TOPIC)))).sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
+  if(!list.length){$('#pkList').innerHTML='<div class="pw"><div class="paper b"><div class="muted">'+(tracking?'还没有标为未完结的剧。可在剧目编辑里设置播出状态。':PK_TOPIC?'当前日期和状态下，没有「'+esc(PK_TOPIC)+'」题材的剧。 <button type="button" class="linkbtn" data-act="pk-topic-filter" data-v="">清除题材筛选</button>':all.length?'这一栏是空的。':'还没有剧。看到想做的新剧，点右上「放一部剧」，对方打开就能看到。')+'</div></div></div>';return}
   $('#pkList').innerHTML=list.map((p,i)=>{
     const id=esc(p.id),st=p.status||'待看',isNew=(p.createdAt||0)>S.pkSeenAt&&p.by&&p.byId!==PK_ACTOR.id,inLib=!!findWork(p.zh);
     const when=ymd(new Date(p.createdAt||Date.now())).slice(5).replace('-','.');
@@ -2706,10 +2717,10 @@ document.addEventListener('click',e=>{
     case 'pk-react':try{PK_RESPONSES.toggle(b.dataset.id,v)}catch(error){toast(error.message)}break;
     case 'pk-response-retry':PK_RESPONSES.retry(b.dataset.id);break;
     case 'pk-reply-delete':armed(b,'确认删除',()=>{try{PK_RESPONSES.remove(b.dataset.id,b.dataset.reply)}catch(error){toast(error.message)}});break;
-    case 'pk-group':S.pkGroup=v;render();break;
+    case 'pk-group':S.pkGroup=v;if(v==='待续'){PK_DATE=null;PK_TOPIC=''}render();if(v==='待续'){$('#pkStatusChips').scrollIntoView({block:'start'});$('#pkStatusChips [data-v="待续"]')?.focus({preventScroll:true})}break;
     case 'pk-who':S.pkWho=v;render();break;
     case 'pk-topic-toggle':pkToggleTopic(v);break;
-    case 'pk-topic-filter':PK_TOPIC=v||'';renderPicks();$('#pkTopicFilter').open=true;break;
+    case 'pk-topic-filter':if(S.pkGroup==='待续')S.pkGroup='全部';PK_TOPIC=v||'';renderPicks();$('#pkTopicFilter').open=true;break;
     case 'pk-form-status':S.pkFormStatus=v;pkStatusChips();break;
     case 'pk-status':pkPatch(b.dataset.id,{status:v},'已标成'+v+(v==='已发微博'||v==='已上传'?'，可以点「编辑」补上链接':''));break;
     case 'pk-form-air':S.pkAir=S.pkAir===v?'':v;pkAirChips();break;
