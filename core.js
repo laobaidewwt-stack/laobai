@@ -26,7 +26,7 @@ export function editable(row={}) { row=row||{}; const d=defaults(); for(const k 
 export function patchBetween(before,after) { return Object.fromEntries(FIELD_KEYS.filter(k=>JSON.stringify(before[k])!==JSON.stringify(after[k])).map(k=>[k,after[k]])); }
 export function validateDraft(d) {
   if(typeof d.duration!=='string'||d.duration.length>80)throw new Error('时长请用 80 字以内的文字，例如每集 20 分钟');
-  if (!d.zh.trim()) throw new Error('请写上剧名');
+  if (!String(d.zh||'').trim() && !String(d.en||'').trim()) throw new Error('中文名、英文名至少填写一个');
   // Validate the submitted string, not only new URL()'s repaired/encoded result.
   for(const [k,label] of [['link','原片链接'],['pubLink','发布链接']]) {
     const value=d[k];
@@ -67,3 +67,4 @@ export class OwnerKeyPicksClient {
     }finally{clearTimeout(timeout);this.active.delete(controller)}
   }
 }
+

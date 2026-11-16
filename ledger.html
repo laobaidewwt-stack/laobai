@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-WfR4hHwSA6loXZ166+HdCtov2/EPLVTPhyDtkD2rkdU='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-+4nIddov2obCXpcUD4o8Tj24Mu1TXvaM4Tsaj9ETets='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,6 +15,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/laobai-192.png">
 <link rel="stylesheet" href="./ledger-app.css">
 <link rel="stylesheet" href="./posters.css?v=20261116-poster-texture-c1">
+<link rel="stylesheet" href="./linkage.css?v=20261116-linkage-candidate2">
 <script defer src="./ledger-app.js"></script>
 <script defer src="./vendor/opencc-1.0.5.js"></script>
 <script defer src="./ledger-script.js"></script>
@@ -310,7 +311,7 @@ button.pk-air:focus-visible{outline:3px solid currentColor;outline-offset:3px}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 
 
-.pk-calendar{margin:14px 2px 16px}.pk-calendar-grid,.pk-weekday{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.pk-weekday{text-align:center;font-size:11px;color:var(--ink2);padding-bottom:6px}.pk-day{min-width:0;min-height:44px;background:transparent;color:var(--ink);border:1px solid transparent;border-radius:8px;font-family:var(--mono);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 2px}.pk-day small{font-size:9px;min-height:14px}.pk-day.outside{opacity:.35}.pk-day[aria-pressed="true"]{background:var(--nav);color:var(--nav-ink)}.pk-calendar-bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px}.pk-date-tools{display:flex;justify-content:center;gap:14px;margin-top:8px;font-size:12px}.pk-auth-note{font-size:12px;color:var(--p-ink2)}.pk-sync-note{font-size:11px;color:var(--ink2);text-align:center}.pk-conflict{padding:12px;border:1px solid #c99a2e;background:#fff0c9;color:#674c20;font-size:13px}.shared-only #installEntry,.shared-only .nav [data-view="today"],.shared-only .nav [data-view="month"],.shared-only .nav [data-view="best"],.shared-only .nav [data-act="open-log"]{display:none}.shared-only .nav-in{display:flex;justify-content:center}.shared-only .seg button:disabled{opacity:.45}.shared-only #ledgerAccess,.shared-only #ledgerAccessNote{display:none!important}
+.pk-calendar{margin:14px 2px 16px}.pk-calendar-grid,.pk-weekday{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.pk-weekday{text-align:center;font-size:11px;color:var(--ink2);padding-bottom:6px}.pk-day{min-width:0;min-height:44px;background:transparent;color:var(--ink);border:1px solid transparent;border-radius:8px;font-family:var(--mono);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 2px}.pk-day small{font-size:9px;min-height:14px}.pk-day.outside{opacity:.35}.pk-day[aria-pressed="true"]{background:var(--nav);color:var(--nav-ink)}.pk-calendar-bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px}.pk-date-tools{display:flex;justify-content:center;gap:14px;margin-top:8px;font-size:12px}.pk-auth-note{font-size:12px;color:var(--p-ink2)}.pk-sync-note{font-size:11px;color:var(--ink2);text-align:center}.pk-conflict{padding:12px;border:1px solid #c99a2e;background:#fff0c9;color:#674c20;font-size:13px}.shared-only #installEntry,.shared-only .nav [data-view="today"],.shared-only .nav [data-view="month"],.shared-only .nav [data-view="best"],.shared-only .nav [data-act="open-log"]{display:none}.shared-only .nav-in{display:flex;justify-content:center}.shared-only .seg button:disabled{opacity:.45}.shared-only #ledgerAccessNote{display:none!important}
 
 
 /* ===== 老白笔记 · 海图题签抬头 + 纸面导航（锁定版 2026-11-07）===== */
@@ -830,6 +831,7 @@ html:root[data-skin="dream"] .pk-density{background:transparent}
 
     <div id="pkTrackingEntry" class="pk-tracking-entry" hidden><button type="button" class="pk-air" data-air="ongoing" data-act="pk-group" data-v="待续" aria-pressed="false">◷ 待续追踪 <span id="pkTrackingCount">0</span> 部</button><small>列出所有未完结的剧</small></div>
     <div class="pw"><div class="paper b"><div class="cap">Shared With The Same Key</div><p class="pk-auth-note">共用原钥匙：两人都能查看、修改和删除整个账本，包括作品、日志和字幕；这里不做个人权限隔离。</p><p id="pkNeedKey" class="pk-auth-note">先在上方输入原账本钥匙。无需新账号、新钥匙或独立网址。</p><div id="pkActorPanel"><form id="pkActorForm" class="row" style="gap:10px"><label class="f" style="flex:1">协作署名<input id="pkActorName" class="in" maxlength="80" placeholder="例如：老白" required></label><button class="btn" type="submit">记下署名</button></form><p class="pk-auth-note">署名和设备标记只帮助分工，不能验证个人身份。</p></div></div></div>
+    <div class="ledger-link-entry"><button type="button" class="linkbtn" data-link-act="organize">整理剧单与作品库关联</button></div>
     <div id="pkCalendar" class="pk-calendar" hidden><div class="pk-calendar-bar"><button class="mini" data-act="pk-month-prev" aria-label="上个月">‹</button><b id="pkMonthLabel"></b><button class="mini" data-act="pk-month-next" aria-label="下个月">›</button></div><div class="pk-weekday" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div><div id="pkCalendarGrid" class="pk-calendar-grid" aria-label="追剧日期"></div><div class="pk-date-tools"><span id="pkDateLabel">全部日期</span><button class="linkbtn" data-act="pk-date-all">全部日期</button><button class="linkbtn" data-act="pk-date-today">今天</button></div></div>
     <div class="pk-sync-note" id="pkSyncNote" hidden></div>
     <dialog id="pkNoticePanel" class="pk-notice paper" aria-labelledby="pkNoticeTitle"><div class="pk-notice-heading"><h2 id="pkNoticeTitle">剧单通知</h2><button id="pkPushClose" type="button" class="linkbtn" aria-label="关闭通知设置">关闭</button></div>
@@ -890,8 +892,8 @@ html:root[data-skin="dream"] .pk-density{background:transparent}
     <label class="f">计划追剧日期<input class="in" id="kWatchDate" type="date" min="1900-01-01" max="2100-12-31"></label>
     <label class="f" id="kMeWrap">你是谁（这台手机会记住）<input class="in" id="kMe" maxlength="12" placeholder="例如：老白"></label>
     <div class="row2 w1">
-      <label class="f">中文名<input class="in" id="kZh" placeholder="可以先写暂定名"></label>
-      <label class="f">英文名<input class="in" id="kEn"></label>
+      <label class="f"><span id="kZhLabel">中文名（官中名）</span><input class="in" id="kZh" placeholder="官中名未出可留空，请填英文名"><small id="kZhNote">不拿自译名代替官中名。</small></label>
+      <label class="f">英文名<input class="in" id="kEn"></label><div id="kLinkSuggestions" class="ledger-link-suggestions" aria-live="polite"></div>
     </div>
     <label class="f">在哪看到的（链接）<input class="in" id="kLink" inputmode="url" placeholder="https://"></label>
     <div class="f"><span>类型 / 题材标签 · 可多选</span><div id="kTopicSuggestions" class="chips" aria-label="建议题材"></div><div id="kTopicChoices" aria-label="选择题材标签"></div><label for="kGenre" class="muted">也可输入别名，用顿号或逗号分隔；主动修改标签并保存时统一名称。</label><input class="in" id="kGenre" aria-label="类型或题材标签" placeholder="欧美AI、重生、双强……"><small id="kTopicHint" class="muted"></small></div>
@@ -918,7 +920,7 @@ html:root[data-skin="dream"] .pk-density{background:transparent}
     <div class="pst-edit" id="wPosters" hidden></div>
     <div class="row2 w1">
       <label class="f">中文名<input class="in" id="wZh" required></label>
-      <label class="f">英文名<input class="in" id="wEn"></label>
+      <label class="f">英文名<input class="in" id="wEn"></label><div id="wLinkSuggestions" class="ledger-link-suggestions" aria-live="polite"></div><div class="ledger-link-entry"><button type="button" class="linkbtn" data-link-act="form-manual">手动选剧单（保存后关联）</button></div>
     </div>
     <div class="row2">
       <label class="f">类型<select class="in" id="wKind"></select></label>
@@ -1423,7 +1425,7 @@ class LedgerTransactions {
  async close(){this.dead=true;await this.adapter.close()}
 }
 
-function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,toast,findWork,normName,ymd,legacyLog,writable,posters}){
+function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,toast,findWork,normName,ymd,legacyLog,writable,posters,onWorkOpen=()=>{},onWorkSaved=()=>{}}){
  const $=s=>document.querySelector(s),uuid=()=>crypto.randomUUID();let work=null,log=null,opening=0,recoveryIntent=null,autoTimer=null;const autoAttempted=new Set();
  const fields={zh:'wZh',en:'wEn',kind:'wKind',status:'wStatus',subLink:'wSub',title:'wTitle',copy:'wCopy',pubLink:'wPub',notes:'wNotes',hook:'wHook',genre:'wGenre',state:'wState',cp:'wCp',rec:'wRec'};
  const message=error=>({read_only:'当前只读，未发送修改；云端记录仍会更新。',conflict:'另一台设备已修改这部作品。本次没有覆盖，请先查看草稿，再载入最新版本。',unsupported:'当前云端尚未启用同步保存。本次未写入，草稿已保留。',title_required:'请填写作品中文名。',loading:'正在读取作品，请稍候再保存。',subtitle_too_long:'字幕全文超过 240,000 字节，请缩短后再保存。',count_required:'请明确填写完成字幕条数：新翻译或官中来源至少一项大于 0。',recovery_scope_unverified:'未找到匹配的已提交回执，本次没有重发。请查看并复制原草稿，手动核对云端结果；不要直接重复记一次交付。',status_only:'这个状态需要交付信息。仅文案或无字幕作品暂不能用此表单新设完成状态；草稿已保留。',stale_key:'钥匙已变更，本次草稿不会在另一把钥匙下重试。',scope_unavailable:'本机无法持久保存恢复标记，本次未发送云端写入。请允许网站保存数据后重新打开。',journal_unavailable:'本机无法安全保存恢复记录，未开始新的云端写入。',rejected_journal_pending:'云端已明确拒绝这次保存，但本机存储暂时无法归档。原草稿仍保留，请勿关闭页面；恢复存储后再点保存，只会先归档，不会重发被拒绝的操作。',coordination_unavailable:'此浏览器不支持安全保存锁，请换用最新浏览器。',incompatible_journal:'本机保存记录版本不兼容，已保留原记录，请勿清除网站数据。',pending_operation:'还有一次保存结果待核实，请先核实上一条结果。',rejected_work:'这部作品上次保存被拒绝，原草稿仍保留。请直接查看或放弃该草稿；其他作品可以照常保存。',rejected_operation:'这次保存已明确被拒绝，未覆盖云端。请直接查看或放弃原草稿；其他作品可以照常保存。',cancelled_recovery:'已取消自动核实，原草稿仍保留。'}[error?.code]||'保存结果尚未确认。请用“核实上次保存结果”；重载后未找到回执不会重发，原稿可复制并手动核对。');
@@ -1461,7 +1463,7 @@ function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,to
  }
  async function openWork(id){
   work=null;contextActions(null,'w');populateWork(id);const token=++opening;formDisable('#workForm',true);$('#wTxStatus').textContent='正在核对云端版本…';
-  try{const tx=getDb().transactions();const edit=await tx.open(id||uuid());if(token!==opening)return;work=edit;populateWork(edit.bundle.work.exists?edit.id:null,edit.bundle.work.data||null);$('#wSubs').value=edit.bundle.subs.deleted?'':edit.bundle.subs.data?.text||'';$('#wSubs').dataset.orig=$('#wSubs').value;completionFields(edit);formDisable('#workForm',!writable());$('#wTxStatus').textContent=writable()?'资料与字幕将一起保存。只有明确新增交付才会增加完成数。':getDb().writeReason();updateDelivery();await markRejected(edit,'w')}
+  try{const tx=getDb().transactions();const edit=await tx.open(id||uuid());if(token!==opening)return;work=edit;populateWork(edit.bundle.work.exists?edit.id:null,edit.bundle.work.data||null);$('#wSubs').value=edit.bundle.subs.deleted?'':edit.bundle.subs.data?.text||'';$('#wSubs').dataset.orig=$('#wSubs').value;completionFields(edit);formDisable('#workForm',!writable());$('#wTxStatus').textContent=writable()?'资料与字幕将一起保存。只有明确新增交付才会增加完成数。':getDb().writeReason();updateDelivery();const readyToken=opening;await markRejected(edit,'w');if(readyToken===opening&&work===edit&&!$('#workOv').hidden)onWorkOpen(edit.id,!edit.bundle.work.exists)}
   catch(e){if(token===opening){$('#wTxStatus').textContent=message(e);toast(message(e))}}
  }
  function bodyFromFields(){const body={};for(const [k,id]of Object.entries(fields))body[k]=k==='zh'?normName($('#'+id).value):$('#'+id).value.trim();body.score=cp(S.score);return body}
@@ -1482,7 +1484,7 @@ function createTransactionForms({document,getDb,S,populateWork,openOv,closeOv,to
  }
  async function saveWork(e){e.preventDefault();if(!writable())return toast('还连不上账本，暂时不能保存');if(!work||work.busy||work.done)return;
   const edit=work,posterDraft=posters.captureDraft('work'),generation=opening,ownsForm=()=>work===edit&&opening===generation&&!$('#workOv').hidden;
-  try{const request=edit.payload||requestFromWork();formDisable('#workForm',true);await getDb().transactions().save(edit,request);if(ownsForm()){const posterOK=await posters.commitDraft('work',edit.id,posterDraft);if(!ownsForm())return;if(posterOK)closeOv();else $('#wTxStatus').textContent='作品已保存，海报未全部上传，请在海报区重试。'}toast(request.mode==='save'?'作品资料和字幕已一起保存，未新增交付':'作品、字幕和交付信息已同步保存');}
+  try{const request=edit.payload||requestFromWork();formDisable('#workForm',true);await getDb().transactions().save(edit,request);if(ownsForm()){const posterOK=await posters.commitDraft('work',edit.id,posterDraft);if(!ownsForm())return;if(posterOK)closeOv();else $('#wTxStatus').textContent='作品已保存，海报未全部上传，请在海报区重试。'}toast(request.mode==='save'?'作品资料和字幕已一起保存，未新增交付':'作品、字幕和交付信息已同步保存');if(generation===opening||edit.done)void onWorkSaved(edit.id);}
   catch(e){if(ownsForm()){$('#wTxStatus').textContent=message(e);if(!edit.payload)formDisable('#workForm',false);else $('#workForm button[type="submit"]').disabled=false;try{await markRejected(edit,'w')}catch{}}await scheduleCheck(edit,generation,ownsForm,'w');toast(message(e))}finally{await refreshPending()}
  }
 
@@ -1638,9 +1640,10 @@ function createNoticeUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalT
 }
 
 return {createNoticeUI};})();
+import {createLinkageUI,pickTitle as linkedPickTitle} from './linkage.js?v=20261116-linkage-candidate2';
 import {createActivityUI} from './activity.js?v=20261107-chart2';
 import {createPosterUI} from './posters.js?v=20261109-posters-order1';
-import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261107-picks-validation1';
+import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261116-linkage-candidate2';
 const SHARED_ONLY=false;
 
 (function(){
@@ -2093,6 +2096,7 @@ function workRow(w,s,compact){
     if(w.title||w.copy||w.hook||w.cp)h+='<div class="acts" style="margin-top:6px">'+((w.hook||w.cp||w.genre)?'<button class="chip" data-act="copy-fan" data-id="'+esc(w.id)+'">复制发布文案</button>':'')+(w.title?'<button class="chip" data-act="copy-title" data-id="'+esc(w.id)+'">复制标题</button>':'')+(w.copy?'<button class="chip" data-act="copy-copy" data-id="'+esc(w.id)+'">复制文案</button>':'')+'</div>';
     if(w.notes)h+='<div class="muted" style="margin-top:6px">'+esc(withoutResourceLinks(w.notes))+'</div>';
   }
+  if(!compact)h+=LINKS.workCard(w);
   return h+'</div>';
 }
 // Read-only, script-insensitive matching. Never rewrite stored text.
@@ -2103,8 +2107,8 @@ function searchText(value){
   return searchConverter?searchConverter(text):text;
 }
 function searchMatches(values,query){return searchText(values.filter(v=>v!=null).join('\n')).includes(searchText(query).trim())}
-function searchWorks(query){if(SHARED_ONLY)return [];return [...S.works.values()].filter(w=>searchMatches([w.zh,w.en,w.title,w.notes,...copyVersions(w).flatMap(v=>[v.title,v.text])],query)||(S.subOn&&S.subs&&searchMatches([S.subs.get(w.id)],query)))}
-function searchPicks(query){return [...S.picks.values()].filter(p=>searchMatches([p.zh,p.en,p.note,p.genre,p.by,p.claim,p.status],query)||pkTopicSearchMatch(p.genre,query))}
+function searchWorks(query){if(SHARED_ONLY)return [];return [...S.works.values()].filter(w=>searchMatches([w.zh,w.en,w.title,w.notes,...LINKS.workSearch(w),...copyVersions(w).flatMap(v=>[v.title,v.text])],query)||(S.subOn&&S.subs&&searchMatches([S.subs.get(w.id)],query)))}
+function searchPicks(query){return [...S.picks.values()].filter(p=>searchMatches([p.zh,p.en,p.note,p.genre,p.by,p.claim,p.status,...LINKS.pickSearch(p)],query)||pkTopicSearchMatch(p.genre,query))}
 function openSearchResult(id,pick){
   if(!(pick?S.picks:S.works).has(id))return toast('这条记录已变化，请重新搜索');
   searchReturn={query:S.wq,view:S.view,wf:S.wf,copyView:S.copyView,pkGroup:S.pkGroup,date:PK_DATE};
@@ -2134,10 +2138,10 @@ function renderWorks(){
   let list=[...S.works.values()];
   if(S.copyView==='weibo')list=list.filter(work=>visibleCopyVersions(work).length);
   if(S.wf!=='全部')list=list.filter(w=>w.status===S.wf);
-  if(q)list=list.filter(w=>searchMatches([w.zh,w.en,w.title,w.notes,...copyVersions(w).flatMap(version=>[version.title,version.text])],q)||(S.subOn&&S.subs&&searchMatches([S.subs.get(w.id)],q)));
+  if(q)list=list.filter(w=>searchMatches([w.zh,w.en,w.title,w.notes,...LINKS.workSearch(w),...copyVersions(w).flatMap(version=>[version.title,version.text])],q)||(S.subOn&&S.subs&&searchMatches([S.subs.get(w.id)],q)));
   list.sort((a,b)=>((ws.get(b.id)||{}).last||b.pubDate||'').localeCompare((ws.get(a.id)||{}).last||a.pubDate||'')||(b.updatedAt||0)-(a.updatedAt||0));
   $('#worksList').innerHTML=list.length?list.map(w=>workRow(w,ws.get(w.id),false)).join(''):'<div class="muted">'+(S.works.size?'没有找到。':'还没有作品。记一条交付，或者点「＋ 新作品」。')+'</div>';
-  POSTERS.decorate('work',$('#worksList'));
+  POSTERS.decorate('work',document);
   const wrap=$('#hitsWrap'),hits=$('#hits');
   if(S.subOn&&q){
     wrap.hidden=false;
@@ -2574,7 +2578,7 @@ function renderPicks(){
   const list=all.filter(p=>pkInGroup(p,g)&&(tracking||((!PK_DATE||p.watchDate===PK_DATE)&&pkTopicMatch(p,PK_TOPIC)))).sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0));
   if(!list.length){$('#pkList').innerHTML='<div class="pw"><div class="paper b"><div class="muted">'+(tracking?'还没有标为未完结的剧。可在剧目编辑里设置播出状态。':PK_TOPIC?'当前日期和状态下，没有「'+esc(PK_TOPIC)+'」题材的剧。 <button type="button" class="linkbtn" data-act="pk-topic-filter" data-v="">清除题材筛选</button>':all.length?'这一栏是空的。':'还没有剧。看到想做的新剧，点右上「放一部剧」，对方打开就能看到。')+'</div></div></div>';return}
   $('#pkList').innerHTML=list.map((p,i)=>{
-    const id=esc(p.id),st=p.status||'待看',isNew=(p.createdAt||0)>S.pkSeenAt&&p.by&&p.byId!==PK_ACTOR.id,inLib=!!findWork(p.zh);
+    const id=esc(p.id),st=p.status||'待看',isNew=(p.createdAt||0)>S.pkSeenAt&&p.by&&p.byId!==PK_ACTOR.id;
     const when=ymd(new Date(p.createdAt||Date.now())).slice(5).replace('-','.');
     const meta=[p.duration,p.watchDate?'追剧 '+p.watchDate:'',p.claim?p.claim+' 在做':''].filter(Boolean).map(esc).join('　·　');
     const fl=[];
@@ -2591,14 +2595,14 @@ function renderPicks(){
     const links=(p.link||p.pubLink)?'<div class="pk-links">'+(p.link?lnk(p.link,'看原片'):'')+(p.pubLink?lnk(p.pubLink,'看发出去的'):'')+'</div>':'';
     return '<div class="pw'+(pkCompact()&&PK_ROW_OPEN.has(p.id)?' pk-row-open':'')+'" data-search-id="'+id+'"><div class="paper '+(i%2?'c':'b')+' pk'+(PK_ROW_OPEN.has(p.id)?' pk-row-expanded':'')+'"'+(pkCompact()?' tabindex="0" aria-expanded="'+PK_ROW_OPEN.has(p.id)+'"':'')+'><span class="pk-cover-placeholder" aria-hidden="true"></span>'+
       '<div class="pk-head">'+pkAiringBadge(p)+'<span class="pk-stamp" data-k="'+pkStampKind(st)+'">'+esc(st)+'</span><span class="cap pk-by">'+esc(p.by||'有人')+' · '+when+(p.updatedBy&&p.updatedBy!==p.by?' · '+esc(p.updatedBy)+' 改过':'')+'</span></div>'+
-      '<div class="pk-title">'+(isNew?'<i class="pk-newdot" title="新放的"></i>':'')+'《'+esc(p.zh)+'》'+(inLib?'<span class="pk-inlib">已入库</span>':'')+'</div>'+
-      (p.en?'<div class="pk-en">'+esc(p.en)+'</div>':'')+
+      '<div class="pk-title">'+(isNew?'<i class="pk-newdot" title="新放的"></i>':'')+'《'+esc(linkedPickTitle(p))+'》'+LINKS.badge(p)+'</div>'+
+      (p.zh&&p.en?'<div class="pk-en">'+esc(p.en)+'</div>':!p.zh?'<div class="pk-en">官中名待补</div>':'')+
       pkCardTags(p)+
       (meta?'<div class="pk-meta">'+meta+'</div>':'')+
-      (p.note?'<div class="pk-note">'+esc(p.note)+'</div>':'')+pkResponseSummary(p,PK_ACTOR,PK_RESPONSES.state(p.id))+follow+links+
+      (p.note?'<div class="pk-note">'+esc(p.note)+'</div>':'')+LINKS.pickCard(p)+pkResponseSummary(p,PK_ACTOR,PK_RESPONSES.state(p.id))+follow+links+
       '<div class="pk-acts"><div>'+main+alt+'</div><div>'+claim+'<button type="button" class="linkbtn pk-response-entry" data-act="pk-response-open" data-id="'+id+'" aria-controls="pk-response-'+id+'" aria-expanded="'+PK_RESPONSES.state(p.id).open+'">✦ 回应</button><button class="linkbtn pk-soft" data-act="pk-edit" data-id="'+id+'">编辑</button></div></div>'+
       pkResponsePanel(p,PK_ACTOR,PK_RESPONSES.state(p.id),PK_RESPONSES)+'</div></div>'}).join('');
-  POSTERS.decorate('pick',$('#pkList'));pkScheduleTagFit();
+  POSTERS.decorate('pick',document);pkScheduleTagFit();
   restoreResponseFocus(document,responseFocus);
 }
 function pkFillClaim(cur){const names=pkNames();if(cur&&!names.includes(cur))names.push(cur);$('#kClaim').innerHTML='<option value="">还没人认领</option>'+names.map(n=>'<option value="'+esc(n)+'"'+(n===cur?' selected':'')+'>'+esc(n)+'</option>').join('')}
@@ -2621,6 +2625,7 @@ function pkIssueRows(){
 }
 /* Full-access shared-key mode: same private ledger key, no accounts or new credentials. */
 const PK_ACTOR={id:'',name:''};
+const LINKS=createLinkageUI({document,sharedOnly:SHARED_ONLY,getCloud:()=>CLOUD,getActor:()=>PK_ACTOR,canWrite:()=>writable,fetcher:guardedLedgerFetch,getWorks:()=>S.works,getPicks:()=>S.picks,onChange:()=>render(),onPick:row=>{PK_ROWS.apply([row]);pkPublish()},openWork:id=>openSearchResult(id,false),openPick:id=>openSearchResult(id,true),toast,decoratePosters:root=>{POSTERS.decorate('pick',root);if(!SHARED_ONLY)POSTERS.decorate('work',root)},copyPublishLink:async(choice,guard)=>{guard();if(SHARED_ONLY||!writable)throw Error('READ_ONLY');const auth=db.authGeneration();if(!choice.edit)choice.edit=await db.transactions().open(choice.workId);guard();if(auth!==db.authGeneration())throw Error('SESSION_CHANGED');if(String(choice.edit.bundle.work.data?.pubLink||'').trim())throw Error('TARGET_NOT_EMPTY');if(!choice.request)choice.request={version:1,mode:'save',savePurpose:'metadata_only',work:{id:choice.workId,expected:choice.edit.bundle.work,patch:{pubLink:choice.url}},subs:{action:'keep',expected:choice.edit.bundle.subs}};try{await LINKS.refresh();guard();await db.transactions().save(choice.edit,choice.request);guard();await db.retry()}finally{void txForms?.refreshPending()}}});
 const PK_CLIENT=new OwnerKeyPicksClient(()=>CLOUD,()=>PK_ACTOR,guardedLedgerFetch),PK_ROWS=new RowStore();
 let PK_EDIT=null,PK_TIMER=null,PK_SESSION=0,PK_SYNCING=false,PK_CONNECTED=false;
 const PK_NOTICE=createNoticeUI(()=>CLOUD,()=>PK_ACTOR,{fetcher:guardedLedgerFetch,canWrite:()=>writable});const PK_ACTIVITY=createActivityUI(()=>CLOUD,()=>PK_ACTOR,{fetcher:guardedLedgerFetch,onUnreadChange:()=>renderChartHead(),onError:e=>{if(e.message==='STORAGE_UNAVAILABLE')toast('浏览器未允许保存已读进度，刷新后可能再次看到提醒')}});
@@ -2667,10 +2672,10 @@ async function pkSync(){
  try{const rows=await PK_CLIENT.rpc('ledger_picks_list');if(session!==PK_SESSION)return;PK_ROWS.apply(rows);pkPublish();PK_NOTICE.sync();PK_ACTIVITY.sync();$('#pkSyncNote').textContent='已同步 · '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
  catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION)PK_SYNCING=false}
 }
-function pkOnLedgerReady(){if(!PK_CONNECTED){PK_CONNECTED=true;PK_NOTICE.connect();PK_ACTIVITY.connect();PK_SESSION++;PK_TIMER=setInterval(()=>{if(!document.hidden)void pkSync()},30000);void pkSync()}render()}
-function pkDisconnect(){PK_COMPOSING=false;PK_RESPONSE_REDRAW=false;PK_COMPOSITION_TOKEN++;PK_RESPONSES.clear();PK_NOTICE.clear();PK_ACTIVITY.clear();PK_SESSION++;PK_CLIENT.clear();PK_CONNECTED=false;PK_EDIT=null;PK_ROWS.clear();PK_BUSY.clear();PK_SYNCING=false;clearInterval(PK_TIMER);$('#pkOv').hidden=true;$('#pkForm').reset();$('#kIssues').innerHTML='';S.picks.clear();render()}
+function pkOnLedgerReady(){LINKS.connect();if(!PK_CONNECTED){PK_CONNECTED=true;PK_NOTICE.connect();PK_ACTIVITY.connect();PK_SESSION++;PK_TIMER=setInterval(()=>{if(!document.hidden)void pkSync()},30000);void pkSync()}render()}
+function pkDisconnect(){LINKS.clear();PK_COMPOSING=false;PK_RESPONSE_REDRAW=false;PK_COMPOSITION_TOKEN++;PK_RESPONSES.clear();PK_NOTICE.clear();PK_ACTIVITY.clear();PK_SESSION++;PK_CLIENT.clear();PK_CONNECTED=false;PK_EDIT=null;PK_ROWS.clear();PK_BUSY.clear();PK_SYNCING=false;clearInterval(PK_TIMER);$('#pkOv').hidden=true;$('#pkForm').reset();$('#kIssues').innerHTML='';S.picks.clear();render()}
 function pkAskMe(){$('#pkActorPanel').hidden=false;$('#pkActorName').value=PK_ACTOR.name;$('#pkActorName').focus()}
-function pkSaveActor(e){e.preventDefault();const name=$('#pkActorName').value.trim();if(!name||name.length>80)return toast('署名请填 1 到 80 个字');PK_CLIENT.clear();PK_RESPONSES.clear();PK_ACTOR.name=name;pkSet('picks_actor_name',name);$('#pkActorPanel').hidden=true;render();toast('署名已记下，仅作协作标记，不是个人账号')}
+function pkSaveActor(e){e.preventDefault();const name=$('#pkActorName').value.trim();if(!name||name.length>80)return toast('署名请填 1 到 80 个字');PK_CLIENT.clear();PK_RESPONSES.clear();PK_ACTOR.name=name;LINKS.clear();LINKS.connect();pkSet('picks_actor_name',name);$('#pkActorPanel').hidden=true;render();toast('署名已记下，仅作协作标记，不是个人账号')}
 function pkRenderCalendar(){
  $('#pkCalendar').hidden=!PK_CONNECTED;$('#pkSyncNote').hidden=!PK_CONNECTED;$('#pkNeedKey').hidden=PK_CONNECTED;
  if(!PK_CONNECTED)return;
@@ -2696,7 +2701,7 @@ function openPick(id){
  PK_EDIT={id:id||crypto.randomUUID(),isNew:!id,revision:r?.revision,original:structuredClone(p),saving:false};
  S.pkEdit=id||null;S.pkFormStatus=p.status;S.pkAir=p.airing;S.pkOff=p.official;S.pkIssues=structuredClone(p.issues);
  $('#kTitle').textContent=id?'改一下这部剧':'放一部剧';$('#kZh').value=p.zh;$('#kEn').value=p.en;$('#kLink').value=p.link;$('#kGenre').value=p.genre;$('#kTragedy').checked=pkTopics(p.genre).includes('悲剧');$('#kDuration').value=p.duration;$('#kDuration').setCustomValidity('');$('#kNote').value=p.note;$('#kPub').value=p.pubLink;$('#kWatchDate').value=p.watchDate||'';$('#kEpsDone').value=p.epsDone;$('#kEpsTotal').value=p.epsTotal;
- pkRenderTopicChoices();$('#kMeWrap').hidden=true;$('#kConflict').hidden=true;$('#kDel').hidden=!id;pkStatusChips();pkAirChips();pkIssueRows();pkFillClaim(r?.claim||'');$('#kClaim').disabled=true;$('#kClaim').title='认领在剧单卡片上操作';pkSetBusy(false);openOv('pkOv');POSTERS.mountEditor('pick',id||null,$('#kPosters'));
+ pkRenderTopicChoices();$('#kMeWrap').hidden=true;$('#kConflict').hidden=true;$('#kDel').hidden=!id;pkStatusChips();pkAirChips();pkIssueRows();pkFillClaim(r?.claim||'');$('#kClaim').disabled=true;$('#kClaim').title='认领在剧单卡片上操作';pkSetBusy(false);openOv('pkOv');POSTERS.mountEditor('pick',id||null,$('#kPosters'));$('#kZhLabel').textContent=id?'既有中文名（未核对官中）':'中文名（官中名）';$('#kZhNote').textContent=id?'保留原名；未经确认不当作官中名。留空时用英文名显示。':'官中名未出可留空，请填英文名。';LINKS.edit('pick',PK_EDIT.id);
 }
 function pkSetBusy(busy){document.querySelectorAll('#pkForm button,#pkForm input,#pkForm textarea,#pkForm select').forEach(n=>n.disabled=busy);$('#kClaim').disabled=true}
 function pkCloseGuard(){if(!PK_EDIT||$('#pkOv').hidden)return true;if(PK_EDIT.saving)return false;const changed=Object.keys(pkPatchBetween(PK_EDIT.original,pkPreserveUnchangedTopics(pkReadDraft(),PK_EDIT))).length;if(changed&&!confirm('放下这次未保存的修改？'))return false;PK_EDIT=null;return true}
@@ -2705,9 +2710,9 @@ async function savePick(e){
  let draft;try{const raw=pkReadDraft();if(edit.isNew||!pkSameTopics(raw.genre,edit.original.genre))raw.genre=pkSaveGenre(raw.genre);else raw.genre=edit.original.genre;draft=pkValidateDraft(raw)}catch(e){return toast(e.message)}
  // Stable IDs for newly added issues survive retry and change detection.
  S.pkIssues=structuredClone(draft.issues);pkIssueRows();const patch=pkPatchBetween(edit.original,draft);
- if(!edit.isNew&&!Object.keys(patch).length){PK_EDIT=null;closeOv();return}
+ if(!edit.isNew&&!Object.keys(patch).length){PK_EDIT=null;closeOv();void LINKS.saved('pick',edit.id);return}
  edit.saving=true;pkSetBusy(true);const session=PK_SESSION,posterDraft=POSTERS.captureDraft('pick');
- try{const row=await PK_CLIENT.rpc(edit.isNew?'ledger_picks_create':'ledger_picks_update',edit.isNew?{p_id:edit.id,p_data:draft}:{p_id:edit.id,p_revision:edit.revision,p_patch:patch});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_NOTICE.sync();PK_ACTIVITY.sync();const posterOK=row.deleted||await POSTERS.commitDraft('pick',row.id,posterDraft);if(session!==PK_SESSION)return;edit.isNew=false;edit.revision=row.revision;edit.original=structuredClone(pkEditable(row));if(posterOK){PK_EDIT=null;closeOv()}pkPublish();toast(!posterOK?'剧已保存，海报未全部上传，请在海报区重试':row.deleted?'这部剧已被删除，未重新创建':'存好了，两个人都能看到')}
+ try{const row=await PK_CLIENT.rpc(edit.isNew?'ledger_picks_create':'ledger_picks_update',edit.isNew?{p_id:edit.id,p_data:draft}:{p_id:edit.id,p_revision:edit.revision,p_patch:patch});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_NOTICE.sync();PK_ACTIVITY.sync();const posterOK=row.deleted||await POSTERS.commitDraft('pick',row.id,posterDraft);if(session!==PK_SESSION)return;edit.isNew=false;edit.revision=row.revision;edit.original=structuredClone(pkEditable(row));if(posterOK){PK_EDIT=null;closeOv()}pkPublish();toast(!posterOK?'剧已保存，海报未全部上传，请在海报区重试':row.deleted?'这部剧已被删除，未重新创建':'存好了，两个人都能看到');if(!row.deleted)void LINKS.saved('pick',row.id)}
  catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION){edit.saving=false;pkSetBusy(false)}}
 }
 async function pkPatch(id,patch,msg){
@@ -2719,7 +2724,7 @@ async function pkPatch(id,patch,msg){
  }catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION)PK_BUSY.delete(id)}
 }
 async function pkDelete(){const edit=PK_EDIT;if(!edit||edit.isNew||edit.saving)return;edit.saving=true;pkSetBusy(true);const session=PK_SESSION;
- try{const row=await PK_CLIENT.rpc('ledger_picks_delete',{p_id:edit.id,p_revision:edit.revision});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);PK_NOTICE.sync();PK_ACTIVITY.sync();PK_EDIT=null;closeOv();pkPublish();toast('从剧单里删掉了')}
+ try{const row=await PK_CLIENT.rpc('ledger_picks_delete',{p_id:edit.id,p_revision:edit.revision});if(session!==PK_SESSION)return;PK_ROWS.apply([row]);if(row.deleted)void LINKS.pickDeleted(row.id);PK_NOTICE.sync();PK_ACTIVITY.sync();PK_EDIT=null;closeOv();pkPublish();toast('从剧单里删掉了')}
  catch(e){if(session===PK_SESSION)pkError(e)}finally{if(session===PK_SESSION){edit.saving=false;pkSetBusy(false)}}
 }
 function pkInitialize(){
@@ -2914,12 +2919,27 @@ window.addEventListener('hashchange',()=>{
   if(supplied){pkDisconnect();setLedgerKey(supplied);stripLedgerKeyFromUrl();if(db)db.retry()}
 });
 function guardedLedgerFetch(url,options={}){
- const name=String(url).split('/').pop(),body=typeof options.body==='string'?JSON.parse(options.body):{};
- const read=['ledger_tx_fingerprint','ledger_tx_snapshot','ledger_tx_bundle','ledger_tx_status','ledger_get','ledger_all','ledger_pull','ledger_inbox_pending_page','ledger_picks_list','ledger_poster_sets','ledger_poster_get'].includes(name)||(name==='ledger_picks_notice'&&['config','status','changes','events_since'].includes(body.p_op));
+ const body=typeof options.body==='string'?JSON.parse(options.body):{};
+ if(SHARED_ONLY){
+  url=String(url).replace(/\/ledger_poster_sets$/, '/ledger_pick_poster_sets').replace(/\/ledger_poster_get$/, '/ledger_pick_poster_get');
+  if(/\/ledger_(?:pick_)?poster_(?:add|arrange)$/.test(String(url))){
+   if(body.p_kind!=='pick')return Promise.reject(Object.assign(new Error('共享视图只能修改剧单海报。'),{code:'shared_only'}));
+   url=String(url).replace(/\/ledger_poster_add$/, '/ledger_pick_poster_add').replace(/\/ledger_poster_arrange$/, '/ledger_pick_poster_arrange');
+  }
+ }
+ const name=String(url).split('/').pop();
+ if(SHARED_ONLY&&!/^ledger_picks_(?:list|create|update|claim|delete|react|reply|reply_delete|notice|link_flags)$/.test(name)&&!/^ledger_pick_poster_(?:sets|get|add|arrange)$/.test(name))return Promise.reject(Object.assign(new Error('共享视图不读取作品库资料。'),{code:'shared_only'}));
+ const read=['ledger_tx_fingerprint','ledger_tx_snapshot','ledger_tx_bundle','ledger_tx_status','ledger_get','ledger_all','ledger_pull','ledger_inbox_pending_page','ledger_picks_list','ledger_links_snapshot','ledger_picks_link_flags','ledger_pick_poster_sets','ledger_pick_poster_get','ledger_poster_sets','ledger_poster_get'].includes(name)||(name==='ledger_picks_notice'&&['config','status','changes','events_since'].includes(body.p_op));
  if(!read&&!writable)return Promise.reject(Object.assign(new Error('当前为只读，未发送修改。'),{code:'read_only'}));
  return fetch(url,options);
 }
 window.addEventListener('storage',e=>{if((e.key==='ledger_tx_scope'||e.key==='ledger_key')&&db){try{TX_SCOPE.assert();if(e.key==='ledger_key'&&localStorage.getItem('ledger_key')!==CLOUD.key)throw Error('key changed')}catch{CLOUD.key='';TX_SCOPE.key='';db.resetSession();pkDisconnect();showLedgerAccess('钥匙在另一标签页发生变化。旧草稿不会转移，请重新输入当前钥匙。')}}});
+function sharedPicksDb(){
+ let generation=0;
+ const reset=()=>{generation++;writable=false;S.works.clear();S.logs=[];S.days.clear();S.subs=null;S.ready=0;pkDisconnect()};
+ const retry=async()=>{reset();const ticket=generation,key=CLOUD.key;if(!key){showLedgerAccess();return false}try{const rows=await PK_CLIENT.rpc('ledger_picks_list');if(ticket!==generation||key!==CLOUD.key)return false;PK_ROWS.apply(rows);writable=true;S.ready=3;S.view='picks';confirmLedgerAccess();pkPublish();setStatus('仅剧单视图：此页面不读取作品库资料。');return true}catch(e){if(ticket===generation){writable=false;if(e.code==='bad_key')rejectLedgerAccess();else setStatus('剧单暂时连不上，请稍后重试。')}return false}};
+ return {retry,resetSession:reset,authGeneration:()=>generation,canWrite:()=>writable,close:reset};
+}
 function supaDb(){
  const COLS=['works','logs','days','subs'],cache={works:new Map(),logs:new Map(),days:new Map(),subs:new Map()},listeners={works:[],logs:[],days:[],subs:[]},batches=[];
  let session=0,tx=null,reader=null,timer=null,loaded=false,connected=false,capable=false,probe=null,inboxRunning=false,subStatus={enabled:false,pending:0,failed:0,missing:0},lastPublished='',reason='正在检查本机保存能力…';
@@ -3025,8 +3045,9 @@ async function offerFile(name,data,mime){
 /* ---------- connect ---------- */
 (async()=>{
   // Every device uses the same cloud ledger, never an embedded preview database.
+  if(SHARED_ONLY){db=sharedPicksDb();S.view='picks';S.works.clear();S.logs=[];S.days.clear();S.subs=null;void db.retry();return}
   db=supaDb();
-  txForms=createTransactionForms({document,getDb:()=>db,S,populateWork,openOv,closeOv,toast,findWork,normName,ymd,legacyLog:saveLegacyLog,writable:()=>writable,posters:POSTERS});
+  txForms=createTransactionForms({document,getDb:()=>db,S,populateWork,openOv,closeOv,toast,findWork,normName,ymd,legacyLog:saveLegacyLog,writable:()=>writable,posters:POSTERS,onWorkOpen:(id,isNew)=>LINKS.edit('work',id,{isNew}),onWorkSaved:async id=>{const generation=db.authGeneration();try{await db.retry();if(generation===db.authGeneration())await LINKS.saved('work',id)}catch{toast('作品已保存，关联资料暂未同步。稍后可从作品卡片继续。')}}});
   writable=false;setStatus(CLOUD.key?'正在读取云端账本…':'请输入一次钥匙，打开这台设备上的账本。');
   if(!CLOUD.key)showLedgerAccess();
   const timer=setTimeout(()=>{if(CLOUD.key&&S.ready<3)setStatus('暂时连不上账本，显示的可能不是最新内容。')},10000);
