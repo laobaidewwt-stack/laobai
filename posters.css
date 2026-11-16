@@ -70,9 +70,6 @@ html.pst-viewing,html.pst-viewing body{overflow:hidden}
 /* Draft ordering uses the same selected thumbnail and actions as saved posters. */
 .pst-draft-tools .chip{min-height:44px;touch-action:manipulation}
 
-/* Arch detail belongs to thumbnails only, never the viewer or failed covers. */
-.work .pst-cover:not(.failed) .pst-mount::after,.paper.pk .pst-cover:not(.failed) .pst-mount::after{content:"";position:absolute;inset:7px;border:1.5px solid rgba(255,255,255,.85);border-radius:50% 50% 3px 3px/33% 33% 3px 3px;pointer-events:none}
 #pkList.pk-compact .paper.pk:not(.pk-row-expanded) .pst-cover{border-radius:6px}
 #pkList.pk-compact .paper.pk:not(.pk-row-expanded) .pst-cover .pst-mount{border-radius:6px;box-shadow:4px 5px 0 0 color-mix(in srgb,var(--p-ink2) 45%,transparent),0 1px 2px rgba(10,16,40,.18)}
 #pkList.pk-compact .paper.pk:not(.pk-row-expanded) .pst-cover .pst-mount img{border-radius:6px;box-shadow:0 0 0 1.5px rgba(255,255,255,.92)}
-#pkList.pk-compact .paper.pk:not(.pk-row-expanded) .pst-cover:not(.failed) .pst-mount::after{inset:4px;border-width:1px}
