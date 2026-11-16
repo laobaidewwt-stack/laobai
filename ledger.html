@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-7Khm/MwIkr+3WQoE600CWEbtGxQepttjPlZAD6wEmbY='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-qj6E8Vy1qNz3pDwl3yDWv7RL6X6b+vAEJFR5+WKcAVs='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src https://tvoynrohczmovuyorplm.supabase.co; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,8 +15,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/laobai-192.png">
 <link rel="stylesheet" href="./ledger-app.css">
 <link rel="stylesheet" href="./posters.css?v=20261116-poster-texture-c1">
-<link rel="stylesheet" href="./linkage.css?v=20261116-names-n1">
-<link rel="stylesheet" href="./names.css?v=20261116-names-n1">
+<link rel="stylesheet" href="./linkage.css?v=20261116-names-n2">
+<link rel="stylesheet" href="./names.css?v=20261116-names-n2">
 <script defer src="./ledger-app.js"></script>
 <script defer src="./vendor/opencc-1.0.5.js"></script>
 <script defer src="./ledger-script.js"></script>
@@ -1642,11 +1642,11 @@ function createNoticeUI(getCloud,getActor,{fetcher=globalThis.fetch.bind(globalT
 }
 
 return {createNoticeUI};})();
-import {createNamesUI} from './names.js?v=20261116-names-n1';
-import {createLinkageUI,pickTitle as linkedPickTitle} from './linkage.js?v=20261116-names-n1';
+import {createNamesUI} from './names.js?v=20261116-names-n2';
+import {createLinkageUI,pickTitle as linkedPickTitle} from './linkage.js?v=20261116-names-n2';
 import {createActivityUI} from './activity.js?v=20261107-chart2';
 import {createPosterUI} from './posters.js?v=20261109-posters-order1';
-import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261116-names-n1';
+import {OwnerKeyPicksClient,RowStore,safeURL as pkSafeURL,editable as pkEditable,patchBetween as pkPatchBetween,validateDraft as pkValidateDraft,monthDays as pkMonthDays,shiftMonth as pkShiftMonth,validDate as pkValidDate} from './core.js?v=20261116-names-n2';
 const SHARED_ONLY=false;
 
 (function(){
