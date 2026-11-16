@@ -14,7 +14,7 @@
 <link rel="icon" type="image/svg+xml" href="./icons/laobai.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/laobai-192.png">
 <link rel="stylesheet" href="./ledger-app.css">
-<link rel="stylesheet" href="./posters.css?v=20261116-aesthetic-candidate1">
+<link rel="stylesheet" href="./posters.css?v=20261116-poster-texture-c1">
 <script defer src="./ledger-app.js"></script>
 <script defer src="./vendor/opencc-1.0.5.js"></script>
 <script defer src="./ledger-script.js"></script>
@@ -597,9 +597,10 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
   .app:has(#v-picks:not([hidden])){max-width:900px;padding-inline:28px}
   #v-picks #pkList{gap:22px}
   #v-picks .paper.pk{padding:26px 30px 24px;display:flow-root}
-  #v-picks .paper.pk.has-cover{display:grid;grid-template-columns:124px minmax(0,1fr);column-gap:26px;grid-template-rows:auto auto auto auto auto;align-content:start}
+  #v-picks #pkList:not(.pk-compact) .paper.pk.has-cover,
+  #v-picks #pkList .paper.pk.has-cover.pk-row-expanded{display:grid;grid-template-columns:168px minmax(0,1fr);column-gap:26px;grid-template-rows:auto auto auto auto minmax(0,1fr);align-content:start}
   #v-picks .paper.pk.has-cover>*{grid-column:1/-1;min-width:0;clear:none}
-  #v-picks .paper.pk.has-cover>.pst-cover{grid-column:1;grid-row:1/6;float:none;width:124px;margin:4px 0 0;align-self:start;transform:rotate(-1deg)}
+  #v-picks .paper.pk.has-cover>.pst-cover{grid-column:1;grid-row:1/6;float:none;width:100%;margin:4px 0 0;align-self:start}
   #v-picks .paper.pk.has-cover>.pk-head{grid-column:2;grid-row:1}
   #v-picks .paper.pk.has-cover>.pk-title{grid-column:2;grid-row:2}
   #v-picks .paper.pk.has-cover>.pk-en{grid-column:2;grid-row:3}
@@ -627,10 +628,11 @@ input[type=checkbox]{accent-color:var(--hd-gold)}
 }
 @media (max-width:899.98px){
   #kTopicChoices{max-height:none;overflow:visible}
-  #v-picks .paper.pk.has-cover{display:grid;grid-template-columns:clamp(84px,26vw,112px) minmax(0,1fr);column-gap:16px;align-content:start}
+  #v-picks #pkList:not(.pk-compact) .paper.pk.has-cover,
+  #v-picks #pkList .paper.pk.has-cover.pk-row-expanded{display:grid;grid-template-columns:clamp(112px,36vw,150px) minmax(0,1fr);column-gap:16px;grid-template-rows:auto auto auto auto minmax(0,1fr);align-content:start}
   #v-picks .paper.pk.has-cover>*{grid-column:1/-1;min-width:0;clear:none}
   #v-picks .paper.pk.has-cover>.pk-head{grid-row:1}
-  #v-picks .paper.pk.has-cover>.pst-cover{grid-column:1;grid-row:2/6;float:none;width:100%;margin:12px 0 0;align-self:start;transform:rotate(-1.4deg)}
+  #v-picks .paper.pk.has-cover>.pst-cover{grid-column:1;grid-row:2/6;float:none;width:100%;margin:12px 0 0;align-self:start}
   #v-picks .paper.pk.has-cover>.pk-title{grid-column:2;grid-row:2;line-height:1.45;overflow-wrap:anywhere}
   #v-picks .paper.pk.has-cover>.pk-en{grid-column:2;grid-row:3;overflow-wrap:anywhere}
   #v-picks .paper.pk.has-cover>.pk-topic-tags{grid-column:2;grid-row:4;align-self:start}
