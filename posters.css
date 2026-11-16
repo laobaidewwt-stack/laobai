@@ -67,3 +67,7 @@ html.pst-viewing,html.pst-viewing body{overflow:hidden}
 
 /* Draft ordering uses the same selected thumbnail and actions as saved posters. */
 .pst-draft-tools .chip{min-height:44px;touch-action:manipulation}
+
+/* Arch detail belongs to thumbnails only, never the viewer or failed covers. */
+.work .pst-cover:not(.failed) .pst-mount::after,.paper.pk .pst-cover:not(.failed) .pst-mount::after{content:"";position:absolute;inset:7px;border:1.5px solid rgba(255,255,255,.85);border-radius:50% 50% 3px 3px/33% 33% 3px 3px;pointer-events:none}
+#pkList.pk-compact .paper.pk:not(.pk-row-expanded) .pst-cover:not(.failed) .pst-mount::after{inset:4px;border-width:1px}
